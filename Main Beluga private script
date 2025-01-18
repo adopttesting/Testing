@@ -6,5 +6,5 @@ local window = library:AddWindow("Belugaga V1 [] Made By Adopt", {
 	can_resize = false, -- true or false
 })
 
-
+local Client = window:AddTab("Client") 
 
