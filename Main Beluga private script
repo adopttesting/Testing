@@ -1,1 +1,10 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
+
+local window = library:AddWindow("Belugaga V1 [] Made By Adopt", {
+	main_color = Color3.fromRGB(109, 110, 108), -- Color
+	min_size = Vector2.new(500, 450), -- Size of the gui
+	can_resize = false, -- true or false
+})
+
+
+
