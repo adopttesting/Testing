@@ -1,19 +1,69 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "Lite Hub",
+    Title = "Fluent " .. Fluent.Version,
     SubTitle = "by dawid",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Aqua", -- Set the theme to Aqua
-    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when there's no MinimizeKeybind
 })
 
--- 
+-- Variable to track if the window is minimized or not
+local isMinimized = false
+
+-- Add the Minimize/Restore button with an icon
+local MinimizeButton = Window:AddButton({
+    Title = "Minimize/Restore",
+    Description = "Minimize or restore the entire GUI window.",
+    Icon = "minimize", -- Default icon (you can change this to any icon from Fluent's available icons)
+    Callback = function()
+        if isMinimized then
+            Window:Show()  -- Show the window to restore it
+            MinimizeButton:SetIcon("minimize")  -- Set the icon back to "minimize"
+        else
+            Window:Hide()  -- Hide the window to simulate minimizing
+            MinimizeButton:SetIcon("maximize")  -- Change icon to "maximize"
+        end
+        isMinimized = not isMinimized  -- Toggle the minimized state
+    end
+})
+
 local Tabs = {
-    Killing = Window:AddTab({ Title = "Killing", Icon = "skull" })
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
+local Options = Fluent.Options
 
+-- Example of adding more UI elements (this is the existing setup)
+Tabs.Main:AddButton({
+    Title = "Example Button",
+    Description = "An example button inside the window.",
+    Callback = function()
+        print("Button clicked!")
+    end
+})
 
+-- The rest of your script follows here...
+
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+SaveManager:LoadAutoloadConfig()
