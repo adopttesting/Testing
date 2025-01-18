@@ -220,8 +220,8 @@ AutoShakeToggle:OnChanged(function()
         if not pressedBackslash then
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            pressedBackslash = true  -- Mark navigation mode as activated
-            wait(0.1)
+            pressedBackslash = true
+            wait(0.3)
         end
 
         -- Start continuous loop for "S" and "Enter"
@@ -234,20 +234,18 @@ AutoShakeToggle:OnChanged(function()
             -- Simulate pressing "Enter"
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-            wait(0.15)
+            wait(0.350)
         end
     else
         -- Deactivate navigation mode (press "\" again)
-        if pressedBackslash then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            pressedBackslash = false  -- Mark navigation mode as deactivated
-        end
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+        pressedBackslash = false
     end
 end)
 
 -- Create Freeze Local Player Toggle
-local FreezePlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
+local FreezeLocalPlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
     Title = "",
     Default = false
 })
@@ -269,4 +267,3 @@ FreezePlayerToggle:OnChanged(function()
         humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
 end)
-
