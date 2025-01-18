@@ -12,9 +12,9 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
--- Removed the Main and Settings tabs, only the "Killing" tab remains
+-- Only the Killing tab exists now
 local Tabs = {
-    Killing = Window:AddTab({ Title = "Killing", Icon = "skull" }) -- Added a Killing tab
+    Killing = Window:AddTab({ Title = "Killing", Icon = "skull" })
 }
 
 local Options = Fluent.Options
@@ -26,15 +26,38 @@ Fluent:Notify({
     Duration = 5
 })
 
--- Toggle for Auto Kill
-local AutoKillToggle = Tabs.Killing:AddToggle("AutoKill", {
-    Title = "Auto Kill",
+-- Create a section for killing target
+local KillingTargetSection = Tabs.Killing:AddSection("Killin Target")
+
+-- Dropdown for selecting players to kill
+local SelectPlayerDropdown = KillingTargetSection:AddDropdown("SelectPlayerToKill", {
+    Title = "Select Player To Kill",
+    Values = {},
+    Multi = true,
+    Default = {}
+})
+
+-- Fill the dropdown with player names
+local function UpdatePlayerDropdown()
+    local playerNames = {}
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    SelectPlayerDropdown:SetValues(playerNames)
+end
+UpdatePlayerDropdown()
+
+-- Toggle to kill selected players
+local KillPlayersToggle = KillingTargetSection:AddToggle("KillPlayers", {
+    Title = "Kill Players",
     Default = false
 })
 
-AutoKillToggle:OnChanged(function()
-    if AutoKillToggle.Value then
-        -- Equip Punch tool and start punching
+KillPlayersToggle:OnChanged(function()
+    if KillPlayersToggle.Value then
+        local selectedPlayers = SelectPlayerDropdown:GetSelectedValues()
         local player = game.Players.LocalPlayer
         local playerName = player.Name
         local punchTool =
@@ -59,29 +82,28 @@ AutoKillToggle:OnChanged(function()
                 warn("Punch tool not found")
                 _G.autoPunchanim = false -- Stop the loop if the tool is not found
             end
-        end
 
-        -- Teleport players' heads infinitely between right and left hands and make their heads invisible
-        local myCharacter = player.Character or player.CharacterAdded:Wait()
-        local rightHand = myCharacter:WaitForChild("RightHand")
-        local leftHand = myCharacter:WaitForChild("LeftHand")
-
-        while AutoKillToggle.Value do
-            for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-                if targetPlayer ~= player then
+            -- Process killing selected players
+            for _, targetPlayerName in ipairs(selectedPlayers) do
+                local targetPlayer = game.Players:FindFirstChild(targetPlayerName)
+                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
                     local targetCharacter = targetPlayer.Character
-                    if targetCharacter and targetCharacter:FindFirstChild("Head") then
-                        -- Teleport their head between right and left hand
-                        local targetHead = targetCharacter.Head
-                        if targetHead then
-                            targetHead.CFrame = (targetHead.Position - rightHand.Position).magnitude < (targetHead.Position - leftHand.Position).magnitude and rightHand.CFrame or leftHand.CFrame
-                            -- Make their head invisible
-                            targetHead.Transparency = 1
-                            targetHead.CanCollide = false
-                        end
+                    local targetHead = targetCharacter.Head
+
+                    -- Teleport head to right and left hand and make invisible
+                    if targetHead then
+                        local myCharacter = player.Character or player.CharacterAdded:Wait()
+                        local rightHand = myCharacter:WaitForChild("RightHand")
+                        local leftHand = myCharacter:WaitForChild("LeftHand")
+
+                        -- Teleport the head to the closest hand and make it invisible
+                        targetHead.CFrame = (targetHead.Position - rightHand.Position).Magnitude < (targetHead.Position - leftHand.Position).Magnitude and rightHand.CFrame or leftHand.CFrame
+                        targetHead.Transparency = 1
+                        targetHead.CanCollide = false
                     end
                 end
             end
+
             wait(0.1) -- Adjust this delay for timing between head teleportations
         end
     else
@@ -89,7 +111,7 @@ AutoKillToggle:OnChanged(function()
 
         -- Reset visibility for all players' heads
         for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-            if targetPlayer ~= player then
+            if targetPlayer ~= game.Players.LocalPlayer then
                 local targetCharacter = targetPlayer.Character
                 if targetCharacter and targetCharacter:FindFirstChild("Head") then
                     targetCharacter.Head.Transparency = 0
