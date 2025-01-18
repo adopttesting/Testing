@@ -128,3 +128,8 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
+Tabs.Main:AddParagraph({
+        Title = "Farming",
+        Content = ""
+    })
+
