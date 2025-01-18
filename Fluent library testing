@@ -3,67 +3,152 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "Fluent " .. Fluent.Version,
+    Title = "Lite Hub",
     SubTitle = "by dawid",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl -- Used when there's no MinimizeKeybind
-})
-
--- Variable to track if the window is minimized or not
-local isMinimized = false
-
--- Add the Minimize/Restore button with an icon
-local MinimizeButton = Window:AddButton({
-    Title = "Minimize/Restore",
-    Description = "Minimize or restore the entire GUI window.",
-    Icon = "minimize", -- Default icon (you can change this to any icon from Fluent's available icons)
-    Callback = function()
-        if isMinimized then
-            Window:Show()  -- Show the window to restore it
-            MinimizeButton:SetIcon("minimize")  -- Set the icon back to "minimize"
-        else
-            Window:Hide()  -- Hide the window to simulate minimizing
-            MinimizeButton:SetIcon("maximize")  -- Change icon to "maximize"
-        end
-        isMinimized = not isMinimized  -- Toggle the minimized state
-    end
+    Theme = "Aqua", -- Set the theme to Aqua
+    MinimizeKey = Enum.KeyCode.LeftControl
 })
 
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Client = Window:AddTab({ Title = "Client", Icon = "" }),
+    "Auto Farming" = Window:AddTab({ Title = "Auto Farming", Icon = "" }),
+    Killing = Window:AddTab({ Title = "Killing", Icon = "skull" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
 local Options = Fluent.Options
 
--- Example of adding more UI elements (this is the existing setup)
-Tabs.Main:AddButton({
-    Title = "Example Button",
-    Description = "An example button inside the window.",
-    Callback = function()
-        print("Button clicked!")
+-- Time Elapsing
+local startTime = tick()
+
+Tabs.Client:AddParagraph({
+    Title = "Execution Time",
+    Content = "minute:0 hour:0 day:0 week:0"
+})
+
+task.spawn(function()
+    while true do
+        wait(1)
+        local elapsedTime = tick() - startTime
+        local minutes = math.floor(elapsedTime / 60)
+        local hours = math.floor(minutes / 60)
+        local days = math.floor(hours / 24)
+        local weeks = math.floor(days / 7)
+        
+        Tabs.Client:GetParagraph(1).Content = string.format("minute:%d hour:%d day:%d week:%d", minutes % 60, hours % 24, days % 7, weeks)
     end
-})
+end)
 
--- The rest of your script follows here...
+-- Auto Farming
+local autoWeightToggle = Tabs["Auto Farming"]:AddToggle("AutoWeight", {Title = "Auto Weight", Default = false})
+autoWeightToggle:OnChanged(function(Value)
+    if Value then
+        while autoWeightToggle.Value do
+            -- Equip and use Weight tool (replace 'Weight' with actual tool name)
+            local weightTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Weight")
+            if weightTool then
+                weightTool.Parent = game.Players.LocalPlayer.Character
+                weightTool:Activate()
+            end
+            wait(0.5)
+        end
+    end
+end)
 
-Fluent:Notify({
-    Title = "Fluent",
-    Content = "The script has been loaded.",
-    Duration = 8
-})
+local autoPushupsToggle = Tabs["Auto Farming"]:AddToggle("AutoPushups", {Title = "Auto Pushups", Default = false})
+autoPushupsToggle:OnChanged(function(Value)
+    if Value then
+        while autoPushupsToggle.Value do
+            -- Equip and use Pushups tool (replace 'Pushups' with actual tool name)
+            local pushupsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Pushups")
+            if pushupsTool then
+                pushupsTool.Parent = game.Players.LocalPlayer.Character
+                pushupsTool:Activate()
+            end
+            wait(0.5)
+        end
+    end
+end)
 
+local autoSitupsToggle = Tabs["Auto Farming"]:AddToggle("AutoSitups", {Title = "Auto Situps", Default = false})
+autoSitupsToggle:OnChanged(function(Value)
+    if Value then
+        while autoSitupsToggle.Value do
+            -- Equip and use Situps tool (replace 'Situps' with actual tool name)
+            local situpsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Situps")
+            if situpsTool then
+                situpsTool.Parent = game.Players.LocalPlayer.Character
+                situpsTool:Activate()
+            end
+            wait(0.5)
+        end
+    end
+end)
+
+local autoHandstandsToggle = Tabs["Auto Farming"]:AddToggle("AutoHandstands", {Title = "Auto Handstands", Default = false})
+autoHandstandsToggle:OnChanged(function(Value)
+    if Value then
+        while autoHandstandsToggle.Value do
+            -- Equip and use Handstands tool (replace 'Handstands' with actual tool name)
+            local handstandsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Handstands")
+            if handstandsTool then
+                handstandsTool.Parent = game.Players.LocalPlayer.Character
+                handstandsTool:Activate()
+            end
+            wait(0.5)
+        end
+    end
+end)
+
+-- Killing
+local autoKillToggle = Tabs.Killing:AddToggle("AutoKill", {Title = "Auto Kill", Default = false})
+autoKillToggle:OnChanged(function(Value)
+    if Value then
+        while autoKillToggle.Value do
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    -- Teleport to my right hand and equip Punch tool
+                    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                    local rightHand = game.Players.LocalPlayer.Character:FindFirstChild("RightHand")
+                    if humanoidRootPart and rightHand then
+                        humanoidRootPart.CFrame = rightHand.CFrame
+                    end
+                    
+                    -- Equip and use Punch tool (replace 'Punch' with actual tool name)
+                    local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch")
+                    if punchTool then
+                        punchTool.Parent = game.Players.LocalPlayer.Character
+                        punchTool:Activate()
+                    end
+                end
+            end
+            wait(1)
+        end
+    end
+end)
+
+-- Settings (Saving and Interface Management)
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
+
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
-InterfaceManager:SetFolder("FluentScriptHub")
-SaveManager:SetFolder("FluentScriptHub/specific-game")
+InterfaceManager:SetFolder("LiteHub")
+SaveManager:SetFolder("LiteHub/specific-game")
 
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
 
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "Lite Hub",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+
+-- Load auto-load config if available
 SaveManager:LoadAutoloadConfig()
