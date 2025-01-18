@@ -216,31 +216,56 @@ AutoShakeToggle:OnChanged(function()
     local pressedBackslash = false  -- Track if "\" has already been pressed
 
     if AutoShakeToggle.Value then
-        -- Activate navigation mode (press "\" once)
+        -- Step 1: Activate navigation mode by pressing "\"
         if not pressedBackslash then
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
             pressedBackslash = true
-            wait(0.3)
+            wait(0.3)  -- Give some time for the input to be processed
         end
 
-        -- Start continuous loop for "S" and "Enter"
+        -- Step 2: Press "D" twice
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.D, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.D, false, nil)
+        wait(0.1)  -- Small delay to simulate pressing "D"
+        
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.D, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.D, false, nil)
+        wait(0.1)  -- Small delay to simulate pressing "D"
+
+        -- Step 3: Press "Enter"
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
+        wait(0.3)  -- Small delay to simulate pressing "Enter"
+
+        -- Step 4: Deactivate navigation mode by pressing "\"
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+        pressedBackslash = false  -- Mark navigation mode as deactivated
+        wait(0.3)  -- Ensure there's a slight delay before continuing
+
+        -- Step 5: Add a 2-second wait before starting the regular "S" and "Enter" presses
+        wait(2)  -- Wait for 2 seconds before proceeding to regular action
+
+        -- Step 6: Regular "S" and "Enter" simulation
         while AutoShakeToggle.Value do
             -- Simulate pressing "S"
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
-            wait(0.1)
+            wait(0.1)  -- Small delay to simulate pressing "S"
 
             -- Simulate pressing "Enter"
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-            wait(0.350)
+            wait(0.35)  -- Small delay to simulate pressing "Enter"
         end
     else
-        -- Deactivate navigation mode (press "\" again)
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-        pressedBackslash = false
+        -- Deactivate navigation mode when toggle is turned off
+        if pressedBackslash then
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+            pressedBackslash = false
+        end
     end
 end)
 
