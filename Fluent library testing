@@ -207,7 +207,7 @@ end)
 
 -- Create Auto Shake Toggle
 local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
-    Title = "Auto Shake",
+    Title = "",
     Default = false
 })
 
@@ -220,7 +220,7 @@ AutoShakeToggle:OnChanged(function()
         if not pressedBackslash then
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            pressedBackslash = true
+            pressedBackslash = true  -- Mark navigation mode as activated
             wait(0.1)
         end
 
@@ -238,9 +238,11 @@ AutoShakeToggle:OnChanged(function()
         end
     else
         -- Deactivate navigation mode (press "\" again)
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-        pressedBackslash = false
+        if pressedBackslash then
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+            pressedBackslash = false  -- Mark navigation mode as deactivated
+        end
     end
 end)
 
