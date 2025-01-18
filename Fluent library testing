@@ -6,10 +6,76 @@ local Window = Fluent:CreateWindow({
     SubTitle = "by dawid",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
-    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Acrylic = true,
     Theme = "Aqua",
-    MinimizeKey = Enum.KeyCode.LeftControl -- Used when there's no MinimizeKeybind
+    MinimizeKey = Enum.KeyCode.LeftControl, -- Optional, if you still want to keep the keybind
 })
+
+-- Create a minimize button manually
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 40, 0, 40) -- Size of the button
+minimizeButton.Position = UDim2.new(0, 10, 0.5, -20) -- Position at the middle-left of the screen
+minimizeButton.BackgroundTransparency = 1 -- Make the background of the button transparent
+minimizeButton.Parent = Window.Frame -- Assuming the window has a frame to add it to
+
+-- Add a UIStroke to give the button a border
+local uiStroke = Instance.new("UIStroke")
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- Apply the stroke on the border
+uiStroke.Color = Color3.fromRGB(255, 255, 255) -- Stroke color (white)
+uiStroke.Thickness = 2 -- Stroke thickness
+uiStroke.Parent = minimizeButton
+
+-- Add an ImageLabel to cover the button with an image
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.Size = UDim2.new(1, 0, 1, 0) -- Make the image cover the whole button
+imageLabel.Position = UDim2.new(0, 0, 0, 0) -- Position the image to cover the button
+imageLabel.Image = "rbxassetid://YOUR_IMAGE_ID"  -- Replace with your image ID
+imageLabel.BackgroundTransparency = 1 -- Make the image label background transparent
+imageLabel.Parent = minimizeButton
+
+-- Variable to track the window's visibility state
+local windowMinimized = false
+
+-- Function to toggle the window visibility
+minimizeButton.MouseButton1Click:Connect(function()
+    if windowMinimized then
+        -- If the window is minimized, make it visible again
+        Window.Visible = true
+        windowMinimized = false
+        imageLabel.Image = "rbxassetid://YOUR_IMAGE_ID"  -- Replace with your visible image ID (minimize icon)
+    else
+        -- If the window is visible, minimize it (make it invisible)
+        Window.Visible = false
+        windowMinimized = true
+        imageLabel.Image = "rbxassetid://YOUR_SECOND_IMAGE_ID"  -- Replace with your restored image ID (restore icon)
+    end
+end)
+
+-- Draggable functionality for the button
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+minimizeButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = minimizeButton.Position
+    end
+end)
+
+minimizeButton.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        minimizeButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+minimizeButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
 
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
@@ -184,78 +250,4 @@ FreezePlayerToggle:OnChanged(function()
         humanoid.PlatformStand = false
         humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
-end)
-
--- Create a ScreenGui and set the name to "DraggableGui"
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "DraggableGui"
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- Create a Frame inside the ScreenGui
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 45, 0, 45)  -- Set size of the frame to 45x45
-frame.Position = UDim2.new(0.5, -22, 0.5, -22)  -- Center the frame on the screen
-frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Set a background color (this won't show due to the image)
-frame.BorderSizePixel = 0  -- Remove the default border
-frame.Parent = screenGui
-
--- Add a UIStroke to the Frame
-local uiStroke = Instance.new("UIStroke")
-uiStroke.Thickness = 3  -- Set thickness of stroke
-uiStroke.Color = Color3.fromRGB(0, 255, 0)  -- Set stroke color (green)
-uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-uiStroke.Parent = frame
-
--- Create a TextButton inside the Frame
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(0, 45, 0, 45)  -- Same size as the frame
-button.Position = UDim2.new(0, 0, 0, 0)  -- Button positioned within the frame
-button.BackgroundTransparency = 1  -- Make the button background transparent
-button.Text = ""  -- No text on the button
-button.Parent = frame
-
--- Add an Image to the button
-local image = Instance.new("ImageLabel")
-image.Size = UDim2.new(0, 45, 0, 45)  -- Same size as the button
-image.Position = UDim2.new(0, 0, 0, 0)  -- Image positioned within the button
-image.BackgroundTransparency = 1  -- Make image background transparent
-image.Image = "rbxassetid://YourImageIDHere"  -- Replace with your image's asset ID
-image.Parent = button
-
--- Draggable functionality
-local userInputService = game:GetService("UserInputService")
-
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
--- Function to start dragging
-button.MouseButton1Down:Connect(function(input)
-    dragging = true
-    dragStart = input.Position
-    startPos = frame.Position
-end)
-
--- Function to stop dragging
-userInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
--- Function to update the frame position
-userInputService.InputChanged:Connect(function(input)
-    if dragging then
-        local delta = input.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
--- Simulate pressing the "Left CTRL" key when the button is pressed
-button.MouseButton1Click:Connect(function()
-    -- Fire a "UserInputService" event that simulates pressing the "Left CTRL" key
-    local inputObject = Instance.new("InputObject")
-    inputObject.KeyCode = Enum.KeyCode.LeftControl
-    inputObject.UserInputType = Enum.UserInputType.Keyboard
-    userInputService.InputBegan:Fire(inputObject)
 end)
