@@ -1,0 +1,118 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Lite Hub",
+    SubTitle = "by dawid",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Theme = "Aqua", -- Set the theme to Aqua
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+    Killing = Window:AddTab({ Title = "Killing", Icon = "skull" }) -- Added a Killing tab
+}
+
+local Options = Fluent.Options
+
+-- Notification at the start
+Fluent:Notify({
+    Title = "Notification",
+    Content = "Lite Hub loaded successfully.",
+    Duration = 5
+})
+
+-- Toggle for Auto Kill
+local AutoKillToggle = Tabs.Killing:AddToggle("AutoKill", {
+    Title = "Auto Kill",
+    Default = false
+})
+
+AutoKillToggle:OnChanged(function()
+    if AutoKillToggle.Value then
+        -- Equip Punch tool
+        local player = game.Players.LocalPlayer
+        local punchTool = game.Workspace:FindFirstChild("Punch")
+        if punchTool then
+            punchTool.Parent = player.Backpack
+            while AutoKillToggle.Value do
+                -- Infinite use of Punch tool
+                if punchTool.Parent == player.Backpack then
+                    firetool(punchTool)  -- Simulating a punch attack (assuming the game uses this method)
+                end
+                wait(0.1)
+            end
+        end
+
+        -- Teleport all players (except me) to my right hand and make their avatar invisible
+        local myCharacter = player.Character or player.CharacterAdded:Wait()
+        local rightHand = myCharacter:WaitForChild("RightHand")
+
+        for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
+            if targetPlayer ~= player then
+                local targetCharacter = targetPlayer.Character
+                if targetCharacter and targetCharacter:FindFirstChild("HumanoidRootPart") then
+                    -- Teleport humanoid root part to my right hand
+                    targetCharacter.HumanoidRootPart.CFrame = rightHand.CFrame
+                    -- Make the player's avatar invisible
+                    for _, part in ipairs(targetCharacter:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            part.Transparency = 1
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end
+        end
+    else
+        -- If toggle is turned off, stop the actions
+        local player = game.Players.LocalPlayer
+        local punchTool = game.Workspace:FindFirstChild("Punch")
+        if punchTool then
+            punchTool.Parent = nil -- Remove Punch tool if it was equipped
+        end
+
+        -- Reset all players to visible
+        for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
+            if targetPlayer ~= player then
+                local targetCharacter = targetPlayer.Character
+                if targetCharacter then
+                    -- Reset avatar visibility
+                    for _, part in ipairs(targetCharacter:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            part.Transparency = 0
+                            part.CanCollide = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- SaveManager and InterfaceManager integration
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("LiteHub")
+SaveManager:SetFolder("LiteHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "Lite Hub",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+
+SaveManager:LoadAutoloadConfig()
