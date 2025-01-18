@@ -190,8 +190,31 @@ Tabs.Automatically:AddParagraph({
 
 Tabs.Automatically:AddButton({
     Title = "Sell All",
-    Description = "Very important button",
+    Description = "",
     Callback = function()
         game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("SellAll"):InvokeServer()
     end
 })
+
+Tabs.Automatically:AddParagraph({
+        Title = "Merlin",
+        Content = ""
+    })
+
+Tabs.Automatically:AddButton({
+    Title = "Auto Buy Relic",
+    Description = "",
+    Callback = function()
+        workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Merlin"):WaitForChild("Merlin"):WaitForChild("power"):InvokeServer()
+    end
+})
+
+Tabs.Automatically:AddButton({
+    Title = "Auto Buy Luck",
+    Description = "",
+    Callback = function()
+        workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Merlin"):WaitForChild("Merlin"):WaitForChild("luck"):InvokeServer()
+    end
+})
+
+
