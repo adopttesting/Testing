@@ -1,10 +1,3 @@
--- Create the GUI
-local player = game.Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player.PlayerGui
-screenGui.Name = "CustomGui"
-
-
 -- Fluent 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
@@ -193,68 +186,76 @@ FreezePlayerToggle:OnChanged(function()
     end
 end)
 
--- Create the minimize button and make it draggable
-local buttonFrame = Instance.new("Frame")
-buttonFrame.Size = UDim2.new(0, 46, 0, 42)  -- Size of the button
-buttonFrame.Position = UDim2.new(0, 0, 0.5, -21)  -- Position the button at the middle-left of the screen
-buttonFrame.BackgroundTransparency = 1  -- Make the frame invisible
-buttonFrame.Parent = screenGui
+-- Create a ScreenGui and set the name to "DraggableGui"
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DraggableGui"
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Create an image for the button (using the same asset ID)
-local buttonImage = Instance.new("ImageLabel")
-buttonImage.Size = UDim2.new(1, 0, 1, 0)  -- Fill the whole frame
-buttonImage.Image = "rbxassetid://86093303748141"  -- Replace with your image asset ID
-buttonImage.BackgroundTransparency = 1  -- Make the image transparent
-buttonImage.Parent = buttonFrame
+-- Create a Frame inside the ScreenGui
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 45, 0, 45)  -- Set size of the frame to 45x45
+frame.Position = UDim2.new(0.5, -22, 0.5, -22)  -- Center the frame on the screen
+frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Set a background color (this won't show due to the image)
+frame.BorderSizePixel = 0  -- Remove the default border
+frame.Parent = screenGui
+
+-- Add a UIStroke to the Frame
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 3  -- Set thickness of stroke
+uiStroke.Color = Color3.fromRGB(0, 255, 0)  -- Set stroke color (green)
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke.Parent = frame
+
+-- Create a TextButton inside the Frame
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 45, 0, 45)  -- Same size as the frame
+button.Position = UDim2.new(0, 0, 0, 0)  -- Button positioned within the frame
+button.BackgroundTransparency = 1  -- Make the button background transparent
+button.Text = ""  -- No text on the button
+button.Parent = frame
+
+-- Add an Image to the button
+local image = Instance.new("ImageLabel")
+image.Size = UDim2.new(0, 45, 0, 45)  -- Same size as the button
+image.Position = UDim2.new(0, 0, 0, 0)  -- Image positioned within the button
+image.BackgroundTransparency = 1  -- Make image background transparent
+image.Image = "rbxassetid://YourImageIDHere"  -- Replace with your image's asset ID
+image.Parent = button
 
 -- Draggable functionality
 local userInputService = game:GetService("UserInputService")
+
 local dragging = false
 local dragStart = nil
 local startPos = nil
 
-buttonFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        -- Start dragging the button when mouse button is pressed
-        dragging = true
-        dragStart = input.Position
-        startPos = buttonFrame.Position
-    end
+-- Function to start dragging
+button.MouseButton1Down:Connect(function(input)
+    dragging = true
+    dragStart = input.Position
+    startPos = frame.Position
 end)
 
-userInputService.InputChanged:Connect(function(input)
-    if dragging then
-        -- Update the button's position as the mouse moves
-        local delta = input.Position - dragStart
-        buttonFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
+-- Function to stop dragging
 userInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        -- Stop dragging when the mouse button is released
         dragging = false
     end
 end)
 
--- Minimize functionality when the button is clicked
-buttonFrame.MouseButton1Click:Connect(function()
-    -- Toggle the minimize state when the button is clicked
-    if Window:IsMinimized() then
-        Window:Maximize()  -- Restore the window if minimized
-    else
-        Window:Minimize()  -- Minimize the window
+-- Function to update the frame position
+userInputService.InputChanged:Connect(function(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
--- Make sure the minimize button presses Left Control (instead of Right CTRL)
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.LeftControl then
-        -- Handle the behavior when Left Control is pressed for minimizing
-        if Window:IsMinimized() then
-            Window:Maximize()
-        else
-            Window:Minimize()
-        end
-    end
+-- Simulate pressing the "Left CTRL" key when the button is pressed
+button.MouseButton1Click:Connect(function()
+    -- Fire a "UserInputService" event that simulates pressing the "Left CTRL" key
+    local inputObject = Instance.new("InputObject")
+    inputObject.KeyCode = Enum.KeyCode.LeftControl
+    inputObject.UserInputType = Enum.UserInputType.Keyboard
+    userInputService.InputBegan:Fire(inputObject)
 end)
