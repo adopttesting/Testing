@@ -27,26 +27,6 @@ Fluent:Notify({
 -- Create a section for killing target
 local KillingTargetSection = Tabs.Killing:AddSection("Killin Target")
 
--- Dropdown for selecting players to kill
-local SelectPlayerDropdown = KillingTargetSection:AddDropdown("SelectPlayerToKill", {
-    Title = "Select Player To Kill",
-    Values = {},
-    Multi = true,
-    Default = {}
-})
-
--- Fill the dropdown with player names
-local function UpdatePlayerDropdown()
-    local playerNames = {}
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            table.insert(playerNames, player.Name)
-        end
-    end
-    SelectPlayerDropdown:SetValues(playerNames)
-end
-UpdatePlayerDropdown()
-
 -- Auto Kill toggle
 local AutoKillToggle = KillingTargetSection:AddToggle("AutoKill", {
     Title = "Auto Kill",
@@ -55,141 +35,65 @@ local AutoKillToggle = KillingTargetSection:AddToggle("AutoKill", {
 
 AutoKillToggle:OnChanged(function()
     if AutoKillToggle.Value then
+        -- Handle the teleportation and invisibility for all players in the game
         local player = game.Players.LocalPlayer
-        local playerName = player.Name
-        local punchTool =
-            player.Backpack:FindFirstChild("Punch") or
-            game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
-        
-        _G.autoPunchanim = true -- Global control variable
+        local localCharacter = player.Character or player.CharacterAdded:Wait()
 
-        while _G.autoPunchanim do
-            if punchTool then
-                -- Equip the tool if it's not already equipped
-                if punchTool.Parent ~= game.Workspace:FindFirstChild(playerName) then
-                    punchTool.Parent = game.Workspace:FindFirstChild(playerName) -- Equip the tool
-                end
-                
-                -- Fire punch events for both right and left hand
-                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                
-                wait() -- Adjust the delay as needed for timing between punches
-            else
-                warn("Punch tool not found")
-                _G.autoPunchanim = false -- Stop the loop if the tool is not found
-            end
+        -- Function to teleport the head and make the head invisible
+        local function handleKill(character, localCharacter)
+            if not character or not localCharacter then return end
 
-            -- Teleport all players' heads to the right and left hand and make invisible
+            -- Find the player's head and your hands
+            local head = character:FindFirstChild("Head")
+            local leftHand = localCharacter:FindFirstChild("LeftHand")
+            local rightHand = localCharacter:FindFirstChild("RightHand")
+
+            if not head or not leftHand or not rightHand then return end
+
+            -- Teleport the head to your hands
+            head.CFrame = leftHand.CFrame
+            head.CFrame = rightHand.CFrame
+
+            -- Make the head invisible
+            head.Transparency = 1
+            head.CanCollide = false
+        end
+
+        -- Continuously teleport and make the heads invisible for all players except the local player
+        while AutoKillToggle.Value do
             for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-                if targetPlayer ~= game.Players.LocalPlayer then
-                    local targetCharacter = targetPlayer.Character
-                    if targetCharacter and targetCharacter:FindFirstChild("Head") then
-                        local targetHead = targetCharacter.Head
+                if targetPlayer ~= player and targetPlayer.Character then
+                    handleKill(targetPlayer.Character, localCharacter)
+                end
+            end
+            wait(0.1) -- Adjust this delay as needed for smooth teleportation
+        end
 
-                        -- Teleport the head to right and left hand and make invisible
-                        if targetHead then
-                            local myCharacter = player.Character or player.CharacterAdded:Wait()
-                            local rightHand = myCharacter:WaitForChild("RightHand")
-                            local leftHand = myCharacter:WaitForChild("LeftHand")
+        -- Punching logic when the toggle is enabled
+        local function autoPunch()
+            local punchTool = player.Backpack:FindFirstChild("Punch") or game.Workspace:FindFirstChild(player.Name):FindFirstChild("Punch")
+            _G.autoPunchanim = true
 
-                            -- Teleport the head to the closest hand and make it invisible
-                            targetHead.CFrame = (targetHead.Position - rightHand.Position).Magnitude < (targetHead.Position - leftHand.Position).Magnitude and rightHand.CFrame or leftHand.CFrame
-                            targetHead.Transparency = 1
-                            targetHead.CanCollide = false
-                        end
+            while _G.autoPunchanim do
+                if punchTool then
+                    if punchTool.Parent ~= game.Workspace:FindFirstChild(player.Name) then
+                        punchTool.Parent = game.Workspace:FindFirstChild(player.Name)
                     end
+                    -- Fire the punch event for both right and left hands
+                    game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                    game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                    wait()
+                else
+                    _G.autoPunchanim = false
                 end
             end
-
-            wait(0.1) -- Adjust this delay for timing between head teleportations
         end
+
+        -- Run the autoPunch function when the toggle is on
+        autoPunch()
     else
-        _G.autoPunchanim = false -- Stop punching if the toggle is off
-
-        -- Reset visibility for all players' heads
-        for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-            if targetPlayer ~= game.Players.LocalPlayer then
-                local targetCharacter = targetPlayer.Character
-                if targetCharacter and targetCharacter:FindFirstChild("Head") then
-                    targetCharacter.Head.Transparency = 0
-                    targetCharacter.Head.CanCollide = true
-                end
-            end
-        end
-    end
-end)
-
--- Kill Players toggle
-local KillPlayersToggle = KillingTargetSection:AddToggle("KillPlayers", {
-    Title = "Kill Players",
-    Default = false
-})
-
-KillPlayersToggle:OnChanged(function()
-    if KillPlayersToggle.Value then
-        local selectedPlayers = SelectPlayerDropdown:GetSelectedValues()
-        local player = game.Players.LocalPlayer
-        local playerName = player.Name
-        local punchTool =
-            player.Backpack:FindFirstChild("Punch") or
-            game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
-        
-        _G.autoPunchanim = true -- Global control variable
-
-        while _G.autoPunchanim do
-            if punchTool then
-                -- Equip the tool if it's not already equipped
-                if punchTool.Parent ~= game.Workspace:FindFirstChild(playerName) then
-                    punchTool.Parent = game.Workspace:FindFirstChild(playerName) -- Equip the tool
-                end
-                
-                -- Fire punch events for both right and left hand
-                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                
-                wait() -- Adjust the delay as needed for timing between punches
-            else
-                warn("Punch tool not found")
-                _G.autoPunchanim = false -- Stop the loop if the tool is not found
-            end
-
-            -- Process killing selected players
-            for _, targetPlayerName in ipairs(selectedPlayers) do
-                local targetPlayer = game.Players:FindFirstChild(targetPlayerName)
-                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
-                    local targetCharacter = targetPlayer.Character
-                    local targetHead = targetCharacter.Head
-
-                    -- Teleport head to right and left hand and make invisible
-                    if targetHead then
-                        local myCharacter = player.Character or player.CharacterAdded:Wait()
-                        local rightHand = myCharacter:WaitForChild("RightHand")
-                        local leftHand = myCharacter:WaitForChild("LeftHand")
-
-                        -- Teleport the head to the closest hand and make it invisible
-                        targetHead.CFrame = (targetHead.Position - rightHand.Position).Magnitude < (targetHead.Position - leftHand.Position).Magnitude and rightHand.CFrame or leftHand.CFrame
-                        targetHead.Transparency = 1
-                        targetHead.CanCollide = false
-                    end
-                end
-            end
-
-            wait(0.1) -- Adjust this delay for timing between head teleportations
-        end
-    else
-        _G.autoPunchanim = false -- Stop punching if the toggle is off
-
-        -- Reset visibility for all players' heads
-        for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-            if targetPlayer ~= game.Players.LocalPlayer then
-                local targetCharacter = targetPlayer.Character
-                if targetCharacter and targetCharacter:FindFirstChild("Head") then
-                    targetCharacter.Head.Transparency = 0
-                    targetCharacter.Head.CanCollide = true
-                end
-            end
-        end
+        -- Stop everything when the toggle is turned off
+        _G.autoPunchanim = false
     end
 end)
 
