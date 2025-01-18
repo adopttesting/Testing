@@ -197,12 +197,6 @@ AutoShakeToggle:OnChanged(function()
         VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
         wait(0.3)  -- Small delay to simulate pressing "Enter"
 
-        -- Step 4: Deactivate navigation mode by pressing "\"
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-        pressedBackslash = false  -- Mark navigation mode as deactivated
-        wait(0.3)  -- Ensure there's a slight delay before continuing
-
         -- Step 5: Add a 2-second wait before starting the regular "S" and "Enter" presses
         wait(2)  -- Wait for 2 seconds before proceeding to regular action
 
@@ -227,7 +221,6 @@ AutoShakeToggle:OnChanged(function()
         end
     end
 end)
-
 -- Create Freeze Local Player Toggle
 local FreezePlayerToggle = Tabs.AutoFishing:AddToggle("Freeze Local Player", {
     Title = "Freeze Local Player",
