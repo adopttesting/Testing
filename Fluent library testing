@@ -1,3 +1,145 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Lite Hub,
+    SubTitle = "by dawid",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Theme = "Aqua",
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+})
+
+local Tabs = {
+    AutoFiching = Window:AddTab({ Title = "Auto Fiching", Icon = "" }),
+}
+
+Tabs.AutoFishing:AddParagraph({
+    Title = "Farming",
+    Content = ""
+})
+
+-- Create Dropdown for Select Rod
+local Dropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
+    Title = "",
+    Values = {
+        "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
+        "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
+        "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
+        "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
+        "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
+        "Kings Rod", "Aurora Rod", "Scurvy Rod"
+    },
+    Multi = false,
+    Default = 1,
+})
+
+Dropdown:SetValue("Flimsy Rod")  -- Default selection set to "Flimsy Rod"
+
+-- Create Equip Rod Toggle
+local EquipRodToggle = Tabs.AutoFishing:AddToggle("Equip Rod", {
+    Title = "Equip Rod",
+    Default = false
+})
+
+EquipRodToggle:OnChanged(function()
+    local player = game:GetService("Players").LocalPlayer
+    local backpack = player:WaitForChild("Backpack")
+
+    while EquipRodToggle.Value do
+        local selectedRod = Dropdown.Value  -- Get the rod name from the dropdown
+        local rodTool = backpack:FindFirstChild(selectedRod) or player.Character:FindFirstChild(selectedRod)
+
+        if rodTool and backpack:FindFirstChild(selectedRod) then
+            rodTool.Parent = player.Character  -- Equip the rod
+        end
+
+        wait(0.5)  -- Adjust as needed to control how often it checks
+    end
+end)
+
+-- Create Auto Cast Toggle
+local AutoCastToggle = Tabs.AutoFishing:AddToggle("Auto Cast", {
+    Title = "Auto Cast",
+    Default = false
+})
+
+AutoCastToggle:OnChanged(function()
+    while AutoCastToggle.Value do
+        -- Fire the cast event with the selected rod
+        local selectedRod = Dropdown.Value
+        local args = {
+            [1] = 23.7,  -- example value, replace as needed
+            [2] = 1,
+        }
+        
+        game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
+        
+        wait(0.5)  -- Adjust the wait time as needed
+    end
+end)
+
+-- Create Auto Reel Toggle
+local AutoReelToggle = Tabs.AutoFishing:AddToggle("Auto Reel", {
+    Title = "Auto Reel",
+    Default = false
+})
+
+AutoReelToggle:OnChanged(function()
+    while AutoReelToggle.Value do
+        -- Fire the reel finished event
+        local args = {
+            [1] = 100,
+            [2] = true,
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+        
+        wait(0.5)  -- Adjust the wait time as needed
+    end
+end)
+
+-- Create Auto Shake Toggle
+local AutoShakeToggle = Tabs.AutoFiching:AddToggle("Auto Shake", {
+    Title = "Auto Shake",
+    Default = false
+})
+
+AutoShakeToggle:OnChanged(function()
+    local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
+    local pressedBackslash = false  -- Track if "\" has already been pressed
+
+    if AutoShakeToggle.Value then
+        -- Step 1: Activate navigation mode by pressing "\"
+        if not pressedBackslash then
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+            pressedBackslash = true
+            wait(0.3)  -- Give some time for the input to be processed
+        end
+
+        -- Step 2: Press "D" four times
+        for i = 1, 4 do
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.D, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.D, false, nil)
+            wait(0.1)  -- Small delay to simulate pressing "D"
+        end
+
+        -- Step 3: Press "Enter"
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
+        wait(0.3)  -- Small delay to simulate pressing "Enter"
+
+        -- Step 4: Deactivate navigation mode by pressing "\"
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+        pressedBackslash = false  -- Mark navigation mode as deactivated
+        wait(0.3)  -- Ensure there's a slight delay before continuing
+
+        -- Step 5: Add a 2-second wait before starting the regular "S" and "Enter" presses
+        wait(2)  -- Wait for 2 seconds before proceeding to regular action
+
+        -- Step 6: Regular "S" and "Enter" simulation
         while AutoShakeToggle.Value do
             -- Simulate pressing "S"
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
@@ -19,8 +161,8 @@
     end
 end)
 
--- Create Freeze Local Player Toggle
-local FreezeLocalPlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
+-- Create Free Local Player Toggle
+local FreezePlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
     Title = "",
     Default = false
 })
@@ -41,4 +183,4 @@ FreezePlayerToggle:OnChanged(function()
         humanoid.PlatformStand = false
         humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
-end)
+end)  
