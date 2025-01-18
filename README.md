@@ -253,7 +253,7 @@ local killPlayer = nil
 local whiteListedPlayers = {}
 
 -- Dropdown for WhiteList (players who won't be affected by auto kill)
-local whiteListDropdown = Killing:AddDropdown("WhiteList", function(playerName)
+Killingtab:AddDropdown("WhiteList", function(playerName)
     if playerName ~= "None" then
         table.insert(whiteListedPlayers, playerName)
     end
@@ -264,10 +264,10 @@ for _, player in pairs(game.Players:GetPlayers()) do
     whiteListDropdown:Add(player.Name)
 end
 
-Killing:AddLabel("Target A Player")
+Killingtab:AddLabel("Target A Player")
 
 -- Dropdown for selecting target player to kill
-local selectPlayerDropdown = Killing:AddDropdown("Select Player", function(playerName)
+Killingtab:AddDropdown("Select Player", function(playerName)
     killPlayer = playerName == "None" and nil or playerName
 end)
 
@@ -278,19 +278,19 @@ end
 
 -- Switch to enable/disable killing specific players
 local killPlayersEnabled = false
-Killing:AddSwitch("Kill Players", function(State)
+Killingtab:AddSwitch("Kill Players", function(State)
     killPlayersEnabled = State
 end)
 
 -- Switch to enable/disable Auto Punch
 local autoPunchEnabled = false
-Killing:AddSwitch("Auto Punch", function(State)
+Killingtab:AddSwitch("Auto Punch", function(State)
     autoPunchEnabled = State
 end)
 
 -- Switch to enable/disable Auto Punch without animation
 local autoPunchNoAnimEnabled = false
-Killing:AddSwitch("Auto Punch [No Animation]", function(State)
+Killingtab:AddSwitch("Auto Punch [No Animation]", function(State)
     autoPunchNoAnimEnabled = State
 end)
 
@@ -299,7 +299,7 @@ local spyPlayer = nil
 local spyPlayerEnabled = false
 
 -- Dropdown for selecting player to spy on
-local spyPlayerDropdown = Killing:AddDropdown("Select Player To Spy", function(playerName)
+Killingtab:AddDropdown("Select Player To Spy", function(playerName)
     spyPlayer = playerName == "None" and nil or playerName
 end)
 
@@ -309,7 +309,7 @@ for _, player in pairs(game.Players:GetPlayers()) do
 end
 
 -- Switch to enable/disable spying on selected player
-Killing:AddSwitch("Spy Player", function(State)
+Killingtab:AddSwitch("Spy Player", function(State)
     spyPlayerEnabled = State
 end)
 
