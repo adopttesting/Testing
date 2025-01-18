@@ -11,74 +11,11 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl, -- Optional, if you still want to keep the keybind
 })
 
--- Create a minimize button manually
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 40, 0, 40) -- Size of the button
-minimizeButton.Position = UDim2.new(0, 10, 0.5, -20) -- Position at the middle-left of the screen
-minimizeButton.BackgroundTransparency = 1 -- Make the background of the button transparent
-minimizeButton.Parent = Window.Frame -- Assuming the window has a frame to add it to
-
--- Add a UIStroke to give the button a border
-local uiStroke = Instance.new("UIStroke")
-uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- Apply the stroke on the border
-uiStroke.Color = Color3.fromRGB(255, 255, 255) -- Stroke color (white)
-uiStroke.Thickness = 2 -- Stroke thickness
-uiStroke.Parent = minimizeButton
-
--- Add an ImageLabel to cover the button with an image
-local imageLabel = Instance.new("ImageLabel")
-imageLabel.Size = UDim2.new(1, 0, 1, 0) -- Make the image cover the whole button
-imageLabel.Position = UDim2.new(0, 0, 0, 0) -- Position the image to cover the button
-imageLabel.Image = "rbxassetid://YOUR_IMAGE_ID"  -- Replace with your image ID
-imageLabel.BackgroundTransparency = 1 -- Make the image label background transparent
-imageLabel.Parent = minimizeButton
-
--- Variable to track the window's visibility state
-local windowMinimized = false
-
--- Function to toggle the window visibility
-minimizeButton.MouseButton1Click:Connect(function()
-    if windowMinimized then
-        -- If the window is minimized, make it visible again
-        Window.Visible = true
-        windowMinimized = false
-        imageLabel.Image = "rbxassetid://YOUR_IMAGE_ID"  -- Replace with your visible image ID (minimize icon)
-    else
-        -- If the window is visible, minimize it (make it invisible)
-        Window.Visible = false
-        windowMinimized = true
-        imageLabel.Image = "rbxassetid://YOUR_SECOND_IMAGE_ID"  -- Replace with your restored image ID (restore icon)
-    end
-end)
-
--- Draggable functionality for the button
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
-minimizeButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = minimizeButton.Position
-    end
-end)
-
-minimizeButton.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        minimizeButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-minimizeButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
 
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
+    local AutomaticallyTab = Window:AddTab({ Title = "Automatically", Icon = "" })
+
 }
 
 Tabs.AutoFishing:AddParagraph({
@@ -244,3 +181,20 @@ FreezePlayerToggle:OnChanged(function()
         humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
 end)
+
+
+-- Add a paragraph that says "Selling"
+AutomaticallyTab:AddParagraph({
+    Title = "Selling",
+    Content = "Automatically sell all your items."
+})
+
+-- Create the "Sell All" button
+AutomaticallyTab:AddButton({
+    Title = "Sell All",
+    Description = "Click to sell all items automatically.",
+    Callback = function()
+        -- Invoke the SellAll event when the button is clicked
+        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("SellAll"):InvokeServer()
+    end
+})
