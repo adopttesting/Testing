@@ -1,41 +1,4 @@
--- Create the GUI
-local player = game.Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player.PlayerGui
-screenGui.Name = "HiddenButtonGui"
-
--- Create a frame to hold the button
-local buttonFrame = Instance.new("Frame")
-buttonFrame.Size = UDim2.new(0, 100, 0, 100)  -- 100x100 size
-buttonFrame.Position = UDim2.new(1, -150, 0.5, -50)  -- Position on the middle-right of the screen
-buttonFrame.BackgroundTransparency = 1  -- Make the frame invisible
-buttonFrame.Parent = screenGui
-
--- Create an image for the button (use any image link or ID)
-local buttonImage = Instance.new("ImageLabel")
-buttonImage.Size = UDim2.new(1, 0, 1, 0)  -- Fill the whole frame
-buttonImage.Image = "rbxassetid://86093303748141"  -- Replace with your image asset ID
-buttonImage.BackgroundTransparency = 1  -- Make the image transparent
-buttonImage.Parent = buttonFrame
-
--- Create a function to simulate pressing "Left CTRL" when the image is clicked
-buttonImage.MouseButton1Click:Connect(function()
-    local userInputService = game:GetService("UserInputService")
-    
-    -- Simulate pressing "Left CTRL"
-    local inputObject = Instance.new("InputObject")
-    inputObject.UserInputType = Enum.UserInputType.Keyboard
-    inputObject.KeyCode = Enum.KeyCode.LeftControl
-    
-    -- Trigger the key press
-    userInputService.InputBegan:Fire(inputObject)
-    
-    -- Optionally, you can also simulate the key release:
-    wait(0.1)  -- Small delay before releasing the key
-    userInputService.InputEnded:Fire(inputObject)
-end)
-
--- Fluent GUI setup
+-- Fluent 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 local Window = Fluent:CreateWindow({
@@ -45,7 +8,7 @@ local Window = Fluent:CreateWindow({
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
     Theme = "Aqua",
-    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when there's no MinimizeKeybind
 })
 
 local Tabs = {
@@ -215,10 +178,76 @@ FreezePlayerToggle:OnChanged(function()
             -- Freeze the player's movement
             humanoid.PlatformStand = true
             humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-wait(0.1)  -- Check every 0.1 seconds to see if the toggle is still on
+            wait(0.1)  -- Check every 0.1 seconds to see if the toggle is still on
         end
         -- Unfreeze the player when the toggle is turned off
         humanoid.PlatformStand = false
         humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+end)
+
+-- Create the minimize button and make it draggable
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Size = UDim2.new(0, 46, 0, 42)  -- Size of the button
+buttonFrame.Position = UDim2.new(0, 0, 0.5, -21)  -- Position the button at the middle-left of the screen
+buttonFrame.BackgroundTransparency = 1  -- Make the frame invisible
+buttonFrame.Parent = screenGui
+
+-- Create an image for the button (using the same asset ID)
+local buttonImage = Instance.new("ImageLabel")
+buttonImage.Size = UDim2.new(1, 0, 1, 0)  -- Fill the whole frame
+buttonImage.Image = "rbxassetid://86093303748141"  -- Replace with your image asset ID
+buttonImage.BackgroundTransparency = 1  -- Make the image transparent
+buttonImage.Parent = buttonFrame
+
+-- Draggable functionality
+local userInputService = game:GetService("UserInputService")
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+buttonFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        -- Start dragging the button when mouse button is pressed
+        dragging = true
+        dragStart = input.Position
+        startPos = buttonFrame.Position
+    end
+end)
+
+userInputService.InputChanged:Connect(function(input)
+    if dragging then
+        -- Update the button's position as the mouse moves
+        local delta = input.Position - dragStart
+        buttonFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+userInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        -- Stop dragging when the mouse button is released
+        dragging = false
+    end
+end)
+
+-- Minimize functionality when the button is clicked
+buttonFrame.MouseButton1Click:Connect(function()
+    -- Toggle the minimize state when the button is clicked
+    if Window:IsMinimized() then
+        Window:Maximize()  -- Restore the window if minimized
+    else
+        Window:Minimize()  -- Minimize the window
+    end
+end)
+
+-- Make sure the minimize button presses Left Control (instead of Right CTRL)
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.LeftControl then
+        -- Handle the behavior when Left Control is pressed for minimizing
+        if Window:IsMinimized() then
+            Window:Maximize()
+        else
+            Window:Minimize()
+        end
     end
 end)
