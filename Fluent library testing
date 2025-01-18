@@ -133,3 +133,121 @@ Tabs.Main:AddParagraph({
         Content = ""
     })
 
+-- Create Dropdown for Select Rod
+local Dropdown = Tabs.Main:AddDropdown("Select Rod", {
+    Title = "Select The Rod You Are Currently Using",
+    Values = {
+        "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
+        "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
+        "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
+        "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
+        "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
+        "Kings Rod", "Aurora Rod", "Scurvy Rod"
+    },
+    Multi = false,
+    Default = 1,
+})
+
+Dropdown:SetValue("Flimsy Rod")  -- Default selection set to "Flimsy Rod"
+
+-- Create Auto Cast Toggle
+local AutoCastToggle = Tabs.Main:AddToggle("Auto Cast", {
+    Title = "Auto Cast",
+    Default = false
+})
+
+AutoCastToggle:OnChanged(function()
+    while AutoCastToggle.Value do
+        -- Fire the cast event with the selected rod
+        local selectedRod = Dropdown.Value
+        local args = {
+            [1] = 23.7,  -- example value, replace as needed
+            [2] = 1,
+        }
+        
+        game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
+        
+        wait(0.5)  -- Adjust the wait time as needed
+    end
+end)
+
+-- Create Auto Reel Toggle
+local AutoReelToggle = Tabs.Main:AddToggle("Auto Reel", {
+    Title = "Auto Reel",
+    Default = false
+})
+
+AutoReelToggle:OnChanged(function()
+    while AutoReelToggle.Value do
+        -- Fire the reel finished event
+        local args = {
+            [1] = 100,
+            [2] = true,
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+        
+        wait(0.5)  -- Adjust the wait time as needed
+    end
+end)
+
+-- Create Auto Shake Toggle
+local AutoShakeToggle = Tabs.Main:AddToggle("Auto Shake", {
+    Title = "Auto Shake",
+    Default = false
+})
+
+AutoShakeToggle:OnChanged(function()
+    local UserInputService = game:GetService("UserInputService")
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    
+    while AutoShakeToggle.Value do
+        -- Enable navigation mode (replace with actual navigation logic)
+        -- Example: Enable navigation mode logic here if your game has such a feature.
+        
+        -- Simulate pressing "s" (for going down)
+        UserInputService.InputBegan:Fire(Instance.new("InputObject", {
+            UserInputType = Enum.UserInputType.Keyboard,
+            KeyCode = Enum.KeyCode.S
+        }))
+        
+        -- Simulate pressing "Enter"
+        UserInputService.InputBegan:Fire(Instance.new("InputObject", {
+            UserInputType = Enum.UserInputType.Keyboard,
+            KeyCode = Enum.KeyCode.Return
+        }))
+        
+        wait(0.5)  -- Adjust as necessary
+    end
+
+    -- Turn off navigation mode (replace with actual navigation mode disabling logic)
+    if not AutoShakeToggle.Value then
+        -- Example: Disable navigation mode if your game requires such a feature.
+    end
+end)
+
+-- Create Free Local Player Toggle
+local FreePlayerToggle = Tabs.Main:AddToggle("Free Local Player", {
+    Title = "Free Local Player",
+    Default = false
+})
+
+FreePlayerToggle:OnChanged(function()
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    
+    if humanoid then
+        while FreePlayerToggle.Value do
+            -- Freeze the player's movement
+            humanoid.PlatformStand = true
+            humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+            wait(0.1)  -- Check every 0.1 seconds to see if the toggle is still on
+        end
+        -- Unfreeze the player when the toggle is turned off
+        humanoid.PlatformStand = false
+        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+end)
