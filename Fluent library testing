@@ -10,97 +10,10 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
--- Only the Killing tab exists now
+-- 
 local Tabs = {
     Killing = Window:AddTab({ Title = "Killing", Icon = "skull" })
 }
 
-local Options = Fluent.Options
 
--- Notification at the start
-Fluent:Notify({
-    Title = "Notification",
-    Content = "Lite Hub loaded successfully.",
-    Duration = 5
-})
 
--- Create a section for killing target
-local KillingTargetSection = Tabs.Killing:AddSection("Killin Target")
-
--- Auto Kill toggle
-local AutoKillToggle = KillingTargetSection:AddToggle("AutoKill", {
-    Title = "Auto Kill",
-    Default = false
-})
-
-AutoKillToggle:OnChanged(function()
-    if AutoKillToggle.Value then
-        -- Handle the teleportation and invisibility for all players in the game
-        local player = game.Players.LocalPlayer
-        local localCharacter = player.Character or player.CharacterAdded:Wait()
-
-        -- Function to teleport the head and make the head invisible
-        local function handleKill(character, localCharacter)
-            if not character or not localCharacter then return end
-
-            -- Find the player's head and your hands
-            local head = character:FindFirstChild("Head")
-            local leftHand = localCharacter:FindFirstChild("LeftHand")
-            local rightHand = localCharacter:FindFirstChild("RightHand")
-
-            if not head or not leftHand or not rightHand then return end
-
-            -- Teleport the head to your hands
-            head.CFrame = leftHand.CFrame
-            head.CFrame = rightHand.CFrame
-
-            -- Make the head invisible
-            head.Transparency = 1
-            head.CanCollide = false
-        end
-
-        -- Continuously teleport and make the heads invisible for all players except the local player
-        while AutoKillToggle.Value do
-            for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-                if targetPlayer ~= player and targetPlayer.Character then
-                    handleKill(targetPlayer.Character, localCharacter)
-                end
-            end
-            wait(0.1) -- Adjust this delay as needed for smooth teleportation
-        end
-
-        -- Punching logic when the toggle is enabled
-        local function autoPunch()
-            local punchTool = player.Backpack:FindFirstChild("Punch") or game.Workspace:FindFirstChild(player.Name):FindFirstChild("Punch")
-            _G.autoPunchanim = true
-
-            while _G.autoPunchanim do
-                if punchTool then
-                    if punchTool.Parent ~= game.Workspace:FindFirstChild(player.Name) then
-                        punchTool.Parent = game.Workspace:FindFirstChild(player.Name)
-                    end
-                    -- Fire the punch event for both right and left hands
-                    game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                    game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                    wait()
-                else
-                    _G.autoPunchanim = false
-                end
-            end
-        end
-
-        -- Run the autoPunch function when the toggle is on
-        autoPunch()
-    else
-        -- Stop everything when the toggle is turned off
-        _G.autoPunchanim = false
-    end
-end)
-
-Window:SelectTab(1)
-
-Fluent:Notify({
-    Title = "Lite Hub",
-    Content = "The script has been loaded.",
-    Duration = 8
-})
