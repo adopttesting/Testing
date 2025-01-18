@@ -205,6 +205,12 @@ AutoReelToggle:OnChanged(function()
     end
 end)
 
+-- Create Auto Shake Toggle
+local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
+    Title = "Auto Shake",
+    Default = false
+})
+
 AutoShakeToggle:OnChanged(function()
     local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
     local pressedBackslash = false  -- Track if "\" has already been pressed
