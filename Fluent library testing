@@ -205,59 +205,41 @@ AutoReelToggle:OnChanged(function()
     end
 end)
 
--- Create Auto Shake Toggle
-local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
-    Title = "Auto Shake",
-    Default = false
-})
-
 AutoShakeToggle:OnChanged(function()
-    local UserInputService = game:GetService("UserInputService")
-    local player = game:GetService("Players").LocalPlayer
-    local character = player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
+    local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
     local pressedBackslash = false  -- Track if "\" has already been pressed
 
     if AutoShakeToggle.Value then
         -- Activate navigation mode (press "\" once)
         if not pressedBackslash then
-            UserInputService.InputBegan:Fire(Instance.new("InputObject", {
-                UserInputType = Enum.UserInputType.Keyboard,
-                KeyCode = Enum.KeyCode.BackSlash  -- KeyCode for "\"
-            }))
-            pressedBackslash = true  -- Mark "\" as pressed
-            wait(0.1)  -- Small delay to ensure input is registered
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+            pressedBackslash = true
+            wait(0.1)
         end
 
         -- Start continuous loop for "S" and "Enter"
         while AutoShakeToggle.Value do
-            -- Simulate pressing "S" (for going down)
-            UserInputService.InputBegan:Fire(Instance.new("InputObject", {
-                UserInputType = Enum.UserInputType.Keyboard,
-                KeyCode = Enum.KeyCode.S
-            }))
-            wait(0.1)  -- Small delay to ensure input is registered
+            -- Simulate pressing "S"
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
+            wait(0.1)
 
-            -- Simulate pressing "Enter" to confirm navigation
-            UserInputService.InputBegan:Fire(Instance.new("InputObject", {
-                UserInputType = Enum.UserInputType.Keyboard,
-                KeyCode = Enum.KeyCode.Return
-            }))
-            wait(0.15)  -- Adjust delay as needed for continuous action
+            -- Simulate pressing "Enter"
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
+            wait(0.15)
         end
     else
         -- Deactivate navigation mode (press "\" again)
-        UserInputService.InputBegan:Fire(Instance.new("InputObject", {
-            UserInputType = Enum.UserInputType.Keyboard,
-            KeyCode = Enum.KeyCode.BackSlash  -- KeyCode for "\"
-        }))
-        pressedBackslash = false  -- Reset when navigation mode is deactivated
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+        pressedBackslash = false
     end
 end)
 
--- Create Free Local Player Toggle
-local FreezePlayerToggle = Tabs.AutoFishing:AddToggle("Freeze Local Player", {
+-- Create Freeze Local Player Toggle
+local FreezePlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
     Title = "",
     Default = false
 })
