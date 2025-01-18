@@ -17,7 +17,6 @@ local Tabs = {
 
 local Options = Fluent.Options
 
--- Time Elapsing
 local startTime = tick()
 
 Tabs.Client:AddParagraph({
@@ -25,18 +24,44 @@ Tabs.Client:AddParagraph({
     Content = "minute:0 hour:0 day:0 week:0"
 })
 
+local elapsedSeconds = 0
+local elapsedMinutes = 0
+local elapsedHours = 0
+local elapsedDays = 0
+local elapsedWeeks = 0
+
 task.spawn(function()
     while true do
-        wait(1)
-        local elapsedTime = tick() - startTime
-        local minutes = math.floor(elapsedTime / 60)
-        local hours = math.floor(minutes / 60)
-        local days = math.floor(hours / 24)
-        local weeks = math.floor(days / 7)
+        wait(1)  -- Wait 1 second
+        elapsedSeconds = elapsedSeconds + 1  -- Increment by 1 second
+
+        -- Calculate minutes, hours, days, and weeks
+        if elapsedSeconds >= 60 then
+            elapsedSeconds = 0
+            elapsedMinutes = elapsedMinutes + 1
+        end
+
+        if elapsedMinutes >= 60 then
+            elapsedMinutes = 0
+            elapsedHours = elapsedHours + 1
+        end
+
+        if elapsedHours >= 24 then
+            elapsedHours = 0
+            elapsedDays = elapsedDays + 1
+        end
+
+        if elapsedDays >= 7 then
+            elapsedDays = 0
+            elapsedWeeks = elapsedWeeks + 1
+        end
         
-        Tabs.Client:GetParagraph(1).Content = string.format("minute:%d hour:%d day:%d week:%d", minutes % 60, hours % 24, days % 7, weeks)
+        -- Update the displayed time
+        Tabs.Client:GetParagraph(1).Content = string.format("minute:%d hour:%d day:%d week:%d", 
+                                                            elapsedMinutes, elapsedHours, elapsedDays, elapsedWeeks)
     end
 end)
+
 
 Tabs.Main:AddParagraph({
         Title = "Local Player",
