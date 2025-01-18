@@ -35,10 +35,11 @@ buttonImage.MouseButton1Click:Connect(function()
     userInputService.InputEnded:Fire(inputObject)
 end)
 
+-- Fluent GUI setup
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "Lite Hub,
+    Title = "Lite Hub",
     SubTitle = "by dawid",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
@@ -48,7 +49,7 @@ local Window = Fluent:CreateWindow({
 })
 
 local Tabs = {
-    AutoFiching = Window:AddTab({ Title = "Auto Fiching", Icon = "" }),
+    AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
 }
 
 Tabs.AutoFishing:AddParagraph({
@@ -137,7 +138,7 @@ AutoReelToggle:OnChanged(function()
 end)
 
 -- Create Auto Shake Toggle
-local AutoShakeToggle = Tabs.AutoFiching:AddToggle("Auto Shake", {
+local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
     Title = "Auto Shake",
     Default = false
 })
@@ -198,9 +199,9 @@ AutoShakeToggle:OnChanged(function()
     end
 end)
 
--- Create Free Local Player Toggle
-local FreezePlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
-    Title = "",
+-- Create Freeze Local Player Toggle
+local FreezePlayerToggle = Tabs.AutoFishing:AddToggle("Freeze Local Player", {
+    Title = "Freeze Local Player",
     Default = false
 })
 
@@ -214,10 +215,10 @@ FreezePlayerToggle:OnChanged(function()
             -- Freeze the player's movement
             humanoid.PlatformStand = true
             humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-            wait(0.1)  -- Check every 0.1 seconds to see if the toggle is still on
+wait(0.1)  -- Check every 0.1 seconds to see if the toggle is still on
         end
         -- Unfreeze the player when the toggle is turned off
         humanoid.PlatformStand = false
         humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
-end)  
+end)
