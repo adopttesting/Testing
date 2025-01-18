@@ -64,8 +64,8 @@ task.spawn(function()
 end)
 
 Tabs.Main:AddParagraph({
-    Title = "",
-    Content = "Local Player"
+    Title = "Local Player",
+    Content = ""
 })
 
 local WalkSpeedSlider = Tabs.Main:AddSlider("WalkSpeedSlider", {
@@ -121,8 +121,8 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
 end)
 
 Tabs.AutoFishing:AddParagraph({
-    Title = "",
-    Content = "Farming"
+    Title = "Farming",
+    Content = ""
 })
 
 -- Create Dropdown for Select Rod
