@@ -13,7 +13,7 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Client = Window:AddTab({ Title = "Client", Icon = "" }),
     Main = Window:AddTab({ Title = "Main", Icon = "" })
-    Auto Fiching = Window:AddTab({ Title = "Auto Fiching", Icon = "" })
+    AutoFiching = Window:AddTab({ Title = "Auto Fiching", Icon = "" })
 }
 
 local Options = Fluent.Options
@@ -65,8 +65,8 @@ end)
 
 
 Tabs.Main:AddParagraph({
-        Title = "",
-        Content = "Local Player"
+        Title = "Local Player",
+        Content = ""
     })
 
 local WalkSpeedSlider = Tabs.Main:AddSlider("WalkSpeedSlider", {
@@ -129,13 +129,13 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
-Tabs.Auto Fiching:AddParagraph({
+Tabs.AutoFiching:AddParagraph({
         Title = "",
         Content = "Farming"
     })
 
 -- Create Dropdown for Select Rod
-local Dropdown = Tabs.Auto Fiching:AddDropdown("Select Rod You Are Using", {
+local Dropdown = Tabs.AutoFiching:AddDropdown("Select Rod", {
     Title = "",
     Values = {
         "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
@@ -152,7 +152,7 @@ local Dropdown = Tabs.Auto Fiching:AddDropdown("Select Rod You Are Using", {
 Dropdown:SetValue("Flimsy Rod")  -- Default selection set to "Flimsy Rod"
 
 -- Create Auto Cast Toggle
-local AutoCastToggle = Tabs.Auto Fiching:AddToggle("Auto Cast", {
+local AutoCastToggle = Tabs.AutoFiching:AddToggle("Auto Cast", {
     Title = "Auto Cast",
     Default = false
 })
@@ -173,7 +173,7 @@ AutoCastToggle:OnChanged(function()
 end)
 
 -- Create Auto Reel Toggle
-local AutoReelToggle = Tabs.Auto Fiching:AddToggle("Auto Reel", {
+local AutoReelToggle = Tabs.AutoFiching:AddToggle("Auto Reel", {
     Title = "Auto Reel",
     Default = false
 })
@@ -193,7 +193,210 @@ AutoReelToggle:OnChanged(function()
 end)
 
 -- Create Auto Shake Toggle
-local AutoShakeToggle = Tabs.Auto Fiching:AddToggle("Auto Shake", {
+local AutoShakeToggle = Tabs.AutoFiching:AddToggle("Auto Shake", {
+    Title = "Auto Shake",
+    Default = false
+})
+
+AutoShakeToggle:OnChanged(function()
+    local UserInputService = game:GetService("UserInputService")
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Characterlocal Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Lite Hub",
+    SubTitle = "Made By Adopt",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Theme = "Aqua", -- Set the theme to Aqua
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Client = Window:AddTab({ Title = "Client", Icon = "" }),
+    Main = Window:AddTab({ Title = "Main", Icon = "" })
+    AutoFiching = Window:AddTab({ Title = "Auto Fiching", Icon = "" })
+}
+
+local Options = Fluent.Options
+
+local startTime = tick()
+
+Tabs.Client:AddParagraph({
+    Title = "Elapsed Time",
+    Content = "minute:0 hour:0 day:0 week:0"
+})
+
+local elapsedSeconds = 0
+local elapsedMinutes = 0
+local elapsedHours = 0
+local elapsedDays = 0
+local elapsedWeeks = 0
+
+task.spawn(function()
+    while true do
+        wait(1)  -- Wait 1 second
+        elapsedSeconds = elapsedSeconds + 1  -- Increment by 1 second
+
+        -- Calculate minutes, hours, days, and weeks
+        if elapsedSeconds >= 60 then
+            elapsedSeconds = 0
+            elapsedMinutes = elapsedMinutes + 1
+        end
+
+        if elapsedMinutes >= 60 then
+            elapsedMinutes = 0
+            elapsedHours = elapsedHours + 1
+        end
+
+        if elapsedHours >= 24 then
+            elapsedHours = 0
+            elapsedDays = elapsedDays + 1
+        end
+
+        if elapsedDays >= 7 then
+            elapsedDays = 0
+            elapsedWeeks = elapsedWeeks + 1
+        end
+        
+        -- Update the displayed time
+        Tabs.Client:GetParagraph(1).Content = string.format("minute:%d hour:%d day:%d week:%d", 
+                                                            elapsedMinutes, elapsedHours, elapsedDays, elapsedWeeks)
+    end
+end)
+
+
+Tabs.Main:AddParagraph({
+        Title = "Local Player",
+        Content = ""
+    })
+
+local WalkSpeedSlider = Tabs.Main:AddSlider("WalkSpeedSlider", {
+    Title = "WalkSpeed",
+    Description = "Adjust your walk speed",
+    Default = 16,
+    Min = 16,
+    Max = 1000,
+    Rounding = 1,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end
+})
+
+WalkSpeedSlider:OnChanged(function(Value)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+end)
+
+WalkSpeedSlider:SetValue(16) -- Set initial WalkSpeed value to 16
+
+local JumpPowerSlider = Tabs.Main:AddSlider("JumpPowerSlider", {
+    Title = "JumpPower",
+    Description = "Adjust your jump power",
+    Default = game.Players.LocalPlayer.Character.Humanoid.JumpPower, -- Default to current JumpPower
+    Min = game.Players.LocalPlayer.Character.Humanoid.JumpPower, -- Minimum set to current JumpPower
+    Max = 1000,
+    Rounding = 1,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+    end
+})
+
+JumpPowerSlider:OnChanged(function(Value)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+end)
+
+JumpPowerSlider:SetValue(game.Players.LocalPlayer.Character.Humanoid.JumpPower) -- Set initial JumpPower value to current JumpPower
+
+local Toggle = Tabs.Main:AddToggle("Infinite Jump", {Title = "Infinite Jump", Default = false})
+
+-- Variable to check if infinite jump is enabled
+local infiniteJumpEnabled = false
+
+Toggle:OnChanged(function()
+    infiniteJumpEnabled = Toggle.Value
+end)
+
+-- Function to handle infinite jump
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if infiniteJumpEnabled then
+        -- Allow the player to jump again immediately by setting Humanoid's JumpPower
+        local player = game.Players.LocalPlayer
+        if player and player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                humanoid:Move(Vector3.new(0, 50, 0))  -- Apply a force upwards to simulate the jump
+            end
+        end
+    end
+end)
+
+Tabs.AutoFiching:AddParagraph({
+        Title = "",
+        Content = "Farming"
+    })
+
+-- Create Dropdown for Select Rod
+local Dropdown = Tabs.AutoFiching:AddDropdown("Select Rod", {
+    Title = "",
+    Values = {
+        "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
+        "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
+        "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
+        "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
+        "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
+        "Kings Rod", "Aurora Rod", "Scurvy Rod"
+    },
+    Multi = false,
+    Default = 1,
+})
+
+Dropdown:SetValue("Flimsy Rod")  -- Default selection set to "Flimsy Rod"
+
+-- Create Auto Cast Toggle
+local AutoCastToggle = Tabs.AutoFiching:AddToggle("Auto Cast", {
+    Title = "Auto Cast",
+    Default = false
+})
+
+AutoCastToggle:OnChanged(function()
+    while AutoCastToggle.Value do
+        -- Fire the cast event with the selected rod
+        local selectedRod = Dropdown.Value
+        local args = {
+            [1] = 23.7,  -- example value, replace as needed
+            [2] = 1,
+        }
+        
+        game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
+        
+        wait(0.5)  -- Adjust the wait time as needed
+    end
+end)
+
+-- Create Auto Reel Toggle
+local AutoReelToggle = Tabs.AutoFiching:AddToggle("Auto Reel", {
+    Title = "Auto Reel",
+    Default = false
+})
+
+AutoReelToggle:OnChanged(function()
+    while AutoReelToggle.Value do
+        -- Fire the reel finished event
+        local args = {
+            [1] = 100,
+            [2] = true,
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+        
+        wait(0.5)  -- Adjust the wait time as needed
+    end
+end)
+
+-- Create Auto Shake Toggle
+local AutoShakeToggle = Tabs.AutoFiching:AddToggle("Auto Shake", {
     Title = "Auto Shake",
     Default = false
 })
@@ -230,7 +433,58 @@ AutoShakeToggle:OnChanged(function()
 end)
 
 -- Create Free Local Player Toggle
-local FreezePlayerToggle = Tabs.Auto Fiching:AddToggle("Freeze Local Player", {
+local FreezePlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
+    Title = "Free Local Player",
+    Default = false
+})
+
+FreePlayerToggle:OnChanged(function()
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    
+    if humanoid then
+        while FreePlayerToggle.Value do
+            -- Freeze the player's movement
+            humanoid.PlatformStand = true
+            humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+            wait(0.1)  -- Check every 0.1 seconds to see if the toggle is still on
+        end
+        -- Unfreeze the player when the toggle is turned off
+        humanoid.PlatformStand = false
+        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+end)
+
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    
+    while AutoShakeToggle.Value do
+        -- Enable navigation mode (replace with actual navigation logic)
+        -- Example: Enable navigation mode logic here if your game has such a feature.
+        
+        -- Simulate pressing "s" (for going down)
+        UserInputService.InputBegan:Fire(Instance.new("InputObject", {
+            UserInputType = Enum.UserInputType.Keyboard,
+            KeyCode = Enum.KeyCode.S
+        }))
+        
+        -- Simulate pressing "Enter"
+        UserInputService.InputBegan:Fire(Instance.new("InputObject", {
+            UserInputType = Enum.UserInputType.Keyboard,
+            KeyCode = Enum.KeyCode.Return
+        }))
+        
+        wait(0.5)  -- Adjust as necessary
+    end
+
+    -- Turn off navigation mode (replace with actual navigation mode disabling logic)
+    if not AutoShakeToggle.Value then
+        -- Example: Disable navigation mode if your game requires such a feature.
+    end
+end)
+
+-- Create Free Local Player Toggle
+local FreezePlayerToggle = Tabs.AutoFiching:AddToggle("Freeze Local Player", {
     Title = "Free Local Player",
     Default = false
 })
