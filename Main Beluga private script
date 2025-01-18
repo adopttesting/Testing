@@ -1,7 +1,7 @@
 -- Whitelist for specific usernames 
 local whitelistedUsers = {
    "Sub2LeopardGod",
-   "Mrbignewcoming3",
+   "Mrbignewcoming",
    "Hi_dorihi",  --whitelisted
    "",
    "",
