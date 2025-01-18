@@ -1,3 +1,40 @@
+-- Create the GUI
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player.PlayerGui
+screenGui.Name = "HiddenButtonGui"
+
+-- Create a frame to hold the button
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Size = UDim2.new(0, 100, 0, 100)  -- 100x100 size
+buttonFrame.Position = UDim2.new(1, -150, 0.5, -50)  -- Position on the middle-right of the screen
+buttonFrame.BackgroundTransparency = 1  -- Make the frame invisible
+buttonFrame.Parent = screenGui
+
+-- Create an image for the button (use any image link or ID)
+local buttonImage = Instance.new("ImageLabel")
+buttonImage.Size = UDim2.new(1, 0, 1, 0)  -- Fill the whole frame
+buttonImage.Image = "rbxassetid://86093303748141"  -- Replace with your image asset ID
+buttonImage.BackgroundTransparency = 1  -- Make the image transparent
+buttonImage.Parent = buttonFrame
+
+-- Create a function to simulate pressing "Left CTRL" when the image is clicked
+buttonImage.MouseButton1Click:Connect(function()
+    local userInputService = game:GetService("UserInputService")
+    
+    -- Simulate pressing "Left CTRL"
+    local inputObject = Instance.new("InputObject")
+    inputObject.UserInputType = Enum.UserInputType.Keyboard
+    inputObject.KeyCode = Enum.KeyCode.LeftControl
+    
+    -- Trigger the key press
+    userInputService.InputBegan:Fire(inputObject)
+    
+    -- Optionally, you can also simulate the key release:
+    wait(0.1)  -- Small delay before releasing the key
+    userInputService.InputEnded:Fire(inputObject)
+end)
+
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 local Window = Fluent:CreateWindow({
