@@ -13,6 +13,7 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Client = Window:AddTab({ Title = "Client", Icon = "" }),
     Main = Window:AddTab({ Title = "Main", Icon = "" })
+    Auto Fiching = Window:AddTab({ Title = "Auto Fiching", Icon = "" })
 }
 
 local Options = Fluent.Options
@@ -64,8 +65,8 @@ end)
 
 
 Tabs.Main:AddParagraph({
-        Title = "Local Player",
-        Content = ""
+        Title = "",
+        Content = "Local Player"
     })
 
 local WalkSpeedSlider = Tabs.Main:AddSlider("WalkSpeedSlider", {
@@ -128,14 +129,14 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
-Tabs.Main:AddParagraph({
-        Title = "Farming",
-        Content = ""
+Tabs.Auto Fiching:AddParagraph({
+        Title = "",
+        Content = "Farming"
     })
 
 -- Create Dropdown for Select Rod
-local Dropdown = Tabs.Main:AddDropdown("Select Rod", {
-    Title = "Select The Rod You Are Currently Using",
+local Dropdown = Tabs.Auto Fiching:AddDropdown("Select Rod You Are Using", {
+    Title = "",
     Values = {
         "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
         "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
@@ -151,7 +152,7 @@ local Dropdown = Tabs.Main:AddDropdown("Select Rod", {
 Dropdown:SetValue("Flimsy Rod")  -- Default selection set to "Flimsy Rod"
 
 -- Create Auto Cast Toggle
-local AutoCastToggle = Tabs.Main:AddToggle("Auto Cast", {
+local AutoCastToggle = Tabs.Auto Fiching:AddToggle("Auto Cast", {
     Title = "Auto Cast",
     Default = false
 })
@@ -172,7 +173,7 @@ AutoCastToggle:OnChanged(function()
 end)
 
 -- Create Auto Reel Toggle
-local AutoReelToggle = Tabs.Main:AddToggle("Auto Reel", {
+local AutoReelToggle = Tabs.Auto Fiching:AddToggle("Auto Reel", {
     Title = "Auto Reel",
     Default = false
 })
@@ -192,7 +193,7 @@ AutoReelToggle:OnChanged(function()
 end)
 
 -- Create Auto Shake Toggle
-local AutoShakeToggle = Tabs.Main:AddToggle("Auto Shake", {
+local AutoShakeToggle = Tabs.Auto Fiching:AddToggle("Auto Shake", {
     Title = "Auto Shake",
     Default = false
 })
@@ -229,7 +230,7 @@ AutoShakeToggle:OnChanged(function()
 end)
 
 -- Create Free Local Player Toggle
-local FreePlayerToggle = Tabs.Main:AddToggle("Free Local Player", {
+local FreezePlayerToggle = Tabs.Auto Fiching:AddToggle("Freeze Local Player", {
     Title = "Free Local Player",
     Default = false
 })
