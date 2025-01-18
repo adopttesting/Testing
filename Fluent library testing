@@ -2,7 +2,7 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 
 local Window = Fluent:CreateWindow({
     Title = "Lite Hub",
-    SubTitle = "by dawid",
+    SubTitle = "Made By Adopt",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
@@ -12,9 +12,7 @@ local Window = Fluent:CreateWindow({
 
 local Tabs = {
     Client = Window:AddTab({ Title = "Client", Icon = "" }),
-    "Auto Farming" = Window:AddTab({ Title = "Auto Farming", Icon = "" }),
-    Killing = Window:AddTab({ Title = "Killing", Icon = "skull" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+    Main = Window:AddTab({ Title = "Main", Icon = "" })
 }
 
 local Options = Fluent.Options
@@ -23,7 +21,7 @@ local Options = Fluent.Options
 local startTime = tick()
 
 Tabs.Client:AddParagraph({
-    Title = "Execution Time",
+    Title = "Elapsed Time",
     Content = "minute:0 hour:0 day:0 week:0"
 })
 
@@ -40,98 +38,68 @@ task.spawn(function()
     end
 end)
 
--- Auto Farming
-local autoWeightToggle = Tabs["Auto Farming"]:AddToggle("AutoWeight", {Title = "Auto Weight", Default = false})
-autoWeightToggle:OnChanged(function(Value)
-    if Value then
-        while autoWeightToggle.Value do
-            -- Equip and use Weight tool (replace 'Weight' with actual tool name)
-            local weightTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Weight")
-            if weightTool then
-                weightTool.Parent = game.Players.LocalPlayer.Character
-                weightTool:Activate()
-            end
-            wait(0.5)
-        end
+Tabs.Main:AddParagraph({
+        Title = "Local Player",
+        Content = ""
+    })
+
+local WalkSpeedSlider = Tabs.Main:AddSlider("WalkSpeedSlider", {
+    Title = "WalkSpeed",
+    Description = "Adjust your walk speed",
+    Default = 16,
+    Min = 16,
+    Max = 1000,
+    Rounding = 1,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
     end
-end)
-
-local autoPushupsToggle = Tabs["Auto Farming"]:AddToggle("AutoPushups", {Title = "Auto Pushups", Default = false})
-autoPushupsToggle:OnChanged(function(Value)
-    if Value then
-        while autoPushupsToggle.Value do
-            -- Equip and use Pushups tool (replace 'Pushups' with actual tool name)
-            local pushupsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Pushups")
-            if pushupsTool then
-                pushupsTool.Parent = game.Players.LocalPlayer.Character
-                pushupsTool:Activate()
-            end
-            wait(0.5)
-        end
-    end
-end)
-
-local autoSitupsToggle = Tabs["Auto Farming"]:AddToggle("AutoSitups", {Title = "Auto Situps", Default = false})
-autoSitupsToggle:OnChanged(function(Value)
-    if Value then
-        while autoSitupsToggle.Value do
-            -- Equip and use Situps tool (replace 'Situps' with actual tool name)
-            local situpsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Situps")
-            if situpsTool then
-                situpsTool.Parent = game.Players.LocalPlayer.Character
-                situpsTool:Activate()
-            end
-            wait(0.5)
-        end
-    end
-end)
-
-local autoHandstandsToggle = Tabs["Auto Farming"]:AddToggle("AutoHandstands", {Title = "Auto Handstands", Default = false})
-autoHandstandsToggle:OnChanged(function(Value)
-    if Value then
-        while autoHandstandsToggle.Value do
-            -- Equip and use Handstands tool (replace 'Handstands' with actual tool name)
-            local handstandsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Handstands")
-            if handstandsTool then
-                handstandsTool.Parent = game.Players.LocalPlayer.Character
-                handstandsTool:Activate()
-            end
-            wait(0.5)
-        end
-    end
-end)
-
--- Killing
-local autoKillToggle = Tabs.Killing:AddToggle("AutoKill", {Title = "Auto Kill", Default = false})
-autoKillToggle:OnChanged(function(Value)
-    if Value then
-        while autoKillToggle.Value do
-            for _, player in pairs(game.Players:GetPlayers()) do
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    -- Teleport to my right hand and equip Punch tool
-                    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-                    local rightHand = game.Players.LocalPlayer.Character:FindFirstChild("RightHand")
-                    if humanoidRootPart and rightHand then
-                        humanoidRootPart.CFrame = rightHand.CFrame
-                    end
-                    
-                    -- Equip and use Punch tool (replace 'Punch' with actual tool name)
-                    local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch")
-                    if punchTool then
-                        punchTool.Parent = game.Players.LocalPlayer.Character
-                        punchTool:Activate()
-                    end
-                end
-            end
-            wait(1)
-        end
-    end
-end)
-
-Window:SelectTab(1)
-
-Fluent:Notify({
-    Title = "Lite Hub",
-    Content = "The script has been loaded.",
-    Duration = 8
 })
+
+WalkSpeedSlider:OnChanged(function(Value)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+end)
+
+WalkSpeedSlider:SetValue(16) -- Set initial WalkSpeed value to 16
+
+local JumpPowerSlider = Tabs.Main:AddSlider("JumpPowerSlider", {
+    Title = "JumpPower",
+    Description = "Adjust your jump power",
+    Default = game.Players.LocalPlayer.Character.Humanoid.JumpPower, -- Default to current JumpPower
+    Min = game.Players.LocalPlayer.Character.Humanoid.JumpPower, -- Minimum set to current JumpPower
+    Max = 1000,
+    Rounding = 1,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+    end
+})
+
+JumpPowerSlider:OnChanged(function(Value)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+end)
+
+JumpPowerSlider:SetValue(game.Players.LocalPlayer.Character.Humanoid.JumpPower) -- Set initial JumpPower value to current JumpPower
+
+local Toggle = Tabs.Main:AddToggle("Infinite Jump", {Title = "Infinite Jump", Default = false})
+
+-- Variable to check if infinite jump is enabled
+local infiniteJumpEnabled = false
+
+Toggle:OnChanged(function()
+    infiniteJumpEnabled = Toggle.Value
+end)
+
+-- Function to handle infinite jump
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if infiniteJumpEnabled then
+        -- Allow the player to jump again immediately by setting Humanoid's JumpPower
+        local player = game.Players.LocalPlayer
+        if player and player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                humanoid:Move(Vector3.new(0, 50, 0))  -- Apply a force upwards to simulate the jump
+            end
+        end
+    end
+end)
+
