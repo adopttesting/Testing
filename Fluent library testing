@@ -10,38 +10,6 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- Create the Minimize Button
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Parent = Window -- Add the button to the window
-MinimizeButton.Size = UDim2.new(0, 100, 0, 30) -- Set button size
-MinimizeButton.Position = UDim2.new(0, 480, 0, 10) -- Set position of the button (adjust as needed)
-MinimizeButton.BackgroundTransparency = 1 -- Make background transparent so we can use the image
-MinimizeButton.Text = "" -- Remove text on the button
-
--- Create the ImageLabel for the button's background
-local ImageLabel = Instance.new("ImageLabel")
-ImageLabel.Parent = MinimizeButton
-ImageLabel.Size = UDim2.new(1, 0, 1, 0) -- Make it cover the entire button
-ImageLabel.Position = UDim2.new(0, 0, 0, 0) -- Align to the button
-ImageLabel.Image = "rbxassetid://86093303748141" -- Replace with your image's asset ID
-ImageLabel.ScaleType = Enum.ScaleType.Stretch -- Stretch the image to fit the button
-
--- Add a UIStroke to give the button a stroke
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Parent = MinimizeButton
-UIStroke.Thickness = 4 -- Set the thickness of the stroke
-UIStroke.Color = Color3.fromRGB(255, 255, 255) -- Set stroke color
-UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- Apply the stroke to the button's border
-
--- Toggle window visibility when button is clicked
-MinimizeButton.MouseButton1Click:Connect(function()
-    Window.Visible = not Window.Visible -- Toggle the window's visibility
-end)
-
-
-
-
-
 local Tabs = {
     Client = Window:AddTab({ Title = "Client", Icon = "" }),
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
