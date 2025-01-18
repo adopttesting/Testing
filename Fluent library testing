@@ -12,9 +12,8 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
+-- Removed the Main and Settings tabs, only the "Killing" tab remains
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
     Killing = Window:AddTab({ Title = "Killing", Icon = "skull" }) -- Added a Killing tab
 }
 
@@ -35,60 +34,66 @@ local AutoKillToggle = Tabs.Killing:AddToggle("AutoKill", {
 
 AutoKillToggle:OnChanged(function()
     if AutoKillToggle.Value then
-        -- Equip Punch tool
+        -- Equip Punch tool and start punching
         local player = game.Players.LocalPlayer
-        local punchTool = game.Workspace:FindFirstChild("Punch")
-        if punchTool then
-            punchTool.Parent = player.Backpack
-            while AutoKillToggle.Value do
-                -- Infinite use of Punch tool
-                if punchTool.Parent == player.Backpack then
-                    firetool(punchTool)  -- Simulating a punch attack (assuming the game uses this method)
+        local playerName = player.Name
+        local punchTool =
+            player.Backpack:FindFirstChild("Punch") or
+            game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
+        
+        _G.autoPunchanim = true -- Global control variable
+
+        while _G.autoPunchanim do
+            if punchTool then
+                -- Equip the tool if it's not already equipped
+                if punchTool.Parent ~= game.Workspace:FindFirstChild(playerName) then
+                    punchTool.Parent = game.Workspace:FindFirstChild(playerName) -- Equip the tool
                 end
-                wait(0.1)
+                
+                -- Fire punch events for both right and left hand
+                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                
+                wait() -- Adjust the delay as needed for timing between punches
+            else
+                warn("Punch tool not found")
+                _G.autoPunchanim = false -- Stop the loop if the tool is not found
             end
         end
 
-        -- Teleport all players (except me) to my right hand and make their avatar invisible
+        -- Teleport players' heads infinitely between right and left hands and make their heads invisible
         local myCharacter = player.Character or player.CharacterAdded:Wait()
         local rightHand = myCharacter:WaitForChild("RightHand")
+        local leftHand = myCharacter:WaitForChild("LeftHand")
 
-        for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-            if targetPlayer ~= player then
-                local targetCharacter = targetPlayer.Character
-                if targetCharacter and targetCharacter:FindFirstChild("HumanoidRootPart") then
-                    -- Teleport humanoid root part to my right hand
-                    targetCharacter.HumanoidRootPart.CFrame = rightHand.CFrame
-                    -- Make the player's avatar invisible
-                    for _, part in ipairs(targetCharacter:GetChildren()) do
-                        if part:IsA("BasePart") then
-                            part.Transparency = 1
-                            part.CanCollide = false
+        while AutoKillToggle.Value do
+            for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
+                if targetPlayer ~= player then
+                    local targetCharacter = targetPlayer.Character
+                    if targetCharacter and targetCharacter:FindFirstChild("Head") then
+                        -- Teleport their head between right and left hand
+                        local targetHead = targetCharacter.Head
+                        if targetHead then
+                            targetHead.CFrame = (targetHead.Position - rightHand.Position).magnitude < (targetHead.Position - leftHand.Position).magnitude and rightHand.CFrame or leftHand.CFrame
+                            -- Make their head invisible
+                            targetHead.Transparency = 1
+                            targetHead.CanCollide = false
                         end
                     end
                 end
             end
+            wait(0.1) -- Adjust this delay for timing between head teleportations
         end
     else
-        -- If toggle is turned off, stop the actions
-        local player = game.Players.LocalPlayer
-        local punchTool = game.Workspace:FindFirstChild("Punch")
-        if punchTool then
-            punchTool.Parent = nil -- Remove Punch tool if it was equipped
-        end
+        _G.autoPunchanim = false -- Stop punching if the toggle is off
 
-        -- Reset all players to visible
+        -- Reset visibility for all players' heads
         for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
             if targetPlayer ~= player then
                 local targetCharacter = targetPlayer.Character
-                if targetCharacter then
-                    -- Reset avatar visibility
-                    for _, part in ipairs(targetCharacter:GetChildren()) do
-                        if part:IsA("BasePart") then
-                            part.Transparency = 0
-                            part.CanCollide = true
-                        end
-                    end
+                if targetCharacter and targetCharacter:FindFirstChild("Head") then
+                    targetCharacter.Head.Transparency = 0
+                    targetCharacter.Head.CanCollide = true
                 end
             end
         end
@@ -104,8 +109,8 @@ SaveManager:SetIgnoreIndexes({})
 InterfaceManager:SetFolder("LiteHub")
 SaveManager:SetFolder("LiteHub/specific-game")
 
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
+InterfaceManager:BuildInterfaceSection(Tabs.Killing)  -- Only the "Killing" tab
+SaveManager:BuildConfigSection(Tabs.Killing)
 
 Window:SelectTab(1)
 
