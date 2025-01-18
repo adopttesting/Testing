@@ -183,18 +183,15 @@ FreezePlayerToggle:OnChanged(function()
 end)
 
 
--- Add a paragraph that says "Selling"
-AutomaticallyTab:AddParagraph({
-    Title = "Selling",
-    Content = "Automatically sell all your items."
-})
+Tabs.Automatically:AddParagraph({
+        Title = "Selling",
+        Content = ""
+    })
 
--- Create the "Sell All" button
-AutomaticallyTab:AddButton({
+Tabs.Automatically:AddButton({
     Title = "Sell All",
-    Description = "Click to sell all items automatically.",
+    Description = "Very important button",
     Callback = function()
-        -- Invoke the SellAll event when the button is clicked
         game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("SellAll"):InvokeServer()
     end
 })
