@@ -79,9 +79,6 @@ end
 
 -- Auto Fishing Tab
 local _AutoFishing = Window:MakeTab("Auto Fishing") do
-    -- Create "Rods" section
-    local RodsSection = _AutoFishing:Section("Rods")
-
     -- Create Dropdown for rod selection
     Funcs:AddDropdown(RodsSection, "Select Rod", false, {
         "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
