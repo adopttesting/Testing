@@ -81,51 +81,37 @@ AutoReelToggle:OnChanged(function()
     end
 end)
 
+local VirtualInputManager = game:GetService('VirtualInputManager')
+local LocalPlayer = game:GetService('Players').LocalPlayer
+
 -- Create Auto Shake Toggle
 local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
     Title = "Auto Shake",
     Default = false
 })
 
-AutoShakeToggle:OnChanged(function()
-    local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
-    local pressedBackslash = false  -- Track if "\" has already been pressed
-    local canPressS = true  -- Flag to track whether we can press "S"
+-- Variable to keep track of whether Auto Shake is enabled
+local AutoShakeEnabled = false
 
-    if AutoShakeToggle.Value then
-        -- Step 1: Activate navigation mode by pressing "\"
-        if not pressedBackslash then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            pressedBackslash = true
-            wait(0.3)  -- Give some time for the input to be processed
-        end
+AutoShakeToggle:OnChanged(function(State)
+    AutoShakeEnabled = State  -- Set AutoShakeEnabled based on toggle state
+end)
 
-        -- Step 6: Regular "S" and "Enter" simulation
-        while AutoShakeToggle.Value do
-            -- Press "S" only if it's allowed
-            if canPressS then
-                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
-                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
-                canPressS = false  -- Disable further "S" presses until "Enter" is pressed
-                wait(0.01)  -- Small delay to simulate pressing "S"
-            end
+-- Listen for new UI elements being added
+LocalPlayer.PlayerGui.DescendantAdded:Connect(function(Descendant)
+    if AutoShakeEnabled and Descendant.Name == 'button' and Descendant.Parent.Name == 'safezone' then
+        task.wait(0.1)
+        local ButtonPosition, ButtonSize = Descendant.AbsolutePosition, Descendant.AbsoluteSize
+        -- Simulate mouse click on the button
+        VirtualInputManager:SendMouseButtonEvent(ButtonPosition.X + (ButtonSize.X / 2), ButtonPosition.Y + (ButtonSize.Y / 2), Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
+        VirtualInputManager:SendMouseButtonEvent(ButtonPosition.X + (ButtonSize.X / 2), ButtonPosition.Y + (ButtonSize.Y / 2), Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+    end
+end)
 
-            -- Simulate pressing "Enter"
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-            wait(0.01)  -- Small delay to simulate pressing "Enter"
-
-            -- After pressing "Enter", allow "S" to be pressed again
-            canPressS = true
-        end
-    else
-        -- Deactivate navigation mode by pressing "\"
-        if pressedBackslash then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            pressedBackslash = false
-        end
+-- Listen for when descendants are removed (for cleaning up or other actions)
+LocalPlayer.PlayerGui.DescendantRemoving:Connect(function(Descendant)
+    if Descendant.Name == 'reel' then
+        -- Optionally handle interactions when the reel is removed (currently nothing)
     end
 end)
 
