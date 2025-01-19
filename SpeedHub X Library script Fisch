@@ -8,7 +8,7 @@ local Window = Library:MakeWindow({
 })
 
 Window:AddMinimizeButton({
-    Button = {Image = "rbxassetid://86093303748141"},
+    Button = {Image = "rbxassetid://104291252042750"},
     Corner = {CornerRadius = UDim.new(0, 5)}
 })
 
