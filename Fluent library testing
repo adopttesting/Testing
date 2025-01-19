@@ -204,7 +204,6 @@ TeleportToggle:OnChanged(function()
     end
 end)
 
--- Image Button: Add Image GUI
 local UserInputService = game:GetService("UserInputService")
 
 local screenGui = Instance.new("ScreenGui")
@@ -217,22 +216,39 @@ screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 -- Configure the ImageButton
 imageButton.Parent = screenGui
 imageButton.Size = UDim2.new(0, 45, 0, 45) -- Set size to 45x45
-imageButton.Position = UDim2.new(0.5, -22.5, 0.5, -22.5) -- Center it on the screen
-imageButton.AnchorPoint = Vector2.new(0.5, 0.5) -- Center positioning
+imageButton.Position = UDim2.new(0.2, 0, 0.4, 0) -- Set position to slightly to the left and higher than the center
+imageButton.AnchorPoint = Vector2.new(0.5, 0.5) -- Center positioning (relative to the image button's size)
 imageButton.Image = "rbxassetid://86093303748141" -- Replace with your image ID
 
 -- Add and configure UICorner
 uiCorner.Parent = imageButton
-uiCorner.CornerRadius = UDim.new(0.5, 0) -- Set corner radius to 0.5
+uiCorner.CornerRadius = UDim.new(0, 0.4) -- Set corner radius to 0.4
 
 -- Variables for dragging
 local isDragging = false
 local dragStart
 local startPos
 
+-- Simulate Right CTRL key press
+local function simulateRightCtrlPress()
+    -- Create a key input for the Right CTRL key
+    local rightCtrlKey = Enum.KeyCode.RightControl
+    local input = Instance.new("InputObject")
+    input.KeyCode = rightCtrlKey
+    input.UserInputType = Enum.UserInputType.Keyboard
+    input.Position = Vector3.new(0, 0, 0)  -- You can leave this as is for now
+
+    -- Send the key press to the UserInputService
+    UserInputService.InputBegan:Fire(input)  -- Simulate the key press
+end
+
 -- Detect input start (mouse or touch)
 imageButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        -- When button is clicked, simulate Right CTRL press
+        simulateRightCtrlPress()
+
+        -- Handle dragging
         isDragging = true
         dragStart = input.Position
         startPos = imageButton.Position
