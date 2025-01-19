@@ -25,6 +25,7 @@ end)
 
 -- Settings Table
 local SpeedHubX = {}
+local selectedRod = ""
 
 -- Helper Functions
 local function Toggle(Tab, Name, Desc, Default)
@@ -67,8 +68,8 @@ end
 
 -- |Home Tab
 Home:AddSection({"Local Player"})
-Slider(Home, "Set WalkSpeed", 0, 100000, 1000)
-Slider(Home, "Set JumpPower", 0, 100000, 1000)
+Slider(Home, "Set WalkSpeed", 0, 100000, 16)
+Slider(Home, "Set JumpPower", 0, 100000, 50)
 Toggle(Home, "Enable WalkSpeed", "This Can Set Walk Speed!", false)
 Toggle(Home, "Enable JumpPower", "This Can Set JumpPower!", false)
 
@@ -82,12 +83,46 @@ local rods = {
     "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
-local selectedRod = ""
-Dropdown(AutoFish, "Select Rod", "", rods, rods[1])
+Dropdown(AutoFish, "Select Rod", "", rods, rods[1]).Callback = function(value)
+    selectedRod = value
+end
+
 AutoFish:AddSection({"Automatically"})
-Toggle(AutoFish, "Auto Equip Rod", "This Will Equip Selected Rod", false)
-Toggle(AutoFish, "Auto Cast", "This Will Auto Cast", false)
-Toggle(AutoFish, "Auto Reel", "This Will Auto Reel", false)
+Toggle(AutoFish, "Auto Equip Rod", "This Will Equip Selected Rod", false).Callback = function(enabled)
+    task.spawn(function()
+        while enabled do
+            local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod) or game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
+            if tool then
+                game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+            end
+            task.wait(1)
+        end
+    end)
+end
+
+Toggle(AutoFish, "Auto Cast", "This Will Auto Cast", false).Callback = function(enabled)
+    task.spawn(function()
+        while enabled do
+            local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
+            if tool and tool:FindFirstChild("events") then
+                local args = {[1] = 23.700000000000006, [2] = 1}
+                tool.events.cast:FireServer(unpack(args))
+            end
+            task.wait(2) -- Adjust wait time to match cast animation
+        end
+    end)
+end
+
+Toggle(AutoFish, "Auto Reel", "This Will Auto Reel", false).Callback = function(enabled)
+    task.spawn(function()
+        while enabled do
+            local args = {[1] = 100, [2] = true}
+            game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+            task.wait(2) -- Adjust wait time as necessary
+        end
+    end)
+end
+
 Toggle(AutoFish, "Auto Shake", "This Will Auto Shake", false).Callback = function(enabled)
     local UserInputService = game:GetService("UserInputService")
 
@@ -119,29 +154,12 @@ Toggle(AutoFish, "Auto Shake", "This Will Auto Shake", false).Callback = functio
     end
 end
 
--- Functionality Implementation
+-- Update Speed and JumpPower in real-time
 game:GetService("RunService").RenderStepped:Connect(function()
     if SpeedHubX["Enable WalkSpeed"] then
         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = SpeedHubX["Set WalkSpeed"]
     end
     if SpeedHubX["Enable JumpPower"] then
         game.Players.LocalPlayer.Character.Humanoid.JumpPower = SpeedHubX["Set JumpPower"]
-    end
-    if SpeedHubX["Auto Equip Rod"] and selectedRod ~= "" then
-        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod) or game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
-        if tool then
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
-        end
-    end
-    if SpeedHubX["Auto Cast"] and selectedRod ~= "" then
-        local args = {[1] = 23.700000000000006, [2] = 1}
-        local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
-        if tool and tool:FindFirstChild("events") then
-            tool.events.cast:FireServer(unpack(args))
-        end
-    end
-    if SpeedHubX["Auto Reel"] then
-        local args = {[1] = 100, [2] = true}
-        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
     end
 end)
