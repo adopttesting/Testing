@@ -125,7 +125,7 @@ AutoShakeToggle:OnChanged(function()
             -- Simulate pressing "Enter"
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-            wait(0.35)  -- Small delay to simulate pressing "Enter"
+            wait(0.12)  -- Small delay to simulate pressing "Enter"
         end
     else
         -- Deactivate navigation mode when toggle is turned off
@@ -194,29 +194,7 @@ local fishingAreaCoordinates = {
     ["Vertigo"] = CFrame.new(-129.634705, -808.458923, 1203.53235),
 }
 
--- Auto Fishing: Teleport to Area Button
-Tabs.AutoFishing:AddButton({
-    Title = "Teleport To Area",
-    Description = "Teleport to the selected fishing area.",
-    Callback = function()
-        local selectedArea = AreaDropdown.Value
-        local targetCFrame = fishingAreaCoordinates[selectedArea]
 
-        if targetCFrame then
-            local player = game:GetService("Players").LocalPlayer
-            local char = player.Character or player:WaitForChild("Character")
-            local root = char:FindFirstChild("HumanoidRootPart")
-
-            if root then
-                root.CFrame = targetCFrame
-            else
-                warn("HumanoidRootPart not found!")
-            end
-        else
-            warn("Coordinates for the selected area not found!")
-        end
-    end
-})
 
 -- Auto Fishing: Freeze After Teleport Toggle
 local FreezeAfterTeleportToggle = Tabs.AutoFishing:AddToggle("Freeze After Teleport", {
