@@ -30,12 +30,10 @@ local Funcs = {} do
       ["Default"] = Default,
       ["PlaceHolderText"] = "Select Options",
       ["Callback"] = function(Value)
-        if not Multi and type(Value) == "table" then
-          for _, v in next, Value do
+        if type(Value) == "table" then
+          for _, v in pairs(Value) do
             SpeedHubX[Name] = v
           end
-        else
-          SpeedHubX[Name] = Value
         end
       end
     })
