@@ -5,10 +5,10 @@ local Window = Fluent:CreateWindow({
     Title = "Lite Hub",
     SubTitle = "by dawid",
     TabWidth = 160,
-    Size = UDim2.fromOffset(580, 410),
+    Size = UDim2.fromOffset(450, 410),
     Acrylic = true,
     Theme = "Aqua",
-    MinimizeKey = Enum.KeyCode.LeftControl,
+    MinimizeKey = Enum.KeyCode.R,
 })
 
 -- Tabs
@@ -229,17 +229,20 @@ local isDragging = false
 local dragStart
 local startPos
 
--- Function that is triggered by pressing Left Control
-local function onLeftCtrlPressed()
-    print("Left Control Pressed!")
-    -- Add any action you'd like here that should happen when Left Control is pressed
+-- Function that simulates pressing the "R" key
+local function onRKeyPressed()
+    local input = Instance.new("InputObject")
+    input.UserInputType = Enum.UserInputType.Keyboard
+    input.KeyCode = Enum.KeyCode.R
+    UserInputService.InputBegan:Fire(input, false)
+    print("R Key Pressed!")
 end
 
 -- Detect input start (mouse or touch)
 imageButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        -- When button is clicked, trigger the action as if Left CTRL was pressed
-        onLeftCtrlPressed()
+        -- When button is clicked, simulate pressing the "R" key
+        onRKeyPressed()
 
         -- Start dragging the button
         isDragging = true
