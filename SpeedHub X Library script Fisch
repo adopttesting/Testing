@@ -36,7 +36,7 @@ local function Dropdown(Tab, Name, Desc, Option, Default)
 end
 
 -- Create the "Auto Fishing" Tab
-local AutoFishing = Window:MakeTab({"Auto Fishing", "lucide-fish"})
+local AutoFishing = Window:MakeTab({"| Auto Fishing", "lucide-fish"})
 
 -- Dropdown for "Choose Rod"
 Dropdown(AutoFishing, "Choose Rod", "Select a rod for auto-casting", {
