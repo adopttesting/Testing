@@ -9,127 +9,123 @@ local Window = Library:Start({
 local SpeedHubX = {}
 
 local Funcs = {} do
-  function Funcs:AddToggle(Section, Name, Content, Default)
-    return Section:Toggle({
-      ["Title"] = Name,
-      ["Content"] = Content,
-      ["Default"] = Default,
-      ["Callback"] = function(Value)
-        SpeedHubX[Name] = Value
-      end,
-      ["Flag"] = "SPD/Toggle/" .. tostring(Name)
-    })
-  end
+    function Funcs:AddToggle(Section, Name, Content, Default)
+        return Section:Toggle({
+            ["Title"] = Name,
+            ["Content"] = Content,
+            ["Default"] = Default,
+            ["Callback"] = function(Value)
+                SpeedHubX[Name] = Value
+            end,
+            ["Flag"] = "SPD/Toggle/" .. tostring(Name)
+        })
+    end
 
-  function Funcs:AddDropdown(Section, Name, Multi, Options, Default)
-    return Section:Dropdown({
-      ["Title"] = Name,
-      ["Multi"] = Multi,
-      ["Options"] = Options,
-      ["Default"] = Default,
-      ["PlaceHolderText"] = "Select Options",
-      ["Callback"] = function(Value)
-        if type(Value) == "table" then
-          for _, v in pairs(Value) do
-            SpeedHubX[Name] = v
-          end
-        end
-      end
-    })
-  end
+    function Funcs:AddDropdown(Section, Name, Multi, Options, Default)
+        return Section:Dropdown({
+            ["Title"] = Name,
+            ["Multi"] = Multi,
+            ["Options"] = Options,
+            ["Default"] = Default,
+            ["PlaceHolderText"] = "Select Options",
+            ["Callback"] = function(Value)
+                SpeedHubX[Name] = Value
+            end
+        })
+    end
 
-  function Funcs:AddSlider(Section, Name, Content, Min, Max, Increment, Default)
-    return Section:Slider({
-      ["Title"] = Name,
-      ["Content"] = Content,
-      ["Min"] = Min,
-      ["Max"] = Max,
-      ["Increment"] = Increment,
-      ["Default"] = Default,
-      ["Callback"] = function(Value)
-        SpeedHubX[Name] = Value
-      end
-    })
-  end
+    function Funcs:AddSlider(Section, Name, Content, Min, Max, Increment, Default)
+        return Section:Slider({
+            ["Title"] = Name,
+            ["Content"] = Content,
+            ["Min"] = Min,
+            ["Max"] = Max,
+            ["Increment"] = Increment,
+            ["Default"] = Default,
+            ["Callback"] = function(Value)
+                SpeedHubX[Name] = Value
+            end
+        })
+    end
 
-  function Funcs:AddTextbox(Section, Name, Content, Default, ClearText)
-    return Section:TextInput({
-      ["Title"] = Name,
-      ["Content"] = Content,
-      ["PlaceHolderText"] = "Enter your text here...",
-      ["ClearTextOnFocus"] = ClearText,
-      ["Default"] = Default,
-      ["Callback"] = function(Value)
-        SpeedHubX[Name] = Value
-      end
-    })
-  end
+    function Funcs:AddTextbox(Section, Name, Content, Default, ClearText)
+        return Section:TextInput({
+            ["Title"] = Name,
+            ["Content"] = Content,
+            ["PlaceHolderText"] = "Enter your text here...",
+            ["ClearTextOnFocus"] = ClearText,
+            ["Default"] = Default,
+            ["Callback"] = function(Value)
+                SpeedHubX[Name] = Value
+            end
+        })
+    end
 
-  function Funcs:AddButton(Section, Name, Content, Callback)
-    return Section:Button({
-      ["Title"] = Name,
-      ["Content"] = Content,
-      ["Callback"] = (not Callback and SpeedHubX[Name] or Callback)
-    })  
-  end
+    function Funcs:AddButton(Section, Name, Content, Callback)
+        return Section:Button({
+            ["Title"] = Name,
+            ["Content"] = Content,
+            ["Callback"] = Callback or function()
+                SpeedHubX[Name]()
+            end
+        })
+    end
 end
 
-local _AutoFishing = Window:MakeTab("Auto Fishing") do
-   local _Rods = _AutoFishing:Section({["Title"] = "Rods", ["Content"] = ""}) do
+local _AutoFishing = Window:MakeTab("Auto Fishing")
+do
+    local _Rods = _AutoFishing:Section({ ["Title"] = "Rods", ["Content"] = "" })
+    do
+        
+        Funcs:AddDropdown(_Rods, "Select Rod", false, {
+            "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
+            "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
+            "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
+            "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod",
+            "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
+            "Kings Rod", "Aurora Rod", "Scurvy Rod"
+        }, "Kings Rod") -- Default rod is "Kings Rod"
 
-    local RodsSection = _AutoFishing:Section("Rods Settings")
-
-    Funcs:AddDropdown(RodsSection, "Select Rod", false, {
-        "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
-        "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
-        "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
-        "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod",
-        "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
-        "Kings Rod", "Aurora Rod", "Scurvy Rod"
-    }, "Kings Rod") -- Default rod is "Kings Rod"
-
-    Funcs:AddToggle(RodsSection, "Auto Equip Rod", "Automatically equips the chosen rod", false)
-    spawn(function()
-        while true do
-            task.wait(0.1)
-            if SpeedHubX["Auto Equip Rod"] then
-                local rodName = SpeedHubX["Select Rod"]
-                if rodName and game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rodName) then
-                    local tool = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rodName)
-                    game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):EquipTool(tool)
+        Funcs:AddToggle(_Rods, "Auto Equip Rod", "Automatically equips the chosen rod", false)
+        spawn(function()
+            while task.wait(0.1) do
+                if SpeedHubX["Auto Equip Rod"] then
+                    local rodName = SpeedHubX["Select Rod"]
+                    if rodName and game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rodName) then
+                        local tool = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rodName)
+                        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):EquipTool(tool)
+                    end
                 end
             end
-        end
-    end)
+        end)
 
-    Funcs:AddToggle(RodsSection, "Auto Cast", "Automatically casts the chosen rod", false)
-    spawn(function()
-        while true do
-            task.wait(0.1)
-            if SpeedHubX["Auto Cast"] then
-                local rodName = SpeedHubX["Select Rod"]
-                if rodName and game:GetService("Players").LocalPlayer.Character:FindFirstChild(rodName) then
+        Funcs:AddToggle(_Rods, "Auto Cast", "Automatically casts the chosen rod", false)
+        spawn(function()
+            while task.wait(0.1) do
+                if SpeedHubX["Auto Cast"] then
+                    local rodName = SpeedHubX["Select Rod"]
+                    if rodName and game:GetService("Players").LocalPlayer.Character:FindFirstChild(rodName) then
+                        local args = {
+                            [1] = 23.7,
+                            [2] = 1
+                        }
+                        game:GetService("Players").LocalPlayer.Character[rodName].events.cast:FireServer(unpack(args))
+                    end
+                end
+            end
+        end)
+
+        Funcs:AddToggle(_Rods, "Auto Reel", "Automatically reels in the chosen rod", false)
+        spawn(function()
+            while task.wait(0.3) do
+                if SpeedHubX["Auto Reel"] then
                     local args = {
-                        [1] = 23.7,
-                        [2] = 1
+                        [1] = 100,
+                        [2] = true
                     }
-                    game:GetService("Players").LocalPlayer.Character[rodName].events.cast:FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
                 end
             end
-        end
-    end)
-
-    Funcs:AddToggle(RodsSection, "Auto Reel", "Automatically reels in the chosen rod", false)
-    spawn(function()
-        while true do
-            task.wait(0.3)
-            if SpeedHubX["Auto Reel"] then
-                local args = {
-                    [1] = 100,
-                    [2] = true
-                }
-                game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
-            end
-        end
-    end)
+        end)
+    end
 end
