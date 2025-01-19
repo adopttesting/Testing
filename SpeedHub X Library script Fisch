@@ -1,11 +1,9 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
-
-
 local Window = Library:MakeWindow({
-    Title = "Lite Hub | " .. Version,
+    Title = "Lite Hub | " .. (Version or "1.0"),
     SaveFolder = "Lite Hub"
 })
+
 Window:AddMinimizeButton({
     Button = {Image = "rbxassetid://16022917595"},
     Corner = {CornerRadius = UDim.new(0, 5)}
@@ -40,28 +38,13 @@ local function Dropdown(Tab, Name, Desc, Option, Default)
         Options = Option,
         Default = Default,
         Callback = function(Value)
-            SpeedHubX[Name] = Value
+            SpeedHubX["selectedRod"] = Value
         end
     })
     return Ver
 end
 
-local function Silder(Tab, Name, Min, Max, Default)
-    local Ver = Tab:AddSlider({
-        Name = Name,
-        Min = Min,
-        Max = Max,
-        Default = Default,
-        Callback = function(Value)
-            SpeedHubX[Name] = Value
-        end
-    })
-    return Ver
-end
-
-AutoFishing:AddSection({"Rods"})
-
--- Add all rods to the dropdown
+-- Rod List
 local rods = {
     "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
     "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
@@ -71,34 +54,36 @@ local rods = {
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
 
+-- UI Setup
 Dropdown(AutoFishing, "Choose Rod", "", rods, "")
-
 Toggle(AutoFishing, "Auto Equip Rod", "", false)
 Toggle(AutoFishing, "Auto Cast", "", false)
 Toggle(AutoFishing, "Auto Reel", "", false)
 Toggle(AutoFishing, "Auto Shake", "", false)
 
--- Variables for toggles
-local selectedRod = ""
+-- Variables
 local toggles = {
     AutoEquipRod = false,
     AutoCast = false,
     AutoReel = false,
     AutoShake = false
 }
+local autoShakeConnection
 
 -- Event Handlers
-Library:AddConnection(game:GetService("RunService").Stepped, function()
-    selectedRod = SpeedHubX["Choose Rod"]
-    
-    if toggles.AutoEquipRod and selectedRod ~= "" then
+game:GetService("RunService").Stepped:Connect(function()
+    local selectedRod = SpeedHubX["selectedRod"]
+
+    -- Auto Equip Rod
+    if SpeedHubX["Auto Equip Rod"] and selectedRod and selectedRod ~= "" then
         local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
         if tool then
             game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
         end
     end
 
-    if toggles.AutoCast and selectedRod ~= "" then
+    -- Auto Cast
+    if SpeedHubX["Auto Cast"] and selectedRod and selectedRod ~= "" then
         local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
         if tool and tool:FindFirstChild("events") and tool.events:FindFirstChild("cast") then
             local args = {23.7, 1}
@@ -106,27 +91,14 @@ Library:AddConnection(game:GetService("RunService").Stepped, function()
         end
     end
 
-    if toggles.AutoReel then
+    -- Auto Reel
+    if SpeedHubX["Auto Reel"] then
         local args = {100, true}
         game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
     end
 end)
 
-local autoShakeConnection
-
--- Toggle Handlers
-SpeedHubX["Auto Equip Rod"] = function(value)
-    toggles.AutoEquipRod = value
-end
-
-SpeedHubX["Auto Cast"] = function(value)
-    toggles.AutoCast = value
-end
-
-SpeedHubX["Auto Reel"] = function(value)
-    toggles.AutoReel = value
-end
-
+-- Auto Shake Handler
 SpeedHubX["Auto Shake"] = function(value)
     if value then
         if not autoShakeConnection then
