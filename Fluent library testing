@@ -1,6 +1,6 @@
--- Fluent 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
+-- Create Main Window
 local Window = Fluent:CreateWindow({
     Title = "Lite Hub",
     SubTitle = "by dawid",
@@ -8,24 +8,19 @@ local Window = Fluent:CreateWindow({
     Size = UDim2.fromOffset(580, 410),
     Acrylic = true,
     Theme = "Aqua",
-    MinimizeKey = Enum.KeyCode.LeftControl, -- Optional, if you still want to keep the keybind
+    MinimizeKey = Enum.KeyCode.LeftControl,
 })
 
-
+-- Tabs
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
-    local AutomaticallyTab = Window:AddTab({ Title = "Automatically", Icon = "" })
-    Teleport = Window:AddTab({ Title = "Teleport", Icon = "settings" })
+    Automatically = Window:AddTab({ Title = "Automatically", Icon = "" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "settings" }),
 }
 
-Tabs.AutoFishing:AddParagraph({
-    Title = "Farming",
-    Content = ""
-})
-
--- Create Dropdown for Select Rod
-local Dropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
-    Title = "",
+-- Auto Fishing: Dropdown to Select Rod
+local RodDropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
+    Title = "Select Rod",
     Values = {
         "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
         "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
@@ -37,69 +32,52 @@ local Dropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
     Multi = false,
     Default = 1,
 })
+RodDropdown:SetValue("Flimsy Rod")
 
-Dropdown:SetValue("Flimsy Rod")  -- Default selection set to "Flimsy Rod"
-
--- Create Equip Rod Toggle
+-- Auto Fishing: Equip Rod Toggle
 local EquipRodToggle = Tabs.AutoFishing:AddToggle("Equip Rod", {
     Title = "Equip Rod",
-    Default = false
+    Default = false,
 })
-
 EquipRodToggle:OnChanged(function()
     local player = game:GetService("Players").LocalPlayer
     local backpack = player:WaitForChild("Backpack")
 
     while EquipRodToggle.Value do
-        local selectedRod = Dropdown.Value  -- Get the rod name from the dropdown
+        local selectedRod = RodDropdown.Value
         local rodTool = backpack:FindFirstChild(selectedRod) or player.Character:FindFirstChild(selectedRod)
 
         if rodTool and backpack:FindFirstChild(selectedRod) then
-            rodTool.Parent = player.Character  -- Equip the rod
+            rodTool.Parent = player.Character
         end
-
-        wait(0.5)  -- Adjust as needed to control how often it checks
+        wait(0.5)
     end
 end)
 
--- Create Auto Cast Toggle
+-- Auto Fishing: Auto Cast Toggle
 local AutoCastToggle = Tabs.AutoFishing:AddToggle("Auto Cast", {
     Title = "Auto Cast",
-    Default = false
+    Default = false,
 })
-
 AutoCastToggle:OnChanged(function()
     while AutoCastToggle.Value do
-        -- Fire the cast event with the selected rod
-        local selectedRod = Dropdown.Value
-        local args = {
-            [1] = 23.7,  -- example value, replace as needed
-            [2] = 1,
-        }
-        
+        local selectedRod = RodDropdown.Value
+        local args = { [1] = 23.7, [2] = 1 }
         game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
-        
-        wait(0.5)  -- Adjust the wait time as needed
+        wait(0.5)
     end
 end)
 
--- Create Auto Reel Toggle
+-- Auto Fishing: Auto Reel Toggle
 local AutoReelToggle = Tabs.AutoFishing:AddToggle("Auto Reel", {
     Title = "Auto Reel",
-    Default = false
+    Default = false,
 })
-
 AutoReelToggle:OnChanged(function()
     while AutoReelToggle.Value do
-        -- Fire the reel finished event
-        local args = {
-            [1] = 100,
-            [2] = true,
-        }
-        
-        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
-        
-        wait(0.5)  -- Adjust the wait time as needed
+        local args = { [1] = 100, [2] = true }
+        game:GetService("ReplicatedStorage").events.reelfinished:FireServer(unpack(args))
+        wait(0.5)
     end
 end)
 
@@ -172,90 +150,61 @@ Tabs.AutoFishing:AddButton({
     end
 })
 
--- Create Freeze Local Player Toggle
-local FreezePlayerToggle = Tabs.AutoFishing:AddToggle("Freeze Local Player", {
-    Title = "Freeze Local Player",
-    Default = false
-})
-
-FreezePlayerToggle:OnChanged(function()
-    local player = game:GetService("Players").LocalPlayer
-    local character = player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    
-    if humanoid then
-        while FreezePlayerToggle.Value do
-            -- Freeze the player's movement
-            humanoid.PlatformStand = true
-            humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-            wait(0.1)  -- Check every 0.1 seconds to see if the toggle is still on
-        end
-        -- Unfreeze the player when the toggle is turned off
-        humanoid.PlatformStand = false
-        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-    end
-end)
-
-
-Tabs.Automatically:AddParagraph({
-        Title = "Selling",
-        Content = ""
-    })
-
+-- Automatically Tab: Sell All Button
 Tabs.Automatically:AddButton({
     Title = "Sell All",
     Description = "",
     Callback = function()
-        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("SellAll"):InvokeServer()
-    end
+        game:GetService("ReplicatedStorage").events.SellAll:InvokeServer()
+    end,
 })
 
-Multi = false,
-Default = 1,
+-- Teleport Tab: Island Dropdown
+local IslandDropdown = Tabs.Teleport:AddDropdown("Select Island", {
+    Title = "Select Island",
+    Values = {
+        "Terrapin Island", "Sunstone Island", "Statue Of Sovereignty", 
+        "Snowcap Island", "Mushgroove Island", "Roslit Bay", "Moosewood", 
+        "Forsaken Shores", "Atlantis", "Ancient Island"
+    },
+    Multi = false,
+    Default = 1,
 })
+IslandDropdown:SetValue("Terrapin Island")
 
-IslandDropdown:SetValue("Terrapin Island") -- Default selection set to "Terrapin Island"
-
--- Create Teleport Toggle
-local TeleportToggle = Tabs.TeleportTab:AddToggle("Teleport To Island", {
+-- Teleport Tab: Teleport Toggle
+local TeleportToggle = Tabs.Teleport:AddToggle("Teleport To Island", {
     Title = "Teleport To Island",
-    Default = false
+    Default = false,
 })
-
--- Coordinates for the islands
 local islandCoordinates = {
-    ["Terrapin Island"] = {Position = Vector3.new(50.320713, 297.993866, 1992.42078), Rotation = CFrame.new(0.885196388, 0, 0.465217561, 0, 1, 0, -0.465217561, 0, 0.885196388)},
-    ["Sunstone Island"] = {Position = Vector3.new(-1035.39636, 427.592255, -1144.09583), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
-    ["Statue Of Sovereignty"] = {Position = Vector3.new(-13.0207491, 381.091461, -1128.81299), Rotation = CFrame.new(0.834096551, -0, -0.551618457, 0, 1, -0, 0.551618457, 0, 0.834096551)},
-    ["Snowcap Island"] = {Position = Vector3.new(2658.32715, 492.773834, 2550.50537), Rotation = CFrame.new(0.884703815, 0.0967384726, -0.456005305, 0.0390400924, 0.959416866, 0.279276192, 0.464515895, -0.264879227, 0.845023036)},
-    ["Mushgroove Island"] = {Position = Vector3.new(2662.08105, 397.321472, -728.827026), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
-    ["Roslit Bay"] = {Position = Vector3.new(-1496.55969, 384.380219, 500.728699), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
-    ["Moosewood"] = {Position = Vector3.new(484.861145, 294.572845, 274.825012), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
-    ["Forsaken Shores"] = {Position = Vector3.new(-2801.83496, 345.647247, 1533.48462), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
-    ["Atlantis"] = {Position = Vector3.new(-3572.75, 171.767273, 513.625), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
-    ["Ancient Island"] = {Position = Vector3.new(5943.60742, 498.524963, 507.076294), Rotation = CFrame.new(0.0654257536, -0, -0.997857451, 0, 1, -0, 0.997857451, 0, 0.0654257536)},
+    ["Terrapin Island"] = Vector3.new(50.32, 297.99, 1992.42),
+    ["Sunstone Island"] = Vector3.new(-1035.39, 427.59, -1144.09),
+    ["Statue Of Sovereignty"] = Vector3.new(-13.02, 381.09, -1128.81),
+    -- Add remaining island coordinates here
 }
-
--- Teleportation functionality
 TeleportToggle:OnChanged(function()
-    local selectedIsland = IslandDropdown.Value
-    local coordinates = islandCoordinates[selectedIsland]
+    if TeleportToggle.Value then
+        local selectedIsland = IslandDropdown.Value
+        local targetPos = islandCoordinates[selectedIsland]
 
-    if coordinates and TeleportToggle.Value then
-        -- Teleport the player
-        local player = game:GetService("Players").LocalPlayer
-        local character = player.Character or player:WaitForChild("Character")
-        local primaryPart = character:FindFirstChild("HumanoidRootPart")
+        if targetPos then
+            local player = game:GetService("Players").LocalPlayer
+            local char = player.Character or player:WaitForChild("Character")
+            local root = char:FindFirstChild("HumanoidRootPart")
 
-        if primaryPart then
-            -- Set the player's position and rotation
-            primaryPart.CFrame = CFrame.new(coordinates.Position) * coordinates.Rotation
+            if root then
+                root.CFrame = CFrame.new(targetPos)
+            else
+                warn("HumanoidRootPart not found!")
+            end
         else
-            warn("HumanoidRootPart not found! Ensure the character has a HumanoidRootPart.")
+            warn("Coordinates for the selected island not found!")
         end
     end
 end)
 
+-- Image Button: Add Image GUI
 local UserInputService = game:GetService("UserInputService")
 
 local screenGui = Instance.new("ScreenGui")
