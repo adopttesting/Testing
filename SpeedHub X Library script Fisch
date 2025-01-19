@@ -7,7 +7,7 @@ local Window = Library:Start({
   ["SaveFolder"] = "Lite Hub"
 })
 
-
+local SpeedHubX = {}
 
 local Funcs = {} do
   function Funcs:AddToggle(Section, Name, Content, Default)
