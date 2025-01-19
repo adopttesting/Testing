@@ -1,10 +1,9 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
 
-
 local Window = Library:Start({
-  ["Name"] = "Lite Hub| " .. Version,
-  ["SaveFolder"] = "Lite Hub"
+    ["Name"] = "Lite Hub | " .. Version,
+    ["SaveFolder"] = "Lite Hub"
 })
 
 local SpeedHubX = {}
@@ -70,24 +69,25 @@ local Funcs = {} do
     return Section:Button({
       ["Title"] = Name,
       ["Content"] = Content,
-      ["Callback"] = Callback
+      ["Callback"] = (not Callback and SpeedHubX[Name] or Callback)
     })  
   end
 end
 
--- Auto Fishing Tab
 local _AutoFishing = Window:MakeTab("Auto Fishing") do
-    -- Create Dropdown for rod selection
+   local _Rods = _AutoFishing:Section({["Title"] = "Rods", ["Content"] = ""}) do
+
+    local RodsSection = _AutoFishing:Section("Rods Settings")
+
     Funcs:AddDropdown(RodsSection, "Select Rod", false, {
-        "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
-        "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
-        "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
-        "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
-        "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
+        "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
+        "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
+        "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
+        "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod",
+        "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
         "Kings Rod", "Aurora Rod", "Scurvy Rod"
     }, "Kings Rod") -- Default rod is "Kings Rod"
 
-    -- Auto Equip Rod Toggle
     Funcs:AddToggle(RodsSection, "Auto Equip Rod", "Automatically equips the chosen rod", false)
     spawn(function()
         while true do
@@ -102,7 +102,6 @@ local _AutoFishing = Window:MakeTab("Auto Fishing") do
         end
     end)
 
-    -- Auto Cast Toggle
     Funcs:AddToggle(RodsSection, "Auto Cast", "Automatically casts the chosen rod", false)
     spawn(function()
         while true do
@@ -120,7 +119,6 @@ local _AutoFishing = Window:MakeTab("Auto Fishing") do
         end
     end)
 
-    -- Auto Reel Toggle
     Funcs:AddToggle(RodsSection, "Auto Reel", "Automatically reels in the chosen rod", false)
     spawn(function()
         while true do
