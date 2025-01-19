@@ -255,3 +255,55 @@ TeleportToggle:OnChanged(function()
         end
     end
 end)
+
+local UserInputService = game:GetService("UserInputService")
+
+local screenGui = Instance.new("ScreenGui")
+local imageButton = Instance.new("ImageButton")
+local uiCorner = Instance.new("UICorner")
+
+-- Parent the ScreenGui to PlayerGui
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Configure the ImageButton
+imageButton.Parent = screenGui
+imageButton.Size = UDim2.new(0, 45, 0, 45) -- Set size to 45x45
+imageButton.Position = UDim2.new(0.5, -22.5, 0.5, -22.5) -- Center it on the screen
+imageButton.AnchorPoint = Vector2.new(0.5, 0.5) -- Center positioning
+imageButton.Image = "rbxassetid://86093303748141" -- Replace with your image ID
+
+-- Add and configure UICorner
+uiCorner.Parent = imageButton
+uiCorner.CornerRadius = UDim.new(0.5, 0) -- Set corner radius to 0.5
+
+-- Variables for dragging
+local isDragging = false
+local dragStart
+local startPos
+
+-- Detect input start (mouse or touch)
+imageButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true
+        dragStart = input.Position
+        startPos = imageButton.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                isDragging = false
+            end
+        end)
+    end
+end)
+
+-- Detect input change (mouse movement or touch movement)
+imageButton.InputChanged:Connect(function(input)
+    if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        imageButton.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
