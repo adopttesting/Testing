@@ -1,177 +1,133 @@
--- Load the Speed Hub X Library
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
+local Library = https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library
 
--- Create the Main Window
-local Window = Library:MakeWindow({
-    Title = "Lite Hub | Version V1.0.0",
-    SaveFolder = ""
+local Window = Library:Start({
+  ["Name"] = "Lite Hub| " .. Version,
+  ["SaveFolder"] = "Lite Hub"
 })
 
-Window:AddMinimizeButton({
-    Button = {Image = "rbxassetid://86093303748141"},
-    Corner = {CornerRadius = UDim.new(0, 5)}
-})
 
--- Functions for Toggles and Dropdowns
-local SpeedHubX = {}
 
-local function Toggle(Tab, Name, Desc, Default)
-    local Ver = Tab:AddToggle({
-        Name = Name, Description = Desc or "", Default = Default,
-        Callback = function(Value)
-            SpeedHubX[Name] = Value
-        end
+local Funcs = {} do
+  function Funcs:AddToggle(Section, Name, Content, Default)
+    return Section:Toggle({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["Default"] = Default,
+      ["Callback"] = function(Value)
+        SpeedHubX[Name] = Value
+      end,
+      ["Flag"] = "SPD/Toggle/" .. tostring(Name)
     })
-    return Ver
+  end
+
+  function Funcs:AddDropdown(Section, Name, Multi, Options, Default)
+    return Section:Dropdown({
+      ["Title"] = Name,
+      ["Multi"] = Multi,
+      ["Options"] = Options,
+      ["Default"] = Default,
+      ["PlaceHolderText"] = "Select Options",
+      ["Callback"] = function(Value)
+        if not Multi and type(Value) == "table" then
+          for _, v in next, Value do
+            SpeedHubX[Name] = v
+          end
+        else
+          SpeedHubX[Name] = Value
+        end
+      end
+    })
+  end
+
+  function Funcs:AddSlider(Section, Name, Content, Min, Max, Increment, Default)
+    return Section:Slider({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["Min"] = Min,
+      ["Max"] = Max,
+      ["Increment"] = Increment,
+      ["Default"] = Default,
+      ["Callback"] = function(Value)
+        SpeedHubX[Name] = Value
+      end
+    })
+  end
+
+  function Funcs:AddTextbox(Section, Name, Content, Default, ClearText)
+    return Section:TextInput({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["PlaceHolderText"] = "Enter your text here...",
+      ["ClearTextOnFocus"] = ClearText,
+      ["Default"] = Default,
+      ["Callback"] = function(Value)
+        SpeedHubX[Name] = Value
+      end
+    })
+  end
+
+  function Funcs:AddButton(Section, Name, Content, Callback)
+    return Section:Button({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["Callback"] = Callback
+    })  
+  end
 end
 
-local function Dropdown(Tab, Name, Desc, Option, Default)
-    local Ver = Tab:AddDropdown({
-        Name = Name, Description = Desc or "", Options = Option, Default = Default,
-        Callback = function(Value)
-            SpeedHubX[Name] = Value
+-- Auto Fishing Tab
+local _AutoFishing = Window:MakeTab("Auto Fishing") do
+    -- Create "Rods" section
+    local RodsSection = _AutoFishing:Section("Rods")
+
+    -- Create Dropdown for rod selection
+    Funcs:AddDropdown(RodsSection, "Select Rod", false, {
+        "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
+        "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
+        "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
+        "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
+        "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
+        "Kings Rod", "Aurora Rod", "Scurvy Rod"
+    }, "Kings Rod") -- Default rod is "Kings Rod"
+
+    -- Auto Equip Rod Toggle
+    Funcs:AddToggle(RodsSection, "Auto Equip Rod", "Automatically equips the chosen rod", false)
+    spawn(function()
+        while true do
+            task.wait(0.1)
+            if SpeedHubX["Auto Equip Rod"] then
+                local rodName = SpeedHubX["Select Rod"]
+                if rodName and game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rodName) then
+                    local tool = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rodName)
+                    game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):EquipTool(tool)
+                end
+            end
         end
-    })
-    return Ver
-end
+    end)
 
--- Create the "Auto Fishing" Tab
-local AutoFishing = Window:MakeTab({"Auto Fishing", "lucide-fish"})
-
--- Dropdown for "Choose Rod"
-Dropdown(AutoFishing, "Choose Rod", "Select a rod for auto-casting", {
-    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
-    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
-    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
-    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
-    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
-    "Kings Rod", "Aurora Rod", "Scurvy Rod"}, "Flimsy Rod")
-
--- Toggle for "Equip Rod"
-local EquipRod = Toggle(AutoFishing, "Equip Rod", "Equip the selected rod tool", false)
-
--- Auto Cast Toggle
-local AutoCast = Toggle(AutoFishing, "Auto Cast", "Automatically casts the selected rod", false)
-
--- Auto Reel Toggle
-local AutoReel = Toggle(AutoFishing, "Auto Reel", "Automatically reels the line once cast", false)
-
--- Auto Shake Toggle
-local AutoShake = Toggle(AutoFishing, "Auto Shake", "Automatically shakes and presses keys for navigation", false)
-
--- Create the "Auto Fishing" Tab
-local Teleport = Window:MakeTab({"Teleport", "lucide-navigation"})
-
--- Islands data and locations
-local Islands = {
-    ["Terrapin Island"] = Vector3.new(50.32, 297.99, 1992.42),
-    ["Sunstone Island"] = Vector3.new(-1035.39, 427.59, -1144.09),
-    ["Statue Of Sovereignty"] = Vector3.new(-13.02, 381.09, -1128.81),
-    ["Snowcap Island"] = Vector3.new(2658.32715, 492.773834, 2550.50537),
-    ["Roslit Bay"] = Vector3.new(-1496.55969, 384.380219, 500.728699),
-    ["Mushgroove Island"] = Vector3.new(2662.08105, 397.321472, -728.827026),
-    ["Moosewood"] = Vector3.new(484.861145, 294.572845, 274.825012),
-    ["Forsaken Shores"] = Vector3.new(-2801.83496, 345.647247, 1533.48462),
-    ["Atlantis"] = Vector3.new(-3572.75, 171.767273, 513.625),
-    ["Ancient Island"] = Vector3.new(5943.60742, 498.524963, 507.076294),
-}
-
--- Dropdown for "Select Island"
-Dropdown(Teleport, "Select Island", "Choose an island to teleport to", table.keys(Islands), "Terrapin Island")
-
--- Toggle to Teleport to Selected Island
-local TeleportToIsland = Toggle(Teleport, "Teleport", "Teleport to the selected island", false)
-
--- Fish Area data and locations
-local FishAreas = {
-    ["Ancient Isle Pond"] = CFrame.new(6014.65869, 179.835037, 330.316071),
-    ["Ancient Isle Waterfall"] = CFrame.new(5951.72217, 216.185043, 502.174011),
-    ["Brine Pool"] = CFrame.new(-1796.38306, -223.383011, -3345.58813),
-    ["Desolate Deep"] = CFrame.new(-1678.24756, -306.582123, -3091.30835),
-    ["Forsaken Shores"] = CFrame.new(-2654.87134, 102.072525, 1465.56531),
-    ["Forsaken Shores Pond"] = CFrame.new(-2701.30591, 148.872528, 1750.0592),
-    ["Frigid Cavern"] = CFrame.new(19893.125, 420.223022, 5607.42432),
-    ["Glacial Grotto"] = CFrame.new(20051.2031, 854.765625, 5634.33643),
-    ["Grand Reef"] = CFrame.new(-3576.57349, 11.7025375, 541.630493),
-    ["Lava"] = CFrame.new(-1966.19263, 132.647018, 274.75293),
-    ["Moosewood Docks"] = CFrame.new(345.802917, 54.9887085, 261.252319),
-    ["Moosewood Pond"] = CFrame.new(525.744507, 137.410004, 283.821625),
-    ["Overgrowth Cave"] = CFrame.new(20304.0938, 253.568161, 5525.65771),
-    ["Roslit Bay Clam"] = CFrame.new(-2028.79443, 54.9887085, 541.784424),
-    ["Roslit Pond"] = CFrame.new(-1761.38428, 134.953812, 596.431946),
-    ["Snowcap Pond"] = CFrame.new(2789.34741, 262.703033, 2613.31104),
-    ["Sunstone Island"] = CFrame.new(-1139.38635, 26.3850517, -1076.26379),
-    ["Terrapin Olm"] = CFrame.new(22.0643902, 98.3850555, 1944.36792),
-    ["The Depths"] = CFrame.new(745.830139, -770.311462, 1250.17554),
-    ["Vertigo"] = CFrame.new(-129.634705, -808.458923, 1203.53235),
-}
-
--- Dropdown for "Select Fish Area"
-Dropdown(Teleport, "Select Fish Area", "Choose a fish area to teleport to", table.keys(FishAreas), "Ancient Isle Pond")
-
--- Toggle to Teleport to Selected Fish Area
-local TeleportToFishArea = Toggle(Teleport, "Teleport To Area", "Teleport to the selected fish area and freeze", false)
-
--- Logic for Teleporting to the Fish Area
-task.spawn(function()
-    while true do
-        task.wait(1)
-        pcall(function()
-            if SpeedHubX["Teleport To Area"] then
-                local areaName = SpeedHubX["Select Fish Area"]
-                local areaLocation = FishAreas[areaName]
-                
-                -- Teleport the player to the selected fish area
-                if areaLocation then
-                    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = areaLocation
-                    -- Freeze the player immediately
-                    game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid").PlatformStand = true
-                end
-            else
-                -- Unfreeze the player if toggle is off
-                game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid").PlatformStand = false
-            end
-        end)
-    end
-end)
-
--- Logic for Equip Rod
-task.spawn(function()
-    while task.wait(1) do
-        pcall(function()
-            if SpeedHubX["Equip Rod"] then
-                local rod = SpeedHubX["Choose Rod"]
-                local rodTool = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rod)
-                
-                -- If the rod tool is not already equipped, equip it
-                if rodTool and not game:GetService("Players").LocalPlayer.Character:FindFirstChild(rod) then
-                    rodTool.Parent = game:GetService("Players").LocalPlayer.Character
-                end
-            end
-        end)
-    end
-end)
-
--- Logic for Auto Cast
-task.spawn(function()
-    while task.wait(1) do
-        pcall(function()
+    -- Auto Cast Toggle
+    Funcs:AddToggle(RodsSection, "Auto Cast", "Automatically casts the chosen rod", false)
+    spawn(function()
+        while true do
+            task.wait(0.1)
             if SpeedHubX["Auto Cast"] then
-                local rod = SpeedHubX["Choose Rod"]
-                local args = {
-                    [1] = 23.700000000000006,
-                    [2] = 1
-                }
-                game:GetService("Players").LocalPlayer.Character:FindFirstChild(rod).events.cast:FireServer(unpack(args))
+                local rodName = SpeedHubX["Select Rod"]
+                if rodName and game:GetService("Players").LocalPlayer.Character:FindFirstChild(rodName) then
+                    local args = {
+                        [1] = 23.7,
+                        [2] = 1
+                    }
+                    game:GetService("Players").LocalPlayer.Character[rodName].events.cast:FireServer(unpack(args))
+                end
             end
-        end)
-    end
-end)
+        end
+    end)
 
--- Logic for Auto Reel
-task.spawn(function()
-    while task.wait(1) do
-        pcall(function()
+    -- Auto Reel Toggle
+    Funcs:AddToggle(RodsSection, "Auto Reel", "Automatically reels in the chosen rod", false)
+    spawn(function()
+        while true do
+            task.wait(0.3)
             if SpeedHubX["Auto Reel"] then
                 local args = {
                     [1] = 100,
@@ -179,39 +135,6 @@ task.spawn(function()
                 }
                 game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
             end
-        end)
-    end
-end)
-
--- Logic for Auto Shake
-task.spawn(function()
-    while task.wait(0.5) do
-        pcall(function()
-            if SpeedHubX["Auto Shake"] then
-                -- Ensure we are in the correct mode before pressing keys
-                local userInputService = game:GetService("UserInputService")
-
-                -- Check if player is already in navigation mode, and only then perform actions
-                -- Simulate "\" key press to toggle navigation mode (only if it hasn't been triggered yet)
-                if not userInputService:IsKeyDown(Enum.KeyCode.Backslash) then
-                    -- Press "\" to enable navigation mode
-                    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Backslash, false, game)
-                    task.wait(0.1)
-                end
-
-                -- Simulate "s" to move down (simulate key press and release)
-                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.S, false, game)
-                task.wait(0.1)
-                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.S, false, game)
-
-                -- Simulate "Enter" key press to confirm (navigate)
-                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                task.wait(0.1)
-                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-            end
-        end)
-    end
-end)
-
--- Initialize the Window
-Window:Initialize()
+        end
+    end)
+end
