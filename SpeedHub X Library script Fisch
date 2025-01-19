@@ -36,7 +36,7 @@ local function Dropdown(Tab, Name, Desc, Option, Default)
 end
 
 -- Create the "Auto Fishing" Tab
-local AutoFishing = Window:MakeTab({"Auto Fishing", ""})
+local AutoFishing = Window:MakeTab({"Auto Fishing", "lucide-fish"})
 
 -- Dropdown for "Choose Rod"
 Dropdown(AutoFishing, "Choose Rod", "Select a rod for auto-casting", {
@@ -112,14 +112,23 @@ task.spawn(function()
     while task.wait(0.5) do
         pcall(function()
             if SpeedHubX["Auto Shake"] then
-                -- Press "\" to enable navigation mode
-                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Backslash, false, game)
-                task.wait(0.1)
-                -- Press "s" to move down
+                -- Ensure we are in the correct mode before pressing keys
+                local userInputService = game:GetService("UserInputService")
+
+                -- Check if player is already in navigation mode, and only then perform actions
+                -- Simulate "\" key press to toggle navigation mode (only if it hasn't been triggered yet)
+                if not userInputService:IsKeyDown(Enum.KeyCode.Backslash) then
+                    -- Press "\" to enable navigation mode
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Backslash, false, game)
+                    task.wait(0.1)
+                end
+
+                -- Simulate "s" to move down (simulate key press and release)
                 game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.S, false, game)
                 task.wait(0.1)
                 game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.S, false, game)
-                -- Press "Enter" to confirm
+
+                -- Simulate "Enter" key press to confirm (navigate)
                 game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
                 task.wait(0.1)
                 game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
