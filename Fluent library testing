@@ -2,8 +2,8 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 
 -- Create Main Window
 local Window = Fluent:CreateWindow({
-    Title = "Lite Hub | Version 1.0.0",
-    SubTitle = "by Adopt",
+    Title = "Lite Hub",
+    SubTitle = "by dawid",
     TabWidth = 160,
     Size = UDim2.fromOffset(480, 380),
     Acrylic = true,
@@ -100,11 +100,18 @@ end)
 -- Listen for new UI elements being added
 LocalPlayer.PlayerGui.DescendantAdded:Connect(function(Descendant)
     if AutoShakeEnabled and Descendant.Name == 'button' and Descendant.Parent.Name == 'safezone' then
-        task.wait(0.1)
+        task.wait(0.1)  -- Wait a bit for the button to fully load
+
+        -- Ensure the button's position is calculated relative to the screen
         local ButtonPosition, ButtonSize = Descendant.AbsolutePosition, Descendant.AbsoluteSize
-        -- Simulate mouse click on the button
-        VirtualInputManager:SendMouseButtonEvent(ButtonPosition.X + (ButtonSize.X / 2), ButtonPosition.Y + (ButtonSize.Y / 2), Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
-        VirtualInputManager:SendMouseButtonEvent(ButtonPosition.X + (ButtonSize.X / 2), ButtonPosition.Y + (ButtonSize.Y / 2), Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
+        
+        -- Calculate the center of the button (for clicking)
+        local CenterX = ButtonPosition.X + (ButtonSize.X / 2)
+        local CenterY = ButtonPosition.Y + (ButtonSize.Y / 2)
+        
+        -- Simulate a mouse click at the center of the button
+        VirtualInputManager:SendMouseButtonEvent(CenterX, CenterY, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
+        VirtualInputManager:SendMouseButtonEvent(CenterX, CenterY, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
     end
 end)
 
