@@ -229,34 +229,22 @@ local isDragging = false
 local dragStart
 local startPos
 
--- Simulate Left CTRL key press
-local function simulateLeftCtrlPress()
-    -- Create a key input for the Left CTRL key
-    local leftCtrlKey = Enum.KeyCode.LeftControl
-    local input = Instance.new("InputObject")
-    input.KeyCode = leftCtrlKey
-    input.UserInputType = Enum.UserInputType.Keyboard
-    input.Position = Vector3.new(0, 0, 0)  -- You can leave this as is for now
-
-    -- Send the key press to the UserInputService
-    UserInputService.InputBegan:Fire(input)  -- Simulate the key press
+-- Function that is triggered by pressing Left Control
+local function onLeftCtrlPressed()
+    print("Left Control Pressed!")
+    -- Add any action you'd like here that should happen when Left Control is pressed
 end
 
 -- Detect input start (mouse or touch)
 imageButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        -- When button is clicked, simulate Left CTRL press
-        simulateLeftCtrlPress()
+        -- When button is clicked, trigger the action as if Left CTRL was pressed
+        onLeftCtrlPressed()
 
-        -- Handle dragging
+        -- Start dragging the button
         isDragging = true
         dragStart = input.Position
         startPos = imageButton.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                isDragging = false
-            end
-        end)
     end
 end)
 
@@ -270,5 +258,13 @@ imageButton.InputChanged:Connect(function(input)
             startPos.Y.Scale,
             startPos.Y.Offset + delta.Y
         )
+    end
+end)
+
+-- Detect when input ends (mouse release or touch end)
+imageButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        -- Stop dragging the button
+        isDragging = false
     end
 end)
