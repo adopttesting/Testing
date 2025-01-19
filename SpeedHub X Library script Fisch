@@ -72,8 +72,14 @@ local AutoCastToggle = Toggle(AutoFishing, "Auto Cast", "Enable or disable autom
 AutoCastToggle.Callback = function(value)
     while value do
         local selectedRod = RodDropdown.Value
-        local args = { [1] = 23.7, [2] = 1 }
-        game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
+        local rod = game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod)
+        if rod then
+            local args = { [1] = 23.7, [2] = 1 }
+            local castEvent = rod:FindFirstChild("cast")  -- Ensure the correct event is being referenced
+            if castEvent then
+                castEvent:FireServer(unpack(args))
+            end
+        end
         wait(0.5)
     end
 end
@@ -82,8 +88,11 @@ end
 local AutoReelToggle = Toggle(AutoFishing, "Auto Reel", "Enable or disable automatic reeling.", false)
 AutoReelToggle.Callback = function(value)
     while value do
-        local args = { [1] = 100, [2] = true }
-        game:GetService("ReplicatedStorage").events.reelfinished:FireServer(unpack(args))
+        local reelingEvent = game:GetService("ReplicatedStorage"):FindFirstChild("reelfinished")
+        if reelingEvent then
+            local args = { [1] = 100, [2] = true }
+            reelingEvent:FireServer(unpack(args))
+        end
         wait(0.5)
     end
 end
