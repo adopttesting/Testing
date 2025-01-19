@@ -1,66 +1,62 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
 
 local Window = Library:MakeWindow({
-    Title = "Lite Hub | " .. Version,
+    Title = "Lite Hub",
     SaveFolder = "Lite Hub"
 })
 Window:AddMinimizeButton({
-    Button = {Image = "rbxassetid://86093303748141"},
+    Button = {Image = "rbxassetid://16022917595"},
     Corner = {CornerRadius = UDim.new(0, 5)}
 })
 
 local AutoFishing = Window:MakeTab({"Auto Fishing", ""})
 
+-- Destroy Forward Portals
 task.spawn(function()
     if game.Workspace:FindFirstChild("RobloxForwardPortals") then
         game.Workspace.RobloxForwardPortals:Destroy()
     end
 end)
 
-local SpeedHubX = {}
+-- Variables for toggles and selected rod
+local toggles = {
+    AutoEquipRod = false,
+    AutoCast = false,
+    AutoReel = false,
+    AutoShake = false
+}
+local selectedRod = ""
+local autoShakeConnection = nil
 
+-- Function to create toggles
 local function Toggle(Tab, Name, Desc, Default)
-    local Ver = Tab:AddToggle({
+    Tab:AddToggle({
         Name = Name,
         Description = Desc or "",
         Default = Default,
         Callback = function(Value)
-            SpeedHubX[Name] = Value
+            toggles[Name:gsub(" ", "")] = Value
         end
     })
-    return Ver
 end
 
+-- Function to create dropdown
 local function Dropdown(Tab, Name, Desc, Option, Default)
-    local Ver = Tab:AddDropdown({
+    Tab:AddDropdown({
         Name = Name,
         Description = Desc or "",
         Options = Option,
         Default = Default,
         Callback = function(Value)
-            SpeedHubX[Name] = Value
+            if Name == "Choose Rod" then
+                selectedRod = Value
+            end
         end
     })
-    return Ver
 end
 
-local function Silder(Tab, Name, Min, Max, Default)
-    local Ver = Tab:AddSlider({
-        Name = Name,
-        Min = Min,
-        Max = Max,
-        Default = Default,
-        Callback = function(Value)
-            SpeedHubX[Name] = Value
-        end
-    })
-    return Ver
-end
-
+-- Adding dropdown and toggles
 AutoFishing:AddSection({"Rods"})
-
--- Add all rods to the dropdown
 local rods = {
     "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
     "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
@@ -69,7 +65,6 @@ local rods = {
     "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
-
 Dropdown(AutoFishing, "Choose Rod", "", rods, "")
 
 Toggle(AutoFishing, "Auto Equip Rod", "", false)
@@ -77,19 +72,8 @@ Toggle(AutoFishing, "Auto Cast", "", false)
 Toggle(AutoFishing, "Auto Reel", "", false)
 Toggle(AutoFishing, "Auto Shake", "", false)
 
--- Variables for toggles
-local selectedRod = ""
-local toggles = {
-    AutoEquipRod = false,
-    AutoCast = false,
-    AutoReel = false,
-    AutoShake = false
-}
-
 -- Event Handlers
 Library:AddConnection(game:GetService("RunService").Stepped, function()
-    selectedRod = SpeedHubX["Choose Rod"]
-    
     if toggles.AutoEquipRod and selectedRod ~= "" then
         local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
         if tool then
@@ -111,30 +95,16 @@ Library:AddConnection(game:GetService("RunService").Stepped, function()
     end
 end)
 
-local autoShakeConnection
-
--- Toggle Handlers
-SpeedHubX["Auto Equip Rod"] = function(value)
-    toggles.AutoEquipRod = value
-end
-
-SpeedHubX["Auto Cast"] = function(value)
-    toggles.AutoCast = value
-end
-
-SpeedHubX["Auto Reel"] = function(value)
-    toggles.AutoReel = value
-end
-
-SpeedHubX["Auto Shake"] = function(value)
-    if value then
-        -- Enable Auto Shake
+-- Auto Shake Functionality
+Library:AddConnection(game:GetService("RunService").Stepped, function()
+    if toggles.AutoShake then
         if not autoShakeConnection then
             -- Press "\" to enable navigation mode
             keypress(Enum.KeyCode.BackSlash)
             wait(0.1)
+            keyrelease(Enum.KeyCode.BackSlash)
 
-            -- Start repeating "s" and "Enter"
+            -- Create Auto Shake connection
             autoShakeConnection = game:GetService("RunService").Stepped:Connect(function()
                 keypress(Enum.KeyCode.S)
                 wait(0.1)
@@ -148,15 +118,14 @@ SpeedHubX["Auto Shake"] = function(value)
             end)
         end
     else
-        -- Disable Auto Shake
         if autoShakeConnection then
             autoShakeConnection:Disconnect()
             autoShakeConnection = nil
-        end
 
-        -- Press "\" again to turn off navigation mode
-        keypress(Enum.KeyCode.BackSlash)
-        wait(0.1)
-        keyrelease(Enum.KeyCode.BackSlash)
+            -- Press "\" again to disable navigation mode
+            keypress(Enum.KeyCode.BackSlash)
+            wait(0.1)
+            keyrelease(Enum.KeyCode.BackSlash)
+        end
     end
-end
+end)
