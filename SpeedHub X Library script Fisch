@@ -1,61 +1,79 @@
+-- Load necessary libraries
+loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
 
+-- Create the GUI Window
 local Window = Library:MakeWindow({
-    Title = "Lite Hub",
+    Title = "Lite Hub | " .. Version,
     SaveFolder = "Lite Hub"
 })
-
 Window:AddMinimizeButton({
     Button = {Image = "rbxassetid://16022917595"},
     Corner = {CornerRadius = UDim.new(0, 5)}
 })
 
-local AutoFishing = Window:MakeTab({"Auto Fishing", ""})
+-- Define Tabs
+local Home = Window:MakeTab({"| Home", "scan-face"})
+local AutoFish = Window:MakeTab({"| Auto Fish", "Fish"})
 
--- Destroy Forward Portals
+-- Remove RobloxForwardPortals if exists
 task.spawn(function()
     if game.Workspace:FindFirstChild("RobloxForwardPortals") then
         game.Workspace.RobloxForwardPortals:Destroy()
     end
 end)
 
--- Variables for toggles and selected rod
-local toggles = {
-    AutoEquipRod = false,
-    AutoCast = false,
-    AutoReel = false
-}
-local selectedRod = ""
+-- Settings Table
+local SpeedHubX = {}
 
--- Function to create toggles
+-- Helper Functions
 local function Toggle(Tab, Name, Desc, Default)
-    Tab:AddToggle({
+    local Ver = Tab:AddToggle({
         Name = Name,
         Description = Desc or "",
         Default = Default,
         Callback = function(Value)
-            toggles[Name:gsub(" ", "")] = Value
+            SpeedHubX[Name] = Value
         end
     })
+    return Ver
 end
 
--- Function to create dropdown
-local function Dropdown(Tab, Name, Desc, Option, Default)
-    Tab:AddDropdown({
+local function Dropdown(Tab, Name, Desc, Options, Default)
+    local Ver = Tab:AddDropdown({
         Name = Name,
         Description = Desc or "",
-        Options = Option,
+        Options = Options,
         Default = Default,
         Callback = function(Value)
-            if Name == "Choose Rod" then
-                selectedRod = Value
-            end
+            SpeedHubX[Name] = Value
         end
     })
+    return Ver
 end
 
--- Adding dropdown and toggles
-AutoFishing:AddSection({"Rods"})
+local function Slider(Tab, Name, Min, Max, Default)
+    local Ver = Tab:AddSlider({
+        Name = Name,
+        Min = Min,
+        Max = Max,
+        Default = Default,
+        Callback = function(Value)
+            SpeedHubX[Name] = Value
+        end
+    })
+    return Ver
+end
+
+-- |Home Tab
+Home:AddSection({"Local Player"})
+Slider(Home, "Set WalkSpeed", 0, 100000, 1000)
+Slider(Home, "Set JumpPower", 0, 100000, 1000)
+Toggle(Home, "Enable WalkSpeed", "This Can Set Walk Speed!", false)
+Toggle(Home, "Enable JumpPower", "This Can Set JumpPower!", false)
+
+-- |Auto Fish Tab
+AutoFish:AddSection({"Rods"})
 local rods = {
     "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
     "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
@@ -64,31 +82,37 @@ local rods = {
     "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
-Dropdown(AutoFishing, "Choose Rod", "", rods, "")
+local selectedRod = ""
+Dropdown(AutoFish, "Select Rod", "", rods, rods[1])
+AutoFish:AddSection({"Automatically"})
+Toggle(AutoFish, "Auto Equip Rod", "This Will Equip Selected Rod", false)
+Toggle(AutoFish, "Auto Cast", "This Will Auto Cast", false)
+Toggle(AutoFish, "Auto Reel", "This Will Auto Reel", false)
+Toggle(AutoFish, "Auto Shake", "This Will Auto Shake", false)
 
-Toggle(AutoFishing, "Auto Equip Rod", "", false)
-Toggle(AutoFishing, "Auto Cast", "", false)
-Toggle(AutoFishing, "Auto Reel", "", false)
-
--- Event Handlers
-Library:AddConnection(game:GetService("RunService").Stepped, function()
-    if toggles.AutoEquipRod and selectedRod ~= "" then
-        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
+-- Functionality Implementation
+game:GetService("RunService").RenderStepped:Connect(function()
+    if SpeedHubX["Enable WalkSpeed"] then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = SpeedHubX["Set WalkSpeed"]
+    end
+    if SpeedHubX["Enable JumpPower"] then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = SpeedHubX["Set JumpPower"]
+    end
+    if SpeedHubX["Auto Equip Rod"] and selectedRod ~= "" then
+        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod) or game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
         if tool then
             game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
         end
     end
-
-    if toggles.AutoCast and selectedRod ~= "" then
+    if SpeedHubX["Auto Cast"] and selectedRod ~= "" then
+        local args = {[1] = 23.700000000000006, [2] = 1}
         local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
-        if tool and tool:FindFirstChild("events") and tool.events:FindFirstChild("cast") then
-            local args = {23.7, 1}
+        if tool and tool:FindFirstChild("events") then
             tool.events.cast:FireServer(unpack(args))
         end
     end
-
-    if toggles.AutoReel then
-        local args = {100, true}
+    if SpeedHubX["Auto Reel"] then
+        local args = {[1] = 100, [2] = true}
         game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
     end
 end)
