@@ -1,4 +1,3 @@
--- Fluent 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 local Window = Fluent:CreateWindow({
@@ -11,13 +10,13 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl, -- Optional, if you still want to keep the keybind
 })
 
-
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
-    local AutomaticallyTab = Window:AddTab({ Title = "Automatically", Icon = "" })
-
+    AutomaticallyTab = Window:AddTab({ Title = "Automatically", Icon = "" }),
+    TeleportTab = Window:AddTab({ Title = "Teleport", Icon = "" })
 }
 
+-- AutoFishing Tab
 Tabs.AutoFishing:AddParagraph({
     Title = "Farming",
     Content = ""
@@ -158,6 +157,20 @@ AutoShakeToggle:OnChanged(function()
         end
     end
 end)
+
+-- Create Auto Shake Debug Button
+Tabs.AutoFishing:AddButton({
+    Title = "Only If Needed",
+    Description = "Simulate pressing Left CTRL",
+    Callback = function()
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        
+        -- Simulate pressing Left Control (KeyCode.LeftControl)
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.LeftControl, false, nil)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, nil)
+    end
+})
+
 -- Create Freeze Local Player Toggle
 local FreezePlayerToggle = Tabs.AutoFishing:AddToggle("Freeze Local Player", {
     Title = "Freeze Local Player",
@@ -182,13 +195,13 @@ FreezePlayerToggle:OnChanged(function()
     end
 end)
 
+-- AutomaticallyTab Section
+Tabs.AutomaticallyTab:AddParagraph({
+    Title = "Selling",
+    Content = ""
+})
 
-Tabs.Automatically:AddParagraph({
-        Title = "Selling",
-        Content = ""
-    })
-
-Tabs.Automatically:AddButton({
+Tabs.AutomaticallyTab:AddButton({
     Title = "Sell All",
     Description = "",
     Callback = function()
@@ -196,12 +209,12 @@ Tabs.Automatically:AddButton({
     end
 })
 
-Tabs.Automatically:AddParagraph({
-        Title = "Merlin",
-        Content = ""
-    })
+Tabs.AutomaticallyTab:AddParagraph({
+    Title = "Merlin",
+    Content = ""
+})
 
-Tabs.Automatically:AddButton({
+Tabs.AutomaticallyTab:AddButton({
     Title = "Auto Buy Relic",
     Description = "",
     Callback = function()
@@ -209,7 +222,7 @@ Tabs.Automatically:AddButton({
     end
 })
 
-Tabs.Automatically:AddButton({
+Tabs.AutomaticallyTab:AddButton({
     Title = "Auto Buy Luck",
     Description = "",
     Callback = function()
@@ -217,4 +230,57 @@ Tabs.Automatically:AddButton({
     end
 })
 
+-- Teleport Tab Section
+Tabs.TeleportTab:AddParagraph({
+    Title = "Islands",
+    Content = ""
+})
 
+-- Create Dropdown for Select Island
+local IslandDropdown = Tabs.TeleportTab:AddDropdown("Select Island", {
+    Title = "",
+    Values = {
+        "Terrapin Island", "Sunstone Island", "Statue Of Sovereignty", "Snowcap Island", 
+        "Mushgroove Island", "Roslit Bay", "Moosewood", "Forsaken Shores", 
+        "Atlantis", "Ancient Island"
+    },
+    Multi = false,
+    Default = 1,
+})
+
+IslandDropdown:SetValue("Terrapin Island")  -- Default selection set to "Terrapin Island"
+
+-- Create Teleport Toggle
+local TeleportToggle = Tabs.TeleportTab:AddToggle("Teleport To Island", {
+    Title = "Teleport To Island",
+    Default = false
+})
+
+-- Coordinates for the islands
+local islandCoordinates = {
+    ["Terrapin Island"] = {Position = Vector3.new(50.320713, 297.993866, 1992.42078), Rotation = CFrame.new(0.885196388, 0, 0.465217561, 0, 1, 0, -0.465217561, 0, 0.885196388)},
+    ["Sunstone Island"] = {Position = Vector3.new(-1035.39636, 427.592255, -1144.09583), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
+    ["Statue Of Sovereignty"] = {Position = Vector3.new(-13.0207491, 381.091461, -1128.81299), Rotation = CFrame.new(0.834096551, -0, -0.551618457, 0, 1, -0, 0.551618457, 0, 0.834096551)},
+    ["Snowcap Island"] = {Position = Vector3.new(2658.32715, 492.773834, 2550.50537), Rotation = CFrame.new(0.884703815, 0.0967384726, -0.456005305, 0.0390400924, 0.959416866, 0.279276192, 0.464515895, -0.264879227, 0.845023036)},
+    ["Mushgroove Island"] = {Position = Vector3.new(2662.08105, 397.321472, -728.827026), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
+    ["Roslit Bay"] = {Position = Vector3.new(-1496.55969, 384.380219, 500.728699), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
+    ["Moosewood"] = {Position = Vector3.new(484.861145, 294.572845, 274.825012), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
+    ["Forsaken Shores"] = {Position = Vector3.new(-2801.83496, 345.647247, 1533.48462), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
+    ["Atlantis"] = {Position = Vector3.new(-3572.75, 171.767273, 513.625), Rotation = CFrame.new(1, 0, 0, 0, 1, 0, 0, 0, 1)},
+    ["Ancient Island"] = {Position = Vector3.new(5943.60742, 498.524963, 507.076294), Rotation = CFrame.new(0.0654257536, -0, -0.997857451, 0, 1, -0, 0.997857451, 0, 0.0654257536)},
+}
+
+-- Teleportation functionality
+TeleportToggle:OnChanged(function()
+    local selectedIsland = IslandDropdown.Value
+    local coordinates = islandCoordinates[selectedIsland]
+
+    if coordinates and TeleportToggle.Value then
+        -- Teleport the player
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player:WaitForChild("Character")
+        
+        -- Set the player's position and rotation
+        character:SetPrimaryPartCFrame(CFrame.new(coordinates.Position) * coordinates.Rotation)
+    end
+end)
