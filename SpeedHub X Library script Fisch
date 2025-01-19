@@ -77,7 +77,7 @@ do
     local _Rods = _AutoFishing:Section({ ["Title"] = "Rods", ["Content"] = "" })
     do
         
-        Funcs:AddDropdown(_Rods, "Select Rod", false, {
+        Funcs:AddDropdown(, "Select Rod", false, {
             "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
             "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
             "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
@@ -86,7 +86,7 @@ do
             "Kings Rod", "Aurora Rod", "Scurvy Rod"
         }, "Kings Rod") -- Default rod is "Kings Rod"
 
-        Funcs:AddToggle(_Rods, "Auto Equip Rod", "Automatically equips the chosen rod", false)
+        Funcs:AddToggle(, "Auto Equip Rod", "Automatically equips the chosen rod", false)
         spawn(function()
             while task.wait(0.1) do
                 if SpeedHubX["Auto Equip Rod"] then
@@ -99,7 +99,7 @@ do
             end
         end)
 
-        Funcs:AddToggle(_Rods, "Auto Cast", "Automatically casts the chosen rod", false)
+        Funcs:AddToggle(, "Auto Cast", "Automatically casts the chosen rod", false)
         spawn(function()
             while task.wait(0.1) do
                 if SpeedHubX["Auto Cast"] then
@@ -115,7 +115,7 @@ do
             end
         end)
 
-        Funcs:AddToggle(_Rods, "Auto Reel", "Automatically reels in the chosen rod", false)
+        Funcs:AddToggle(, "Auto Reel", "Automatically reels in the chosen rod", false)
         spawn(function()
             while task.wait(0.3) do
                 if SpeedHubX["Auto Reel"] then
