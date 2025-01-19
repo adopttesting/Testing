@@ -1,151 +1,141 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
+
 local Window = Library:MakeWindow({
-    Title = "Lite Hub | v1.0",
+    Title = "Lite Hub",
     SaveFolder = "Lite Hub"
 })
-
--- Add Minimize Button
 Window:AddMinimizeButton({
     Button = {Image = "rbxassetid://16022917595"},
     Corner = {CornerRadius = UDim.new(0, 5)}
 })
 
--- Tabs
-local Home = Window:MakeTab({"| Home", "scan-face"})
-local AutoFish = Window:MakeTab({"| Auto Fish", "Fish"})
+local AutoFishing = Window:MakeTab({"Auto Fishing", ""})
 
--- Destroy Portals (if exists)
+-- Destroy Forward Portals
 task.spawn(function()
     if game.Workspace:FindFirstChild("RobloxForwardPortals") then
         game.Workspace.RobloxForwardPortals:Destroy()
     end
 end)
 
--- SpeedHubX Table
-local SpeedHubX = {}
+-- Variables for toggles and selected rod
+local toggles = {
+    AutoEquipRod = false,
+    AutoCast = false,
+    AutoReel = false,
+    AutoShake = false
+}
+local selectedRod = ""
+local autoShakeConnection = nil
 
--- Helper Functions
+-- Create keypress and keyrelease functions using VirtualInputManager
+local function keypress(key)
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    VirtualInputManager:SendKeyEvent(true, key, false, nil)
+end
+
+local function keyrelease(key)
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    VirtualInputManager:SendKeyEvent(false, key, false, nil)
+end
+
+-- Function to create toggles
 local function Toggle(Tab, Name, Desc, Default)
-    local Ver = Tab:AddToggle({
+    Tab:AddToggle({
         Name = Name,
         Description = Desc or "",
         Default = Default,
         Callback = function(Value)
-            SpeedHubX[Name] = Value
+            toggles[Name:gsub(" ", "")] = Value
         end
     })
-    return Ver
 end
 
-local function Dropdown(Tab, Name, Desc, Options, Default)
-    local Ver = Tab:AddDropdown({
+-- Function to create dropdown
+local function Dropdown(Tab, Name, Desc, Option, Default)
+    Tab:AddDropdown({
         Name = Name,
         Description = Desc or "",
-        Options = Options,
+        Options = Option,
         Default = Default,
         Callback = function(Value)
-            SpeedHubX[Name] = Value
+            if Name == "Choose Rod" then
+                selectedRod = Value
+            end
         end
     })
-    return Ver
 end
 
-local function Slider(Tab, Name, Min, Max, Default)
-    local Ver = Tab:AddSlider({
-        Name = Name,
-        Min = Min,
-        Max = Max,
-        Default = Default,
-        Callback = function(Value)
-            SpeedHubX[Name] = Value
-        end
-    })
-    return Ver
-end
-
--- Home Tab
-Home:AddSection({"Local Player"})
-Slider(Home, "Set WalkSpeed", 0, 100000, 1000)
-Slider(Home, "Set JumpPower", 0, 100000, 1000)
-Toggle(Home, "Enable WalkSpeed", "This Can Set Walk Speed!", false)
-Toggle(Home, "Enable JumpPower", "This Can Set JumpPower!", false)
-
--- Auto Fish Tab
-AutoFish:AddSection({"Rods"})
-local Rods = {
-    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
-    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
-    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
-    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
-    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
+-- Adding dropdown and toggles
+AutoFishing:AddSection({"Rods"})
+local rods = {
+    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
+    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
+    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
+    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod",
+    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
-Dropdown(AutoFish, "Select Rod", "Select the rod to use", Rods, Rods[1])
+Dropdown(AutoFishing, "Choose Rod", "", rods, "")
+Toggle(AutoFishing, "Auto Equip Rod", "", false)
+Toggle(AutoFishing, "Auto Cast", "", false)
+Toggle(AutoFishing, "Auto Reel", "", false)
+Toggle(AutoFishing, "Auto Shake", "", false)
 
-AutoFish:AddSection({"Automatically"})
-Toggle(AutoFish, "Auto Equip Rod", "This Will Equip Selected Rod", false):SetCallback(function(Value)
-    while Value do
-        local player = game:GetService("Players").LocalPlayer
-        local backpack = player:WaitForChild("Backpack")
-        local selectedRod = SpeedHubX["Select Rod"]
-        local rodTool = backpack:FindFirstChild(selectedRod) or player.Character:FindFirstChild(selectedRod)
-
-        if rodTool and backpack:FindFirstChild(selectedRod) then
-            rodTool.Parent = player.Character
+-- Event Handlers
+Library:AddConnection(game:GetService("RunService").Stepped, function()
+    if toggles.AutoEquipRod and selectedRod ~= "" then
+        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
+        if tool then
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
         end
-        task.wait(0.5)
     end
-end)
 
-Toggle(AutoFish, "Auto Cast", "This Will Auto Cast", false):SetCallback(function(Value)
-    while Value do
-        local selectedRod = SpeedHubX["Select Rod"]
-        local args = { [1] = 23.7, [2] = 1 }
-        game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
-        task.wait(0.5)
-    end
-end)
-
-Toggle(AutoFish, "Auto Reel", "This Will Auto Reel", false):SetCallback(function(Value)
-    while Value do
-        local args = { [1] = 100, [2] = true }
-        game:GetService("ReplicatedStorage").events.reelfinished:FireServer(unpack(args))
-        task.wait(0.5)
-    end
-end)
-
-Toggle(AutoFish, "Auto Shake", "This Will Auto Shake", false):SetCallback(function(Value)
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-    local navigationModeActive = false  -- Track if navigation mode is activated
-
-    if Value then
-        -- Step 1: Activate navigation mode by pressing "\"
-        if not navigationModeActive then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            navigationModeActive = true
-            task.wait(0.3)  -- Small delay to allow mode activation
+    if toggles.AutoCast and selectedRod ~= "" then
+        local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
+        if tool and tool:FindFirstChild("events") and tool.events:FindFirstChild("cast") then
+            local args = {23.7, 1}
+            tool.events.cast:FireServer(unpack(args))
         end
+    end
 
-        -- Step 2: Infinite loop for "S" and "Enter" presses
-        while Value do
-            -- Simulate pressing "S"
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
-            task.wait(0.1)  -- Delay between key presses
+    if toggles.AutoReel then
+        local args = {100, true}
+        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+    end
+end)
 
-            -- Simulate pressing "Enter"
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-            task.wait(0.12)  -- Delay before repeating
+-- Auto Shake Functionality
+Library:AddConnection(game:GetService("RunService").Stepped, function()
+    if toggles.AutoShake then
+        if not autoShakeConnection then
+            -- Press "\" to enable navigation mode
+            keypress(Enum.KeyCode.BackSlash)
+            wait(0.1)
+            keyrelease(Enum.KeyCode.BackSlash)
+
+            -- Create Auto Shake connection
+            autoShakeConnection = game:GetService("RunService").Stepped:Connect(function()
+                keypress(Enum.KeyCode.S)
+                wait(0.1)
+                keyrelease(Enum.KeyCode.S)
+
+                wait(0.1) -- Add a small delay between keypresses for better handling
+                
+                keypress(Enum.KeyCode.Return)
+                wait(0.1)
+                keyrelease(Enum.KeyCode.Return)
+            end)
         end
     else
-        -- Step 3: Deactivate navigation mode by pressing "\" again
-        if navigationModeActive then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            navigationModeActive = false
+        if autoShakeConnection then
+            autoShakeConnection:Disconnect()
+            autoShakeConnection = nil
+
+            -- Press "\" again to disable navigation mode
+            keypress(Enum.KeyCode.BackSlash)
+            wait(0.1)
+            keyrelease(Enum.KeyCode.BackSlash)
         end
     end
 end)
