@@ -29,15 +29,16 @@ local isDragging = false
 local dragStart
 local startPos
 
-local function toggleWindow()
+-- Function to toggle the window visibility (minimize/maximize)
+local function toggleWindowVisibility()
     if isMinimized then
         -- Restore the window
-        Window.Minimized = false
+        Window.Visible = true
         isMinimized = false
         print("Window Restored!")
     else
         -- Minimize the window
-        Window.Minimized = true
+        Window.Visible = false
         isMinimized = true
         print("Window Minimized!")
     end
@@ -51,8 +52,8 @@ imageButton.InputBegan:Connect(function(input)
         dragStart = input.Position
         startPos = imageButton.Position
     elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
-        -- When the button is clicked, toggle the window
-        toggleWindow()
+        -- When the button is clicked, toggle the window visibility
+        toggleWindowVisibility()
     end
 end)
 
