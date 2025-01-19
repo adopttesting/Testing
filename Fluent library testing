@@ -90,6 +90,7 @@ local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
 AutoShakeToggle:OnChanged(function()
     local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
     local pressedBackslash = false  -- Track if "\" has already been pressed
+    local canPressS = true  -- Flag to track whether we can press "S"
 
     if AutoShakeToggle.Value then
         -- Step 1: Activate navigation mode by pressing "\"
@@ -102,15 +103,21 @@ AutoShakeToggle:OnChanged(function()
 
         -- Step 6: Regular "S" and "Enter" simulation
         while AutoShakeToggle.Value do
-            -- Simulate pressing "S"
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
-            wait(0.1)  -- Small delay to simulate pressing "S"
+            -- Press "S" only if it's allowed
+            if canPressS then
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
+                canPressS = false  -- Disable further "S" presses until "Enter" is pressed
+                wait(0.01)  -- Small delay to simulate pressing "S"
+            end
 
             -- Simulate pressing "Enter"
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-            wait(0.12)  -- Small delay to simulate pressing "Enter"
+            wait(0.01)  -- Small delay to simulate pressing "Enter"
+
+            -- After pressing "Enter", allow "S" to be pressed again
+            canPressS = true
         end
     else
         -- Deactivate navigation mode by pressing "\"
