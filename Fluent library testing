@@ -100,21 +100,6 @@ AutoShakeToggle:OnChanged(function()
             wait(0.3)  -- Give some time for the input to be processed
         end
 
-        -- Step 2: Press "D" four times
-        for i = 1, 4 do
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.D, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.D, false, nil)
-            wait(0.1)  -- Small delay to simulate pressing "D"
-        end
-
-        -- Step 3: Press "Enter"
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-        wait(0.3)  -- Small delay to simulate pressing "Enter"
-
-        -- Step 5: Add a 2-second wait before starting the regular "S" and "Enter" presses
-        wait(2)  -- Wait for 2 seconds before proceeding to regular action
-
         -- Step 6: Regular "S" and "Enter" simulation
         while AutoShakeToggle.Value do
             -- Simulate pressing "S"
@@ -128,7 +113,7 @@ AutoShakeToggle:OnChanged(function()
             wait(0.12)  -- Small delay to simulate pressing "Enter"
         end
     else
-        -- Deactivate navigation mode when toggle is turned off
+        -- Deactivate navigation mode by pressing "\"
         if pressedBackslash then
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
