@@ -211,10 +211,10 @@ Tabs.Automatically:AddButton({
 })
 
 Multi = false,
-    Default = 1,
+Default = 1,
 })
 
-IslandDropdown:SetValue("Terrapin Island")  -- Default selection set to "Terrapin Island"
+IslandDropdown:SetValue("Terrapin Island") -- Default selection set to "Terrapin Island"
 
 -- Create Teleport Toggle
 local TeleportToggle = Tabs.TeleportTab:AddToggle("Teleport To Island", {
@@ -245,8 +245,13 @@ TeleportToggle:OnChanged(function()
         -- Teleport the player
         local player = game:GetService("Players").LocalPlayer
         local character = player.Character or player:WaitForChild("Character")
-        
-        -- Set the player's position and rotation
-        character:SetPrimaryPartCFrame(CFrame.new(coordinates.Position) * coordinates.Rotation)
+        local primaryPart = character:FindFirstChild("HumanoidRootPart")
+
+        if primaryPart then
+            -- Set the player's position and rotation
+            primaryPart.CFrame = CFrame.new(coordinates.Position) * coordinates.Rotation
+        else
+            warn("HumanoidRootPart not found! Ensure the character has a HumanoidRootPart.")
+        end
     end
 end)
