@@ -10,10 +10,10 @@ Window:AddMinimizeButton({
     Corner = {CornerRadius = UDim.new(0, 5)}
 })
 
-local |Home = Window:MakeTab({"| Home", "scan-face"})
-local |AutoFish = Window:MakeTab({"| Auto Fish", "Fish"})
+local Home = Window:MakeTab({"| Home", "scan-face"})
+local AutoFish = Window:MakeTab({"| Auto Fish", "Fish"})
 
--- Dropdown for selecting rod, moved this section to be more logical
+-- Rods list
 local rods = {
     "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
     "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
@@ -26,19 +26,33 @@ local rods = {
 local selectedRod = "Flimsy Rod" -- Default rod
 
 -- Dropdown for selecting rod
-Dropdown(|AutoFish, "Select Rod", "Choose a rod to equip", rods, "Flimsy Rod")
+Dropdown(AutoFish, "Select Rod", "Choose a rod to equip", rods, "Flimsy Rod", function(value)
+    selectedRod = value
+end)
 
 -- Auto Equip Rod toggle
 local autoEquipRod = false
-Toggle(|AutoFish, "Auto Equip Rod", "This will equip the selected rod", false)
+Toggle(AutoFish, "Auto Equip Rod", "This will equip the selected rod", false, function(value)
+    autoEquipRod = value
+end)
 
 -- Auto Cast toggle
 local autoCast = false
-Toggle(|AutoFish, "Auto Cast", "This will cast the selected rod every 0.1 seconds", false)
+Toggle(AutoFish, "Auto Cast", "This will cast the selected rod every 0.1 seconds", false, function(value)
+    autoCast = value
+end)
 
 -- Auto Reel toggle
 local autoReel = false
-Toggle(|AutoFish, "Auto Reel", "This will reel the rod every 0.2 seconds", false)
+Toggle(AutoFish, "Auto Reel", "This will reel the rod every 0.2 seconds", false, function(value)
+    autoReel = value
+end)
+
+-- Auto Shake toggle
+local autoShake = false
+Toggle(AutoFish, "Auto Shake", "This will shake the rod", false, function(value)
+    autoShake = value
+end)
 
 -- Function to continuously cast the selected rod
 task.spawn(function()
@@ -87,7 +101,37 @@ task.spawn(function()
     end
 end)
 
--- Update the selected rod when the dropdown changes
-Dropdown(|AutoFish, "Select Rod", "Choose a rod to equip", rods, "Flimsy Rod", function(value)
-    selectedRod = value
+-- Function to perform the shake action if Auto Shake is enabled
+task.spawn(function()
+    local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
+    local pressedBackslash = false  -- Track if "\" has already been pressed
+
+    while true do
+        if autoShake then
+            -- Activate navigation mode by pressing "\"
+            if not pressedBackslash then
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+                pressedBackslash = true
+                wait(0.3)  -- Give some time for the input to be processed
+            end
+
+            -- Regular "S" and "Enter" simulation for shaking
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
+            wait(0.1)  -- Press "S" every 0.1 seconds
+
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
+            wait(0.12)  -- Press "Enter" every 0.12 seconds
+        else
+            -- Deactivate navigation mode when Auto Shake is off
+            if pressedBackslash then
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
+                pressedBackslash = false
+            end
+        end
+        wait(0.1) -- Prevent excessive looping
+    end
 end)
