@@ -150,6 +150,74 @@ Tabs.AutoFishing:AddButton({
     end
 })
 
+-- Auto Fishing: Fishing Area Paragraph
+local FishingAreaParagraph = Tabs.AutoFishing:AddParagraph({
+    Title = "Fishing Area",
+    Description = "Select an area to teleport to and start fishing.",
+})
+
+-- Auto Fishing: Dropdown to Select Area
+local AreaDropdown = Tabs.AutoFishing:AddDropdown("Select Area", {
+    Title = "Select Area",
+    Values = {
+        "Ancient Isle Pond", "Ancient Isle Waterfall", "Brine Pool", "Desolate Deep", "Forsaken Shores", 
+        "Forsaken Shores Pond", "Frigid Cavern", "Glacial Grotto", "Grand Reef", "Lava", "Moosewood Docks", 
+        "Moosewood Pond", "Overgrowth Cave", "Roslit Bay Clam", "Roslit Pond", "Snowcap Pond", "Sunstone Island", 
+        "Terrapin Olm", "The Depths", "Vertigo"
+    },
+    Multi = false,
+    Default = 1,
+})
+AreaDropdown:SetValue("Ancient Isle Pond")
+
+-- Coordinates for Fishing Areas
+local fishingAreaCoordinates = {
+    ["Ancient Isle Pond"] = CFrame.new(6014.65869, 179.835037, 330.316071),
+    ["Ancient Isle Waterfall"] = CFrame.new(5951.72217, 216.185043, 502.174011),
+    ["Brine Pool"] = CFrame.new(-1796.38306, -223.383011, -3345.58813),
+    ["Desolate Deep"] = CFrame.new(-1678.24756, -306.582123, -3091.30835),
+    ["Forsaken Shores"] = CFrame.new(-2654.87134, 102.072525, 1465.56531),
+    ["Forsaken Shores Pond"] = CFrame.new(-2701.30591, 148.872528, 1750.0592),
+    ["Frigid Cavern"] = CFrame.new(19893.125, 420.223022, 5607.42432),
+    ["Glacial Grotto"] = CFrame.new(20051.2031, 854.765625, 5634.33643),
+    ["Grand Reef"] = CFrame.new(-3576.57349, 11.7025375, 541.630493),
+    ["Lava"] = CFrame.new(-1966.19263, 132.647018, 274.75293),
+    ["Moosewood Docks"] = CFrame.new(345.802917, 54.9887085, 261.252319),
+    ["Moosewood Pond"] = CFrame.new(525.744507, 137.410004, 283.821625),
+    ["Overgrowth Cave"] = CFrame.new(20304.0938, 253.568161, 5525.65771),
+    ["Roslit Bay Clam"] = CFrame.new(-2028.79443, 54.9887085, 541.784424),
+    ["Roslit Pond"] = CFrame.new(-1761.38428, 134.953812, 596.431946),
+    ["Snowcap Pond"] = CFrame.new(2789.34741, 262.703033, 2613.31104),
+    ["Sunstone Island"] = CFrame.new(-1139.38635, 26.3850517, -1076.26379),
+    ["Terrapin Olm"] = CFrame.new(22.0643902, 98.3850555, 1944.36792),
+    ["The Depths"] = CFrame.new(745.830139, -770.311462, 1250.17554),
+    ["Vertigo"] = CFrame.new(-129.634705, -808.458923, 1203.53235),
+}
+
+-- Auto Fishing: Teleport to Area Button
+Tabs.AutoFishing:AddButton({
+    Title = "Teleport To Area",
+    Description = "Teleport to the selected fishing area.",
+    Callback = function()
+        local selectedArea = AreaDropdown.Value
+        local targetCFrame = fishingAreaCoordinates[selectedArea]
+
+        if targetCFrame then
+            local player = game:GetService("Players").LocalPlayer
+            local char = player.Character or player:WaitForChild("Character")
+            local root = char:FindFirstChild("HumanoidRootPart")
+
+            if root then
+                root.CFrame = targetCFrame
+            else
+                warn("HumanoidRootPart not found!")
+            end
+        else
+            warn("Coordinates for the selected area not found!")
+        end
+    end
+})
+
 -- Automatically Tab: Sell All Button
 Tabs.Automatically:AddButton({
     Title = "Sell All",
