@@ -5,9 +5,8 @@ local Window = Library:MakeWindow({
     Title = "Lite Hub | " .. Version,
     SaveFolder = "Lite Hub"
 })
-
 Window:AddMinimizeButton({
-    Button = {Image = "rbxassetid://16022917595"},
+    Button = {Image = "rbxassetid://86093303748141"},
     Corner = {CornerRadius = UDim.new(0, 5)}
 })
 
@@ -40,13 +39,28 @@ local function Dropdown(Tab, Name, Desc, Option, Default)
         Options = Option,
         Default = Default,
         Callback = function(Value)
-            SpeedHubX["selectedRod"] = Value
+            SpeedHubX[Name] = Value
         end
     })
     return Ver
 end
 
--- Rod List
+local function Silder(Tab, Name, Min, Max, Default)
+    local Ver = Tab:AddSlider({
+        Name = Name,
+        Min = Min,
+        Max = Max,
+        Default = Default,
+        Callback = function(Value)
+            SpeedHubX[Name] = Value
+        end
+    })
+    return Ver
+end
+
+AutoFishing:AddSection({"Rods"})
+
+-- Add all rods to the dropdown
 local rods = {
     "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
     "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
@@ -56,36 +70,34 @@ local rods = {
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
 
--- UI Setup
 Dropdown(AutoFishing, "Choose Rod", "", rods, "")
+
 Toggle(AutoFishing, "Auto Equip Rod", "", false)
 Toggle(AutoFishing, "Auto Cast", "", false)
 Toggle(AutoFishing, "Auto Reel", "", false)
 Toggle(AutoFishing, "Auto Shake", "", false)
 
--- Variables
+-- Variables for toggles
+local selectedRod = ""
 local toggles = {
     AutoEquipRod = false,
     AutoCast = false,
     AutoReel = false,
     AutoShake = false
 }
-local autoShakeConnection
 
 -- Event Handlers
-game:GetService("RunService").Stepped:Connect(function()
-    local selectedRod = SpeedHubX["selectedRod"]
-
-    -- Auto Equip Rod
-    if SpeedHubX["Auto Equip Rod"] and selectedRod and selectedRod ~= "" then
+Library:AddConnection(game:GetService("RunService").Stepped, function()
+    selectedRod = SpeedHubX["Choose Rod"]
+    
+    if toggles.AutoEquipRod and selectedRod ~= "" then
         local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
         if tool then
             game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
         end
     end
 
-    -- Auto Cast
-    if SpeedHubX["Auto Cast"] and selectedRod and selectedRod ~= "" then
+    if toggles.AutoCast and selectedRod ~= "" then
         local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
         if tool and tool:FindFirstChild("events") and tool.events:FindFirstChild("cast") then
             local args = {23.7, 1}
@@ -93,30 +105,58 @@ game:GetService("RunService").Stepped:Connect(function()
         end
     end
 
-    -- Auto Reel
-    if SpeedHubX["Auto Reel"] then
+    if toggles.AutoReel then
         local args = {100, true}
         game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
     end
 end)
 
--- Auto Shake Handler
+local autoShakeConnection
+
+-- Toggle Handlers
+SpeedHubX["Auto Equip Rod"] = function(value)
+    toggles.AutoEquipRod = value
+end
+
+SpeedHubX["Auto Cast"] = function(value)
+    toggles.AutoCast = value
+end
+
+SpeedHubX["Auto Reel"] = function(value)
+    toggles.AutoReel = value
+end
+
 SpeedHubX["Auto Shake"] = function(value)
     if value then
+        -- Enable Auto Shake
         if not autoShakeConnection then
+            -- Press "\" to enable navigation mode
+            keypress(Enum.KeyCode.BackSlash)
+            wait(0.1)
+
+            -- Start repeating "s" and "Enter"
             autoShakeConnection = game:GetService("RunService").Stepped:Connect(function()
-                keypress(Enum.KeyCode.BackSlash)
-                wait(0.1)
                 keypress(Enum.KeyCode.S)
                 wait(0.1)
+                keyrelease(Enum.KeyCode.S)
+
+                wait(0.1) -- Add a small delay between keypresses for better handling
+                
                 keypress(Enum.KeyCode.Return)
+                wait(0.1)
+                keyrelease(Enum.KeyCode.Return)
             end)
         end
     else
+        -- Disable Auto Shake
         if autoShakeConnection then
             autoShakeConnection:Disconnect()
             autoShakeConnection = nil
-            keypress(Enum.KeyCode.BackSlash)
         end
+
+        -- Press "\" again to turn off navigation mode
+        keypress(Enum.KeyCode.BackSlash)
+        wait(0.1)
+        keyrelease(Enum.KeyCode.BackSlash)
     end
 end
