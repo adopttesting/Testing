@@ -1,5 +1,5 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
 local Window = Library:MakeWindow({
     Title = "Lite Hub | " .. Version,
     SaveFolder = "Lite Hub"
@@ -34,49 +34,11 @@ Toggle(|AutoFish, "Auto Equip Rod", "This will equip the selected rod", false)
 
 -- Auto Cast toggle
 local autoCast = false
-Toggle(|AutoFish, "Auto Cast", "This will cast the selected rod ", false)
+Toggle(|AutoFish, "Auto Cast", "This will cast the selected rod every 0.1 seconds", false)
 
 -- Auto Reel toggle
 local autoReel = false
-Toggle(|AutoFish, "Auto Reel", "This will reel the rod ", false)
-
-local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
-local pressedBackslash = false  -- Track if "\" has already been pressed
-
--- Define the AutoShake toggle and its callback
-Toggle(|AutoFish, "Auto Shake", "This will Auto Shake", false, function(value)
-    if value then  -- If the toggle is turned on
-        -- Activate navigation mode by pressing "\"
-        if not pressedBackslash then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            pressedBackslash = true
-            wait(0.3)  -- Give some time for the input to be processed
-        end
-
-        -- Start regular "S" and "Enter" simulation
-        task.spawn(function()
-            while value do  -- Keep shaking while the toggle is on
-                -- Simulate pressing "S"
-                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
-                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
-                wait(0.1)  -- Press "S" every 0.1 seconds
-
-                -- Simulate pressing "Enter"
-                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
-                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-                wait(0.12)  -- Press "Enter" every 0.12 seconds
-            end
-        end)
-    else
-        -- Deactivate navigation mode when toggle is turned off
-        if pressedBackslash then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-            pressedBackslash = false
-        end
-    end
-end)
+Toggle(|AutoFish, "Auto Reel", "This will reel the rod every 0.2 seconds", false)
 
 -- Function to continuously cast the selected rod
 task.spawn(function()
