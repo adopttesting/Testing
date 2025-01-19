@@ -35,11 +35,7 @@ local function Dropdown(Tab, Name, Desc, Option, Default)
     return Ver
 end
 
--- Create the "Auto Fishing" Tab
-local AutoFishing = Window:MakeTab({
-    Name = "| Auto Fishing", 
-    Icon = "lucide-fish"
-})
+local AutoFishing = Window:MakeTab({"Auto Fish", "Lucide-Fish"})
 
 -- Dropdown for "Choose Rod"
 Dropdown(AutoFishing, "Choose Rod", "Select a rod for auto-casting", {
@@ -62,11 +58,8 @@ local AutoReel = Toggle(AutoFishing, "Auto Reel", "Automatically reels the line 
 -- Auto Shake Toggle
 local AutoShake = Toggle(AutoFishing, "Auto Shake", "Automatically shakes and presses keys for navigation", false)
 
--- Create the "Teleport" Tab
-local Teleport = Window:MakeTab({
-    Name = "Teleport", 
-    Icon = "lucide-navigation"
-})
+--Teleport Tab
+local Teleport = Window:MakeTab({"Teleport", "lucide-navigation"})
 
 -- Islands data and locations
 local Islands = {
