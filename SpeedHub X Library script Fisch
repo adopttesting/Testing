@@ -1,4 +1,6 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Settings.lua"))()
+
 
 local Window = Library:Start({
   ["Name"] = "Lite Hub| " .. Version,
