@@ -95,7 +95,7 @@ Toggle(AutoFish, "Auto Equip Rod", "This Will Equip Selected Rod", false).Callba
             if tool then
                 game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
             end
-            task.wait(1)
+            task.wait(0.3)
         end
     end)
 end
@@ -108,7 +108,7 @@ Toggle(AutoFish, "Auto Cast", "This Will Auto Cast", false).Callback = function(
                 local args = {[1] = 23.700000000000006, [2] = 1}
                 tool.events.cast:FireServer(unpack(args))
             end
-            task.wait(2) -- Adjust wait time to match cast animation
+            task.wait(0.1) -- Adjust wait time to match cast animation
         end
     end)
 end
@@ -118,7 +118,7 @@ Toggle(AutoFish, "Auto Reel", "This Will Auto Reel", false).Callback = function(
         while enabled do
             local args = {[1] = 100, [2] = true}
             game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
-            task.wait(2) -- Adjust wait time as necessary
+            task.wait(0.1) -- Adjust wait time as necessary
         end
     end)
 end
@@ -145,7 +145,7 @@ Toggle(AutoFish, "Auto Shake", "This Will Auto Shake", false).Callback = functio
 
                 -- Press "Enter" to confirm
                 pressKey(Enum.KeyCode.Return)
-                task.wait(0.1)
+                task.wait(0.12)
             end
         end)
     else
