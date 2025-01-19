@@ -88,7 +88,36 @@ AutoFish:AddSection({"Automatically"})
 Toggle(AutoFish, "Auto Equip Rod", "This Will Equip Selected Rod", false)
 Toggle(AutoFish, "Auto Cast", "This Will Auto Cast", false)
 Toggle(AutoFish, "Auto Reel", "This Will Auto Reel", false)
-Toggle(AutoFish, "Auto Shake", "This Will Auto Shake", false)
+Toggle(AutoFish, "Auto Shake", "This Will Auto Shake", false).Callback = function(enabled)
+    local UserInputService = game:GetService("UserInputService")
+
+    -- Function to simulate key press
+    local function pressKey(keyCode)
+        UserInputService.InputBegan:Fire({KeyCode = keyCode})
+        UserInputService.InputEnded:Fire({KeyCode = keyCode})
+    end
+
+    if enabled then
+        -- Enable navigation mode by pressing "\"
+        pressKey(Enum.KeyCode.BackSlash)
+
+        -- Start shaking
+        task.spawn(function()
+            while enabled do
+                -- Press "s" to move down
+                pressKey(Enum.KeyCode.S)
+                task.wait(0.1)
+
+                -- Press "Enter" to confirm
+                pressKey(Enum.KeyCode.Return)
+                task.wait(0.1)
+            end
+        end)
+    else
+        -- Disable navigation mode by pressing "\"
+        pressKey(Enum.KeyCode.BackSlash)
+    end
+end
 
 -- Functionality Implementation
 game:GetService("RunService").RenderStepped:Connect(function()
