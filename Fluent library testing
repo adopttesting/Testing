@@ -1,22 +1,23 @@
+-- Fluent 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 local Window = Fluent:CreateWindow({
     Title = "Lite Hub",
     SubTitle = "by dawid",
     TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
+    Size = UDim2.fromOffset(580, 410),
     Acrylic = true,
     Theme = "Aqua",
     MinimizeKey = Enum.KeyCode.LeftControl, -- Optional, if you still want to keep the keybind
 })
 
+
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
-    AutomaticallyTab = Window:AddTab({ Title = "Automatically", Icon = "" }),
-    TeleportTab = Window:AddTab({ Title = "Teleport", Icon = "" })
+    local AutomaticallyTab = Window:AddTab({ Title = "Automatically", Icon = "" })
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "settings" })
 }
 
--- AutoFishing Tab
 Tabs.AutoFishing:AddParagraph({
     Title = "Farming",
     Content = ""
@@ -160,8 +161,8 @@ end)
 
 -- Create Auto Shake Debug Button
 Tabs.AutoFishing:AddButton({
-    Title = "Only If Needed",
-    Description = "Simulate pressing Left CTRL",
+    Title = "Auto Shake Debug",
+    Description = "Only If Needed",
     Callback = function()
         local VirtualInputManager = game:GetService("VirtualInputManager")
         
@@ -195,13 +196,13 @@ FreezePlayerToggle:OnChanged(function()
     end
 end)
 
--- AutomaticallyTab Section
-Tabs.AutomaticallyTab:AddParagraph({
-    Title = "Selling",
-    Content = ""
-})
 
-Tabs.AutomaticallyTab:AddButton({
+Tabs.Automatically:AddParagraph({
+        Title = "Selling",
+        Content = ""
+    })
+
+Tabs.Automatically:AddButton({
     Title = "Sell All",
     Description = "",
     Callback = function()
@@ -209,42 +210,7 @@ Tabs.AutomaticallyTab:AddButton({
     end
 })
 
-Tabs.AutomaticallyTab:AddParagraph({
-    Title = "Merlin",
-    Content = ""
-})
-
-Tabs.AutomaticallyTab:AddButton({
-    Title = "Auto Buy Relic",
-    Description = "",
-    Callback = function()
-        workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Merlin"):WaitForChild("Merlin"):WaitForChild("power"):InvokeServer()
-    end
-})
-
-Tabs.AutomaticallyTab:AddButton({
-    Title = "Auto Buy Luck",
-    Description = "",
-    Callback = function()
-        workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Merlin"):WaitForChild("Merlin"):WaitForChild("luck"):InvokeServer()
-    end
-})
-
--- Teleport Tab Section
-Tabs.TeleportTab:AddParagraph({
-    Title = "Islands",
-    Content = ""
-})
-
--- Create Dropdown for Select Island
-local IslandDropdown = Tabs.TeleportTab:AddDropdown("Select Island", {
-    Title = "",
-    Values = {
-        "Terrapin Island", "Sunstone Island", "Statue Of Sovereignty", "Snowcap Island", 
-        "Mushgroove Island", "Roslit Bay", "Moosewood", "Forsaken Shores", 
-        "Atlantis", "Ancient Island"
-    },
-    Multi = false,
+Multi = false,
     Default = 1,
 })
 
