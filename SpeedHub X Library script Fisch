@@ -35,7 +35,8 @@ local function Dropdown(Tab, Name, Desc, Option, Default)
     return Ver
 end
 
-local AutoFishing = Window:MakeTab({"Auto Fish", "Lucide-Fish"})
+-- Create the "Auto Fishing" Tab
+local AutoFishing = Window:MakeTab({"Auto Fishing", "lucide-fish"})
 
 -- Dropdown for "Choose Rod"
 Dropdown(AutoFishing, "Choose Rod", "Select a rod for auto-casting", {
@@ -58,7 +59,7 @@ local AutoReel = Toggle(AutoFishing, "Auto Reel", "Automatically reels the line 
 -- Auto Shake Toggle
 local AutoShake = Toggle(AutoFishing, "Auto Shake", "Automatically shakes and presses keys for navigation", false)
 
---Teleport Tab
+-- Create the "Auto Fishing" Tab
 local Teleport = Window:MakeTab({"Teleport", "lucide-navigation"})
 
 -- Islands data and locations
@@ -129,6 +130,84 @@ task.spawn(function()
             else
                 -- Unfreeze the player if toggle is off
                 game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid").PlatformStand = false
+            end
+        end)
+    end
+end)
+
+-- Logic for Equip Rod
+task.spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            if SpeedHubX["Equip Rod"] then
+                local rod = SpeedHubX["Choose Rod"]
+                local rodTool = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(rod)
+                
+                -- If the rod tool is not already equipped, equip it
+                if rodTool and not game:GetService("Players").LocalPlayer.Character:FindFirstChild(rod) then
+                    rodTool.Parent = game:GetService("Players").LocalPlayer.Character
+                end
+            end
+        end)
+    end
+end)
+
+-- Logic for Auto Cast
+task.spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            if SpeedHubX["Auto Cast"] then
+                local rod = SpeedHubX["Choose Rod"]
+                local args = {
+                    [1] = 23.700000000000006,
+                    [2] = 1
+                }
+                game:GetService("Players").LocalPlayer.Character:FindFirstChild(rod).events.cast:FireServer(unpack(args))
+            end
+        end)
+    end
+end)
+
+-- Logic for Auto Reel
+task.spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            if SpeedHubX["Auto Reel"] then
+                local args = {
+                    [1] = 100,
+                    [2] = true
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+            end
+        end)
+    end
+end)
+
+-- Logic for Auto Shake
+task.spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            if SpeedHubX["Auto Shake"] then
+                -- Ensure we are in the correct mode before pressing keys
+                local userInputService = game:GetService("UserInputService")
+
+                -- Check if player is already in navigation mode, and only then perform actions
+                -- Simulate "\" key press to toggle navigation mode (only if it hasn't been triggered yet)
+                if not userInputService:IsKeyDown(Enum.KeyCode.Backslash) then
+                    -- Press "\" to enable navigation mode
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Backslash, false, game)
+                    task.wait(0.1)
+                end
+
+                -- Simulate "s" to move down (simulate key press and release)
+                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.S, false, game)
+                task.wait(0.1)
+                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.S, false, game)
+
+                -- Simulate "Enter" key press to confirm (navigate)
+                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+                task.wait(0.1)
+                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
             end
         end)
     end
