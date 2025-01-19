@@ -66,6 +66,137 @@ local rods = {
     "Kings Rod", "Aurora Rod", "Scurvy Rod"
 }
 Dropdown(AutoFishing, "Choose Rod", "", rods, "")
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
+
+local Window = Library:MakeWindow({
+    Title = "Lite Hub",
+    SaveFolder = "Lite Hub"
+})
+Window:AddMinimizeButton({
+    Button = {Image = "rbxassetid://16022917595"},
+    Corner = {CornerRadius = UDim.new(0, 5)}
+})
+
+local AutoFishing = Window:MakeTab({"Auto Fishing", ""})
+
+-- Destroy Forward Portals
+task.spawn(function()
+    if game.Workspace:FindFirstChild("RobloxForwardPortals") then
+        game.Workspace.RobloxForwardPortals:Destroy()
+    end
+end)
+
+-- Variables for toggles and selected rod
+local toggles = {
+    AutoEquipRod = false,
+    AutoCast = false,
+    AutoReel = false,
+    AutoShake = false
+}
+local selectedRod = ""
+local autoShakeConnection = nil
+
+-- Function to create toggles
+local function Toggle(Tab, Name, Desc, Default)
+    Tab:AddToggle({
+        Name = Name,
+        Description = Desc or "",
+        Default = Default,
+        Callback = function(Value)
+            toggles[Name:gsub(" ", "")] = Value
+        end
+    })
+end
+
+-- Function to create dropdown
+local function Dropdown(Tab, Name, Desc, Option, Default)
+    Tab:AddDropdown({
+        Name = Name,
+        Description = Desc or "",
+        Options = Option,
+        Default = Default,
+        Callback = function(Value)
+            if Name == "Choose Rod" then
+                selectedRod = Value
+            end
+        end
+    })
+end
+
+-- Adding dropdown and toggles
+AutoFishing:AddSection({"Rods"})
+local rods = {
+    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
+    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
+    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
+    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod",
+    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
+    "Kings Rod", "Aurora Rod", "Scurvy Rod"
+}
+Dropdown(AutoFishing, "Choose Rod", "", rods, "")
+
+Toggle(AutoFishing, "Auto Equip Rod", "", false)
+Toggle(AutoFishing, "Auto Cast", "", false)
+Toggle(AutoFishing, "Auto Reel", "", false)
+Toggle(AutoFishing, "Auto Shake", "", false)
+
+-- Event Handlers
+Library:AddConnection(game:GetService("RunService").Stepped, function()
+    if toggles.AutoEquipRod and selectedRod ~= "" then
+        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
+        if tool then
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+        end
+    end
+
+    if toggles.AutoCast and selectedRod ~= "" then
+        local tool = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
+        if tool and tool:FindFirstChild("events") and tool.events:FindFirstChild("cast") then
+            local args = {23.7, 1}
+            tool.events.cast:FireServer(unpack(args))
+        end
+    end
+
+    if toggles.AutoReel then
+        local args = {100, true}
+        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
+    end
+end)
+
+-- Auto Shake Functionality
+Library:AddConnection(game:GetService("RunService").Stepped, function()
+    if toggles.AutoShake then
+        if not autoShakeConnection then
+            -- Press "\" to enable navigation mode
+            keypress(Enum.KeyCode.BackSlash)
+            wait(0.1)
+            keyrelease(Enum.KeyCode.BackSlash)
+
+            -- Create Auto Shake connection
+            autoShakeConnection = game:GetService("RunService").Stepped:Connect(function()
+                keypress(Enum.KeyCode.S)
+                wait(0.1)
+                keyrelease(Enum.KeyCode.S)
+
+                wait(0.1) -- Add a small delay between keypresses for better handling
+                
+                keypress(Enum.KeyCode.Return)
+                wait(0.1)
+                keyrelease(Enum.KeyCode.Return)
+            end)
+        end
+    else
+        if autoShakeConnection then
+            autoShakeConnection:Disconnect()
+            autoShakeConnection = nil
+
+            -- Press "\" again to disable navigation mode
+            keypress(Enum.KeyCode.BackSlash)
+            wait(0.1)
+            keyrelease(Enum.KeyCode.BackSlash)
+        end
+    end
+end)
 
 Toggle(AutoFishing, "Auto Equip Rod", "", false)
 Toggle(AutoFishing, "Auto Cast", "", false)
