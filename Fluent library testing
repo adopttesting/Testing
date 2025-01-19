@@ -2,8 +2,8 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 
 -- Create Main Window
 local Window = Fluent:CreateWindow({
-    Title = "Lite Hub",
-    SubTitle = "by dawid",
+    Title = "Lite Hub | Version 1.0.0",
+    SubTitle = "by Adopt",
     TabWidth = 160,
     Size = UDim2.fromOffset(480, 380),
     Acrylic = true,
