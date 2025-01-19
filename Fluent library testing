@@ -1,6 +1,5 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
--- Create Main Window
 local Window = Fluent:CreateWindow({
     Title = "Lite Hub",
     SubTitle = "by dawid",
@@ -8,8 +7,73 @@ local Window = Fluent:CreateWindow({
     Size = UDim2.fromOffset(480, 410),
     Acrylic = true,
     Theme = "Aqua",
-    MinimizeKey = Enum.KeyCode.R,
 })
+
+local screenGui = Instance.new("ScreenGui")
+local imageButton = Instance.new("ImageButton")
+local uiCorner = Instance.new("UICorner")
+
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+imageButton.Parent = screenGui
+imageButton.Size = UDim2.new(0, 45, 0, 45)
+imageButton.Position = UDim2.new(0.2, 0, 0.4, 0)
+imageButton.AnchorPoint = Vector2.new(0.5, 0.5)
+imageButton.Image = "rbxassetid://86093303748141"
+
+uiCorner.Parent = imageButton
+uiCorner.CornerRadius = UDim.new(0, 10)
+
+local isMinimized = false
+local isDragging = false
+local dragStart
+local startPos
+
+local function toggleWindow()
+    if isMinimized then
+        -- Restore the window
+        Window.Minimized = false
+        isMinimized = false
+        print("Window Restored!")
+    else
+        -- Minimize the window
+        Window.Minimized = true
+        isMinimized = true
+        print("Window Minimized!")
+    end
+end
+
+-- Make the button draggable
+imageButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        -- Start dragging
+        isDragging = true
+        dragStart = input.Position
+        startPos = imageButton.Position
+    elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+        -- When the button is clicked, toggle the window
+        toggleWindow()
+    end
+end)
+
+imageButton.InputChanged:Connect(function(input)
+    if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        imageButton.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+imageButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        -- Stop dragging the button
+        isDragging = false
+    end
+end)
 
 -- Tabs
 local Tabs = {
@@ -204,68 +268,3 @@ TeleportToggle:OnChanged(function()
     end
 end)
 
-local UserInputService = game:GetService("UserInputService")
-
-local screenGui = Instance.new("ScreenGui")
-local imageButton = Instance.new("ImageButton")
-local uiCorner = Instance.new("UICorner")
-
--- Parent the ScreenGui to PlayerGui
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- Configure the ImageButton
-imageButton.Parent = screenGui
-imageButton.Size = UDim2.new(0, 45, 0, 45) -- Set size to 45x45
-imageButton.Position = UDim2.new(0.2, 0, 0.4, 0) -- Set position to slightly to the left and higher than the center
-imageButton.AnchorPoint = Vector2.new(0.5, 0.5) -- Center positioning (relative to the image button's size)
-imageButton.Image = "rbxassetid://86093303748141" -- Replace with your image ID
-
--- Add and configure UICorner with a smooth radius
-uiCorner.Parent = imageButton
-uiCorner.CornerRadius = UDim.new(0, 10) -- Slightly round the corners for a smooth look
-
--- Variables for dragging
-local isDragging = false
-local dragStart
-local startPos
-
--- Function that simulates the action when "R" is pressed
-local function onRKeyPressed()
-    -- Simulate the behavior that would happen when "R" is pressed
-    print("R Key Action Triggered!")
-    -- Add your custom "R" key press action here
-end
-
--- Detect input start (mouse or touch)
-imageButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        -- When button is clicked, trigger the "R" action
-        onRKeyPressed()
-
-        -- Start dragging the button
-        isDragging = true
-        dragStart = input.Position
-        startPos = imageButton.Position
-    end
-end)
-
--- Detect input change (mouse movement or touch movement)
-imageButton.InputChanged:Connect(function(input)
-    if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        imageButton.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
--- Detect when input ends (mouse release or touch end)
-imageButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        -- Stop dragging the button
-        isDragging = false
-    end
-end)
