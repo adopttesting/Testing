@@ -1,11 +1,12 @@
 repeat task.wait() until game:IsLoaded() and not game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("LoadingScreen") and not game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("LobbyLoadingScreen")
 
--- Speed Hub X Library Initialization
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Settings.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library"))()
 local FileSys = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/File_System.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
+
 local Window = Library:Start({
-  ["Name"] = "Speed Hub X | Version 1.0.0",
-  ["SaveFolder"] = "Speed Hub X | Lite Hub"
+  ["Name"] = "Lite Hub | " .. Version,
+  ["SaveFolder"] = "Lite Hub | Fisch"
 })
 
 -- Services and Variables
@@ -260,14 +261,31 @@ local islandCoordinates = {
     ["Keeper's Altar"] = CFrame.new(1297.92285, -805.292236, -284.155823, -0.99758029, 5.80044706e-08, -0.0695239156, 6.16549869e-08, 1, -5.03615105e-08, 0.0695239156, -5.45261436e-08, -0.99758029)
 }
 
+-- Example Dropdown usage (set it up with islands in a dropdown)
+local Dropdown = Funcs:AddDropdown(Tabs.Teleport, "Select Island", false, {
+    "Moosewood", "Roslit Bay", "Forsaken Shores", "Sunstone Island", "Statue of Sovereignty",
+    "Terrapin Island", "Snowcap Island", "Mushgrove Swamp", "Ancient Isle", "Northern Expedition",
+    "Northern Summit", "Vertigo", "Depths Entrance", "Depths", "Overgrowth Caves", "Frigid Cavern",
+    "Cryogenic Canal", "Glacial Grotto", "Keeper's Altar"
+}, "Moosewood")  -- Set default island as "Moosewood"
+
 -- Teleport Button functionality
 Tabs.Teleport:Button("Teleport To Island", function()
-    local selectedIsland = Dropdown:GetValue()
-    local targetCFrame = islandCoordinates[selectedIsland]
-    
+    local selectedIsland = Dropdown:GetValue()  -- Get selected island from dropdown
+    local targetCFrame = islandCoordinates[selectedIsland]  -- Get the CFrame from coordinates
+
     if targetCFrame then
         -- Teleport the player to the selected island
         lp.Character.HumanoidRootPart.CFrame = targetCFrame
         Window:Dialog({
             Title = "Teleported",
-            Content = "You have been
+            Content = "You have been teleported to " .. selectedIsland
+        })
+    else
+        Window:Dialog({
+            Title = "Error",
+            Content = "No island selected or invalid island."
+        })
+    end
+end)
+
