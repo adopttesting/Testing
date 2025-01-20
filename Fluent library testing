@@ -58,7 +58,7 @@ local Dropdown = Tabs.AutoFish:AddDropdown("Dropdown", {
     Title = "Select Farming Method",
     Values = {"Saved Position", "Normal"},
     Multi = false,
-    Default = 1,
+    Default = 2,
 })
 
 Dropdown:SetValue("Normal")
@@ -261,7 +261,7 @@ AutoShakeToggle:OnChanged(function(State)
         isShaking = true
         while isShaking do
             shakeButton()
-            wait(0.1)  -- Delay to prevent overloading the game with actions (adjust as needed)
+            wait(0.001)  -- Delay to prevent overloading the game with actions (adjust as needed)
         end
     else
         -- Stop shaking the button when toggle is off
