@@ -57,7 +57,7 @@ local savedPosition = nil -- Variable to store the saved position
 
 -- Dropdown for selecting farming method
 local Dropdown = Tabs.AutoFishing:AddDropdown("Dropdown", {
-    Title = "Select Farming Method",
+    Title = "Select Method",
     Values = {"Saved Position", "Normal"},
     Multi = false,
     Default = 2,
@@ -66,7 +66,6 @@ local Dropdown = Tabs.AutoFishing:AddDropdown("Dropdown", {
 Dropdown:SetValue("Normal")
 
 Dropdown:OnChanged(function(Value)
-    print("Dropdown changed:", Value)
 end)
 
 -- Button to save the player's current position
@@ -74,11 +73,9 @@ Tabs.AutoFishing:AddButton({
     Title = "Save Position",
     Description = "Saves the player's current position.",
     Callback = function()
-        -- Get player's current position
         local player = game.Players.LocalPlayer
         if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             savedPosition = player.Character.HumanoidRootPart.Position
-            print("Position saved:", savedPosition)
             Window:Dialog({
                 Title = "Position Saved",
                 Content = "Your position has been successfully saved!",
@@ -86,13 +83,10 @@ Tabs.AutoFishing:AddButton({
                     {
                         Title = "OK",
                         Callback = function()
-                            print("Confirmed position save dialog.")
                         end
                     }
                 }
             })
-        else
-            print("Failed to save position. Player or HumanoidRootPart not found.")
         end
     end
 })
@@ -104,11 +98,9 @@ Tabs.AutoFishing:AddButton({
     Callback = function()
         if Dropdown:GetValue() == "Saved Position" then
             if savedPosition then
-                -- Teleport player to the saved position
                 local player = game.Players.LocalPlayer
                 if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                     player.Character.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-                    print("Teleported to saved position:", savedPosition)
                     Window:Dialog({
                         Title = "Teleported",
                         Content = "You have been teleported to the saved position.",
@@ -116,16 +108,12 @@ Tabs.AutoFishing:AddButton({
                             {
                                 Title = "OK",
                                 Callback = function()
-                                    print("Confirmed teleportation dialog.")
                                 end
                             }
                         }
                     })
-                else
-                    print("Failed to teleport. Player or HumanoidRootPart not found.")
                 end
             else
-                print("No position saved yet!")
                 Window:Dialog({
                     Title = "Error",
                     Content = "No saved position found. Save a position first!",
@@ -133,14 +121,12 @@ Tabs.AutoFishing:AddButton({
                         {
                             Title = "OK",
                             Callback = function()
-                                print("Acknowledged no saved position error.")
                             end
                         }
                     }
                 })
             end
         else
-            print("Teleportation failed. 'Saved Position' method not selected.")
             Window:Dialog({
                 Title = "Error",
                 Content = "Please select 'Saved Position' in the dropdown to teleport.",
@@ -148,7 +134,6 @@ Tabs.AutoFishing:AddButton({
                     {
                         Title = "OK",
                         Callback = function()
-                            print("Acknowledged wrong dropdown selection error.")
                         end
                     }
                 }
@@ -234,11 +219,10 @@ local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
     Default = false
 })
 
-local isShaking = false  -- Flag to track the shaking status
+local isShaking = false
 
 -- Function to shake the button (select and simulate key press)
 local function shakeButton()
-    -- Check if necessary UI elements exist
     local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
     if not shakeUI then return end
     local safezone = FindChild(shakeUI, 'safezone')
@@ -246,26 +230,22 @@ local function shakeButton()
     local button = FindChild(safezone, 'button')
     if not button then return end
 
-    -- Set the selected object to the button if it's not already set
     if GuiService.SelectedObject ~= button then
         GuiService.SelectedObject = button
     end
-    
-    -- Simulate pressing Enter key (Return key)
+
     game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
     game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
 end
 
 AutoShakeToggle:OnChanged(function(State)
     if State then
-        -- Start shaking the button
         isShaking = true
         while isShaking do
             shakeButton()
-            wait(0.001)  -- Delay to prevent overloading the game with actions (adjust as needed)
+            wait(0.001)
         end
     else
-        -- Stop shaking the button when toggle is off
         isShaking = false
     end
 end)
@@ -302,46 +282,35 @@ local islandCoordinates = {
     ["Keeper's Altar"] = CFrame.new(1297.92285, -805.292236, -284.155823, -0.99758029, 5.80044706e-08, -0.0695239156, 6.16549869e-08, 1, -5.03615105e-08, 0.0695239156, -5.45261436e-08, -0.99758029)
 }
 
--- Create the dropdown for selecting an island
-local islandDropdown = Tabs.Teleport:AddDropdown("Select Island", {
+-- Teleport Tab: Create Dropdown for Island Selection
+local islandList = {}
+for islandName, _ in pairs(islandCoordinates) do
+    table.insert(islandList, islandName)
+end
+
+local selectedIsland = islandList[1]  -- Default selected island
+
+Tabs.Teleport:AddDropdown({
     Title = "Select Island",
-    Values = {
-        "Moosewood", "Roslit Bay", "Forsaken Shores", "Sunstone Island", "Statue of Sovereignty", 
-        "Terrapin Island", "Snowcap Island", "Mushgrove Swamp", "Ancient Isle", "Northern Expedition",
-        "Northern Summit", "Vertigo", "Depths Entrance", "Depths", "Overgrowth Caves", "Frigid Cavern",
-        "Cryogenic Canal", "Glacial Grotto", "Keeper's Altar"
-    },
-    Multi = false,
-    Default = 1,
+    Options = islandList,
+    Default = selectedIsland,
+    Callback = function(value)
+        selectedIsland = value
+    end
 })
 
--- Teleport to Island button
+-- Teleport Button
 Tabs.Teleport:AddButton({
     Title = "Teleport To Island",
-    Description = "Teleport to the selected island.",
     Callback = function()
-        local selectedIsland = islandDropdown:GetValue()
-        if selectedIsland and islandCoordinates[selectedIsland] then
-            local destination = islandCoordinates[selectedIsland]
-            local character = game.Players.LocalPlayer.Character
-            if character and character:FindFirstChild("HumanoidRootPart") then
-                character.HumanoidRootPart.CFrame = destination
-                print("Teleporting to " .. selectedIsland)
-                Window:Dialog({
-                    Title = "Teleporting",
-                    Content = "You are teleporting to " .. selectedIsland,
-                    Buttons = {
-                        {
-                            Title = "OK",
-                            Callback = function()
-                                print("Confirmed teleportation.")
-                            end
-                        }
-                    }
-                })
-            end
-        else
-            print("Invalid island or no island selected.")
+        -- Teleport to selected island
+        local targetCFrame = islandCoordinates[selectedIsland]
+        if targetCFrame then
+            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(targetCFrame)
         end
     end
 })
+
+-- Optional Auto Teleport Feature
+-- If you want to make the teleportation automatic under certain conditions, you can use the code below.
+-- In this case, we'll just leave it for manual control as you requested.
