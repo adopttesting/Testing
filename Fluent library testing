@@ -2,8 +2,8 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 
 -- Create Main Window
 local Window = Fluent:CreateWindow({
-    Title = "Lite Hub",
-    SubTitle = "by dawid",
+    Title = "Lite Hub | Version 1.0.0",
+    SubTitle = "by Adopt",
     TabWidth = 160,
     Size = UDim2.fromOffset(480, 380),
     Acrylic = true,
@@ -118,6 +118,9 @@ local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
     Default = false
 })
 
+local isShaking = false  -- Flag to track the shaking status
+
+-- Function to shake the button (select and simulate key press)
 local function shakeButton()
     -- Check if necessary UI elements exist
     local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
@@ -138,13 +141,18 @@ local function shakeButton()
 end
 
 AutoShakeToggle:OnChanged(function(State)
-    while State do
-        -- Only perform actions if the toggle is on (State is true)
-        shakeButton()
-        wait(0.2)  -- Delay to prevent overloading the game with actions (you can adjust the delay)
+    if State then
+        -- Start shaking the button
+        isShaking = true
+        while isShaking do
+            shakeButton()
+            wait(0.5)  -- Delay to prevent overloading the game with actions (adjust as needed)
+        end
+    else
+        -- Stop shaking the button when toggle is off
+        isShaking = false
     end
 end)
-
 
 -- Auto Fishing: Fishing Area Paragraph
 local FishingAreaParagraph = Tabs.AutoFishing:AddParagraph({
