@@ -41,9 +41,9 @@ end
 
 -- Tabs
 local Tabs = {
-    AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
+    AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "fish-symbol" }),
     Automatically = Window:AddTab({ Title = "Automatically", Icon = "" }),
-    Teleport = Window:AddTab({ Title = "Teleport", Icon = "settings" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin-house" }),
 }
 
 Tabs.AutoFishing:AddParagraph({
