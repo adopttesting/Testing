@@ -170,6 +170,21 @@ Tabs.Automatically:AddButton({
     end,
 })
 
+-- Utility Function for Teleportation
+local function teleportTo(targetCFrame, label)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        if targetCFrame then
+            character:SetPrimaryPartCFrame(targetCFrame)
+        else
+            warn(label .. " not found.")
+        end
+    else
+        warn("Character or HumanoidRootPart not found.")
+    end
+end
+
 -- Define the coordinates of each island
 local islandCoordinates = {
     ['Moosewood'] = CFrame.new(379.875458, 134.500519, 233.5495, -0.033920113, 8.13274355e-08, 0.999424577, 8.98441925e-08, 1, -7.83249803e-08, -0.999424577, 8.7135696e-08, -0.033920113),
@@ -192,47 +207,6 @@ local islandCoordinates = {
     ['Glacial Grotto'] = CFrame.new(20003.0273, 1136.42798, 5555.95996, 0.983130038, -3.94455064e-08, 0.182907909, 3.45229765e-08, 1, 3.0096718e-08, -0.182907909, -2.32744615e-08, 0.983130038),
     ["Keeper's Altar"] = CFrame.new(1297.92285, -805.292236, -284.155823, -0.99758029, 5.80044706e-08, -0.0695239156, 6.16549869e-08, 1, -5.03615105e-08, 0.0695239156, -5.45261436e-08, -0.99758029)
 }
-
--- Teleport Tab: Create Dropdown for Island Selection
-local islandList = {}
-for islandName, _ in pairs(islandCoordinates) do
-    table.insert(islandList, islandName)
-end
-
-local selectedIsland = islandList[1]  -- Default selected island
-
-Tabs.Teleport:AddParagraph({
-    Title = "Islands",
-    Content = ""
-})
-
-Tabs.Teleport:AddDropdown({
-    Title = "Select Island",
-    Options = islandList,
-    Default = selectedIsland,
-    Callback = function(value)
-        selectedIsland = value
-    end
-})
-
--- Teleport Button
-Tabs.Teleport:AddButton({
-    Title = "Teleport To Island",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local targetCFrame = islandCoordinates[selectedIsland]
-            if targetCFrame then
-                character:SetPrimaryPartCFrame(targetCFrame)
-            else
-                warn("Island not found: " .. tostring(selectedIsland))
-            end
-        else
-            warn("Character or HumanoidRootPart not found.")
-        end
-    end
-})
 
 -- Define the coordinates of each fishing spot
 local FishAreas = {
@@ -262,48 +236,55 @@ local FishAreas = {
     Roslit_Pond_Seaweed = CFrame.new(-1785.2869873046875, 148.15780639648438, 639.9299926757812),    
 }
 
--- Teleport Tab: Create Dropdown for Fishing Spot Selection
-local fishingSpotList = {}
-for spotName, _ in pairs(FishAreas) do
-    table.insert(fishingSpotList, spotName)
+-- Create Dropdown Options
+local function createDropdown(title, data, callback)
+    local itemList = {}
+    for name, _ in pairs(data) do
+        table.insert(itemList, name)
+    end
+    return Tabs.Teleport:AddDropdown({
+        Title = title,
+        Options = itemList,
+        Default = itemList[1],
+        Callback = callback
+    }), itemList[1]
 end
 
-local selectedFishingSpot = fishingSpotList[1]  -- Default selected fishing spot
-
+-- Island Dropdown and Teleport Button
+local selectedIsland
 Tabs.Teleport:AddParagraph({
-    Title = "Fishing Spot",
+    Title = "Islands",
     Content = ""
 })
+selectedIsland = createDropdown("Select Island", islandCoordinates, function(value)
+    selectedIsland = value
+end)
 
-Tabs.Teleport:AddDropdown({
-    Title = "Select Fishing Spot",
-    Options = fishingSpotList,
-    Default = selectedFishingSpot,
-    Callback = function(value)
-        selectedFishingSpot = value
+Tabs.Teleport:AddButton({
+    Title = "Teleport To Island",
+    Callback = function()
+        teleportTo(islandCoordinates[selectedIsland], "Island: " .. tostring(selectedIsland))
     end
 })
 
--- Teleport Button for Fishing Spots
+-- Fishing Spot Dropdown and Teleport Button
+local selectedFishingSpot
+Tabs.Teleport:AddParagraph({
+    Title = "Fishing Spots",
+    Content = ""
+})
+selectedFishingSpot = createDropdown("Select Fishing Spot", FishAreas, function(value)
+    selectedFishingSpot = value
+end)
+
 Tabs.Teleport:AddButton({
     Title = "Teleport To Fishing Spot",
     Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local targetCFrame = FishAreas[selectedFishingSpot]
-            if targetCFrame then
-                character:SetPrimaryPartCFrame(targetCFrame)
-            else
-                warn("Fishing spot not found: " .. tostring(selectedFishingSpot))
-            end
-        else
-            warn("Character or HumanoidRootPart not found.")
-        end
+        teleportTo(FishAreas[selectedFishingSpot], "Fishing Spot: " .. tostring(selectedFishingSpot))
     end
 })
 
--- NPC List
+-- NPC Locations Dropdown and Teleport Button
 local npcLocations = {
     Witch = CFrame.new(409.638092, 134.451523, 311.403687),
     Quiet_Synph = CFrame.new(566.263245, 152.000031, 353.872101),
@@ -330,45 +311,19 @@ local npcLocations = {
     Alfredrickus = CFrame.new(-1520.60632, 142.923264, 764.522034),
 }
 
--- Extract NPC names for dropdown options
-local npcNames = {}
-for name, _ in pairs(npcLocations) do
-    table.insert(npcNames, name)
-end
-
-local selectedNpc = npcNames[1] -- Default selection
-
+local selectedNPC
 Tabs.Teleport:AddParagraph({
-    Title = "Npc",
+    Title = "NPCs",
     Content = ""
 })
+selectedNPC = createDropdown("Select NPC", npcLocations, function(value)
+    selectedNPC = value
+end)
 
--- Create Dropdown for NPCs
-Tabs.Teleport:AddDropdown({
-    Title = "Select NPC",
-    Options = npcNames,
-    Default = selectedNpc,
-    Callback = function(value)
-        selectedNpc = value
-    end
-})
-
--- Create Button for Teleportation
 Tabs.Teleport:AddButton({
     Title = "Teleport To NPC",
     Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local targetCFrame = npcLocations[selectedNpc]
-            if targetCFrame then
-                character:SetPrimaryPartCFrame(targetCFrame)
-            else
-                warn("NPC location not found: " .. tostring(selectedNpc))
-            end
-        else
-            warn("Character or HumanoidRootPart not found.")
-        end
+        teleportTo(npcLocations[selectedNPC], "NPC: " .. tostring(selectedNPC))
     end
 })
 
