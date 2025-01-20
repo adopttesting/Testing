@@ -46,6 +46,121 @@ local Tabs = {
     Teleport = Window:AddTab({ Title = "Teleport", Icon = "settings" }),
 }
 
+Tabs.AutoFishing:AddParagraph({
+        Title = "Farming method",
+        Content = ""
+    })
+
+    local savedPosition = nil -- Variable to store the saved position
+
+-- Dropdown for selecting farming method
+local Dropdown = Tabs.AutoFish:AddDropdown("Dropdown", {
+    Title = "Select Farming Method",
+    Values = {"Saved Position", "Normal"},
+    Multi = false,
+    Default = 1,
+})
+
+Dropdown:SetValue("Normal")
+
+Dropdown:OnChanged(function(Value)
+    print("Dropdown changed:", Value)
+end)
+
+-- Button to save the player's current position
+Tabs.AutoFish:AddButton({
+    Title = "Save Position",
+    Description = "Saves the player's current position.",
+    Callback = function()
+        -- Get player's current position
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            savedPosition = player.Character.HumanoidRootPart.Position
+            print("Position saved:", savedPosition)
+            Window:Dialog({
+                Title = "Position Saved",
+                Content = "Your position has been successfully saved!",
+                Buttons = {
+                    {
+                        Title = "OK",
+                        Callback = function()
+                            print("Confirmed position save dialog.")
+                        end
+                    }
+                }
+            })
+        else
+            print("Failed to save position. Player or HumanoidRootPart not found.")
+        end
+    end
+})
+
+-- Button to teleport to the saved position
+Tabs.AutoFish:AddButton({
+    Title = "Teleport To Saved Position",
+    Description = "Teleports the player to the saved position if the 'Saved Position' method is selected.",
+    Callback = function()
+        if Dropdown:GetValue() == "Saved Position" then
+            if savedPosition then
+                -- Teleport player to the saved position
+                local player = game.Players.LocalPlayer
+                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+                    print("Teleported to saved position:", savedPosition)
+                    Window:Dialog({
+                        Title = "Teleported",
+                        Content = "You have been teleported to the saved position.",
+                        Buttons = {
+                            {
+                                Title = "OK",
+                                Callback = function()
+                                    print("Confirmed teleportation dialog.")
+                                end
+                            }
+                        }
+                    })
+                else
+                    print("Failed to teleport. Player or HumanoidRootPart not found.")
+                end
+            else
+                print("No position saved yet!")
+                Window:Dialog({
+                    Title = "Error",
+                    Content = "No saved position found. Save a position first!",
+                    Buttons = {
+                        {
+                            Title = "OK",
+                            Callback = function()
+                                print("Acknowledged no saved position error.")
+                            end
+                        }
+                    }
+                })
+            end
+        else
+            print("Teleportation failed. 'Saved Position' method not selected.")
+            Window:Dialog({
+                Title = "Error",
+                Content = "Please select 'Saved Position' in the dropdown to teleport.",
+                Buttons = {
+                    {
+                        Title = "OK",
+                        Callback = function()
+                            print("Acknowledged wrong dropdown selection error.")
+                        end
+                    }
+                }
+            })
+        end
+    end
+})
+
+
+Tabs.AutoFishing:AddParagraph({
+        Title = "Rods",
+        Content = ""
+    })
+
 -- Auto Fishing: Dropdown to Select Rod
 local RodDropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
     Title = "Select Rod",
@@ -154,102 +269,9 @@ AutoShakeToggle:OnChanged(function(State)
     end
 end)
 
--- Auto Fishing: Fishing Area Paragraph
-local FishingAreaParagraph = Tabs.AutoFishing:AddParagraph({
-    Title = "Fishing Area",
-    Description = "Select an area to teleport to and start fishing.",
-})
-
--- Auto Fishing: Dropdown to Select Area
-local AreaDropdown = Tabs.AutoFishing:AddDropdown("Select Area", {
-    Title = "Select Area",
-    Values = {
-        "Ancient Isle Pond", "Ancient Isle Waterfall", "Brine Pool", "Desolate Deep", "Forsaken Shores", 
-        "Forsaken Shores Pond", "Frigid Cavern", "Glacial Grotto", "Grand Reef", "Lava", "Moosewood Docks", 
-        "Moosewood Pond", "Overgrowth Cave", "Roslit Bay Clam", "Roslit Pond", "Snowcap Pond", "Sunstone Island", 
-        "Terrapin Olm", "The Depths", "Vertigo"
-    },
-    Multi = false,
-    Default = 1,
-})
-AreaDropdown:SetValue("Ancient Isle Pond")
-
--- Coordinates for Fishing Areas
-local fishingAreaCoordinates = {
-    ["Ancient Isle Pond"] = CFrame.new(6014.65869, 179.835037, 330.316071),
-    ["Ancient Isle Waterfall"] = CFrame.new(5951.72217, 216.185043, 502.174011),
-    ["Brine Pool"] = CFrame.new(-1796.38306, -223.383011, -3345.58813),
-    ["Desolate Deep"] = CFrame.new(-1678.24756, -306.582123, -3091.30835),
-    ["Forsaken Shores"] = CFrame.new(-2654.87134, 102.072525, 1465.56531),
-    ["Forsaken Shores Pond"] = CFrame.new(-2701.30591, 148.872528, 1750.0592),
-    ["Frigid Cavern"] = CFrame.new(19893.125, 420.223022, 5607.42432),
-    ["Glacial Grotto"] = CFrame.new(20051.2031, 854.765625, 5634.33643),
-    ["Grand Reef"] = CFrame.new(-3576.57349, 11.7025375, 541.630493),
-    ["Lava"] = CFrame.new(-1966.19263, 132.647018, 274.75293),
-    ["Moosewood Docks"] = CFrame.new(345.802917, 54.9887085, 261.252319),
-    ["Moosewood Pond"] = CFrame.new(525.744507, 137.410004, 283.821625),
-    ["Overgrowth Cave"] = CFrame.new(20304.0938, 253.568161, 5525.65771),
-    ["Roslit Bay Clam"] = CFrame.new(-2028.79443, 54.9887085, 541.784424),
-    ["Roslit Pond"] = CFrame.new(-1761.38428, 134.953812, 596.431946),
-    ["Snowcap Pond"] = CFrame.new(2789.34741, 262.703033, 2613.31104),
-    ["Sunstone Island"] = CFrame.new(-1139.38635, 26.3850517, -1076.26379),
-    ["Terrapin Olm"] = CFrame.new(22.0643902, 98.3850555, 1944.36792),
-    ["The Depths"] = CFrame.new(745.830139, -770.311462, 1250.17554),
-    ["Vertigo"] = CFrame.new(-129.634705, -808.458923, 1203.53235),
-}
 
 
 
--- Auto Fishing: Freeze After Teleport Toggle
-local FreezeAfterTeleportToggle = Tabs.AutoFishing:AddToggle("Freeze After Teleport", {
-    Title = "Freeze After Teleport",
-    Default = false,
-})
-
--- Auto Fishing: Teleport to Area Button with Freeze Option
-Tabs.AutoFishing:AddButton({
-    Title = "Teleport To Area",
-    Description = "Teleport to the selected fishing area and freeze if enabled.",
-    Callback = function()
-        local selectedArea = AreaDropdown.Value
-        local targetCFrame = fishingAreaCoordinates[selectedArea]
-
-        if targetCFrame then
-            local player = game:GetService("Players").LocalPlayer
-            local char = player.Character or player:WaitForChild("Character")
-            local root = char:FindFirstChild("HumanoidRootPart")
-
-            if root then
-                root.CFrame = targetCFrame
-            else
-                warn("HumanoidRootPart not found!")
-            end
-
-            -- Freeze player if the toggle is on
-            if FreezeAfterTeleportToggle.Value then
-                local humanoid = char:FindFirstChild("Humanoid")
-                if humanoid then
-                    humanoid.PlatformStand = true  -- Freeze the player
-                end
-            end
-        else
-            warn("Coordinates for the selected area not found!")
-        end
-    end
-})
-
--- Function to Unfreeze Player (Called when the toggle is turned off)
-FreezeAfterTeleportToggle:OnChanged(function()
-    local player = game:GetService("Players").LocalPlayer
-    local char = player.Character or player:WaitForChild("Character")
-    
-    if not FreezeAfterTeleportToggle.Value then
-        local humanoid = char:FindFirstChild("Humanoid")
-        if humanoid then
-            humanoid.PlatformStand = false  -- Unfreeze the player
-        end
-    end
-end)
 
 -- Automatically Tab: Sell All Button
 Tabs.Automatically:AddButton({
@@ -267,7 +289,7 @@ local IslandDropdown = Tabs.Teleport:AddDropdown("Select Island", {
         "Terrapin Island", "Sunstone Island", "Statue Of Sovereignty", 
         "Snowcap Island", "Mushgrove Swamp", "Roslit Bay", "Moosewood", 
         "Forsaken Shores", "Atlantis", "Ancient Isle", "Northern Expedition", 
-        "Northern Summit", "Vertigo", "Depths Entrance", "Depths", 
+        "Northern Summit", "Vertigo", "Depths Entrance","Depths", 
         "Overgrowth Caves", "Frigid Cavern", "Cryogenic Canal", "Glacial Grotto", 
         "Keeper's Altar"
     },
