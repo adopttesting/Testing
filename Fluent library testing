@@ -11,6 +11,29 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.R,
 }) 
 
+--// Services
+local Players = cloneref(game:GetService('Players'))
+local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
+local RunService = cloneref(game:GetService('RunService'))
+local GuiService = cloneref(game:GetService('GuiService'))
+
+--variables
+local lp = game.Players.LocalPlayer
+
+--function
+FindChildOfClass = function(parent, classname)
+    return parent:FindFirstChildOfClass(classname)
+end
+FindChild = function(parent, child)
+    return parent:FindFirstChild(child)
+end
+FindChildOfType = function(parent, childname, classname)
+    child = parent:FindFirstChild(childname)
+    if child and child.ClassName == classname then
+        return child
+    end
+end
+
 -- Tabs
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
@@ -88,37 +111,18 @@ local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
 })
 
 AutoShakeToggle:OnChanged(function(State)
-    local lp = game.Players.LocalPlayer
-    local GuiService = game:GetService('GuiService')
-    
-    -- Define the interval for shaking in seconds
-    local shakeInterval = 0.1
-    local lastShakeTime = 0
-
-    -- This function will be called repeatedly while the toggle is on
-    while State do
-        -- Check if enough time has passed to trigger another shake
-        if tick() - lastShakeTime >= shakeInterval then
-            -- Find the necessary UI components
-            local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
-            local safezone = FindChild(shakeUI, 'safezone')
-            local button = FindChild(safezone, 'button')
-
-            -- Perform the shake action by selecting the button and sending a key event
-            if button then
-                GuiService.SelectedObject = button
-                if GuiService.SelectedObject == button then
-                    game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                    game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-                end
+    if State then -- Check if the toggle is turned on (true)
+        -- Check if necessary UI elements exist
+        if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
+            -- Select the button in the UI
+            GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
+            
+            -- If the button is selected, simulate key press (Return key/Enter key)
+            if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
+                game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+                game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
             end
-
-            -- Update the last shake time
-            lastShakeTime = tick()
         end
-        
-        -- Wait a short time before checking again
-        wait(0.1)
     end
 end)
 
