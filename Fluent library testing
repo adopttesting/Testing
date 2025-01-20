@@ -115,18 +115,30 @@ local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
     Default = false
 })
 
+local GuiService = game:GetService("GuiService")
+
 AutoShakeToggle:OnChanged(function(State)
     if State then -- Check if the toggle is turned on (true)
-        -- Check if necessary UI elements exist
-        if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
-            -- Select the button in the UI
-            GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
+        -- Ensure navigation mode is active (if needed)
+        if GuiService.SelectedObject == nil then
+            -- Set the initial focus if it's not already set
+            local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
+            local safezone = FindChild(shakeUI, 'safezone')
+            local button = FindChild(safezone, 'button')
             
-            -- If the button is selected, simulate key press (Return key/Enter key)
-            if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
-                game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+            if button then
+                GuiService.SelectedObject = button
+            else
+                warn("Button not found!")
+                return
             end
+        end
+        
+        -- If the button is selected, simulate the action
+        if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
+            -- Simulate pressing Enter key (Return key)
+            game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+            game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
         end
     end
 end)
