@@ -1,168 +1,273 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/V3.lua"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Settings"))()
-local Window = Library:MakeWindow({
-    Title = "Lite Hub | " .. Version,
-    SaveFolder = "Lite Hub"
+repeat task.wait() until game:IsLoaded() and not game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("LoadingScreen") and not game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("LobbyLoadingScreen")
+
+-- Speed Hub X Library Initialization
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Settings.lua"))()
+local FileSys = loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Main/main/Library/File_System.lua"))()
+local Window = Library:Start({
+  ["Name"] = "Speed Hub X | Version 1.0.0",
+  ["SaveFolder"] = "Speed Hub X | Lite Hub"
 })
 
-Window:AddMinimizeButton({
-    Button = {Image = "rbxassetid://16022917595"},
-    Corner = {CornerRadius = UDim.new(0, 5)}
-})
+-- Services and Variables
+local Players = game:GetService('Players')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local GuiService = game:GetService('GuiService')
+local RunService = game:GetService('RunService')
+local lp = Players.LocalPlayer
 
-task.spawn(function()
-    if game.Workspace:FindFirstChild("RobloxForwardPortals") then
-        game.Workspace.RobloxForwardPortals:Destroy()
+-- Helper Functions
+local function FindChildOfClass(parent, classname)
+    return parent:FindFirstChildOfClass(classname)
+end
+
+local function FindChild(parent, child)
+    return parent:FindFirstChild(child)
+end
+
+local function FindChildOfType(parent, childname, classname)
+    local child = parent:FindFirstChild(childname)
+    if child and child.ClassName == classname then
+        return child
     end
-end)
+end
+
+local function getchar()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+
+-- SpeedHubX Functions
 local SpeedHubX = {}
-local function Toggle(Tab, Name, Desc, Default)
-  local Ver = Tab:AddToggle({
-    Name = Name,Description = Desc or "",Default = Default,
-    Callback = function(Value)
-      SpeedHubX[Name] = Value
-    end})
-    return Ver
-end
-local function Dropdown(Tab, Name, Desc, Option, Default)
-  local Ver = Tab:AddDropdown({
-    Name = Name,Description = Desc or "",Options = Option,Default = Default,
-    Callback = function(Value)
-      SpeedHubX[Name] = Value
-    end})
-    return Ver
-end
-local function Silder(Tab, Name, Min, Max, Default)
-  local Ver = Tab:AddSlider({
-    Name = Name,Min = Min,Max = Max,Default = Default,
-    Callback = function(Value)
-      SpeedHubX[Name] = Value
-    end})
-    return Ver
+local Funcs = {} do
+  function Funcs:AddToggle(Section, Name, Content, Default)
+    return Section:Toggle({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["Default"] = Default,
+      ["Callback"] = function(Value)
+        SpeedHubX[Name] = Value
+      end,
+      ["Flag"] = "SPD/Toggle/" .. tostring(Name)
+    })
+  end
+
+  function Funcs:AddDropdown(Section, Name, Multi, Options, Default)
+    return Section:Dropdown({
+      ["Title"] = Name,
+      ["Multi"] = Multi,
+      ["Options"] = Options,
+      ["Default"] = Default,
+      ["PlaceHolderText"] = "Select Options",
+      ["Callback"] = function(Value)
+        if type(Value) == "table" then
+          for _, v in pairs(Value) do
+            SpeedHubX[Name] = v
+          end
+        end
+      end
+    })
+  end
+
+  function Funcs:AddSlider(Section, Name, Content, Min, Max, Increment, Default)
+    return Section:Slider({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["Min"] = Min,
+      ["Max"] = Max,
+      ["Increment"] = Increment,
+      ["Default"] = Default,
+      ["Callback"] = function(Value)
+        SpeedHubX[Name] = Value
+      end
+    })
+  end
+
+  function Funcs:AddTextbox(Section, Name, Content, Default, ClearText)
+    return Section:TextInput({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["PlaceHolderText"] = "Enter your text here...",
+      ["ClearTextOnFocus"] = ClearText,
+      ["Default"] = Default,
+      ["Callback"] = function(Value)
+        SpeedHubX[Name] = Value
+      end
+    })
+  end
+
+  function Funcs:AddButton(Section, Name, Content, Callback)
+    return Section:Button({
+      ["Title"] = Name,
+      ["Content"] = Content,
+      ["Callback"] = (not Callback and SpeedHubX[Name] or Callback)
+    })  
+  end
 end
 
-local Home = Window:MakeTab({"| Home", "scan-face"})
-local AutoFish = Window:MakeTab({"| Auto Fish", "Fish"})
-
--- Rods list
-local rods = {
-    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod", 
-    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod", 
-    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod", 
-    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod", 
-    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod", 
-    "Kings Rod", "Aurora Rod", "Scurvy Rod"
+-- Tabs Setup
+local Tabs = {
+    AutoFishing = Window:Tab("Auto Fishing"),
+    Automatically = Window:Tab("Automatically"),
+    Teleport = Window:Tab("Teleport"),
 }
 
-local selectedRod = "Flimsy Rod" -- Default rod
+-- AutoFishing Tab
+local AutoFishingTab = Tabs.AutoFishing
+AutoFishingTab:Section("Farming method", "")
 
--- Dropdown for selecting rod
-Dropdown(AutoFish, "Select Rod", "Choose a rod to equip", rods, "Flimsy Rod", function(value)
-    selectedRod = value
-end)
+-- Variables
+local savedPosition = nil
+local Dropdown = AutoFishingTab:Dropdown("Select Method", {"Saved Position", "Normal"}, "Normal")
 
--- Auto Equip Rod toggle
-local autoEquipRod = false
-Toggle(AutoFish, "Auto Equip Rod", "This will equip the selected rod", false, function(value)
-    autoEquipRod = value
-end)
-
--- Auto Cast toggle
-local autoCast = false
-Toggle(AutoFish, "Auto Cast", "This will cast the selected rod every 0.1 seconds", false, function(value)
-    autoCast = value
-end)
-
--- Auto Reel toggle
-local autoReel = false
-Toggle(AutoFish, "Auto Reel", "This will reel the rod every 0.2 seconds", false, function(value)
-    autoReel = value
-end)
-
--- Auto Shake toggle
-local autoShake = false
-Toggle(AutoFish, "Auto Shake", "This will shake the rod", false, function(value)
-    autoShake = value
-end)
-
--- Function to continuously cast the selected rod
-task.spawn(function()
-    while true do
-        if autoCast then
-            local rod = game.Players.LocalPlayer.Character:FindFirstChild(selectedRod)
-            if rod and rod:FindFirstChild("events") and rod.events:FindFirstChild("cast") then
-                local args = {
-                    [1] = 23.700000000000006,
-                    [2] = 1
-                }
-                -- Fire the cast event for the selected rod
-                rod.events.cast:FireServer(unpack(args))
-            end
-        end
-        wait(0.1) -- Wait for 0.1 seconds before the next cast
+AutoFishingTab:Button("Save Position", function()
+    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        savedPosition = lp.Character.HumanoidRootPart.Position
+        Window:Dialog({
+            Title = "Position Saved",
+            Content = "Your position has been saved successfully.",
+            Buttons = { { Title = "OK", Callback = function() end } }
+        })
     end
 end)
 
--- Function to continuously reel the selected rod
-task.spawn(function()
-    while true do
-        if autoReel then
-            local args = {
-                [1] = 100,
-                [2] = true
-            }
-            -- Fire the reelfinished event
-            game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args))
-        end
-        wait(0.2) -- Wait for 0.2 seconds before the next reel
-    end
-end)
-
--- Function to continuously equip the selected rod
-task.spawn(function()
-    while true do
-        if autoEquipRod then
-            local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(selectedRod)
-            if tool then
-                -- Equip the selected rod if it's not already equipped
-                game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
-            end
-        end
-        wait(0.1) -- Prevent too much processing
-    end
-end)
-
--- Function to perform the shake action if Auto Shake is enabled
-task.spawn(function()
-    local VirtualInputManager = game:GetService("VirtualInputManager")  -- Correct service for simulating input
-    local pressedBackslash = false  -- Track if "\" has already been pressed
-
-    while true do
-        if autoShake then
-            -- Activate navigation mode by pressing "\"
-            if not pressedBackslash then
-                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-                pressedBackslash = true
-                wait(0.3)  -- Give some time for the input to be processed
-            end
-
-            -- Regular "S" and "Enter" simulation for shaking
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.S, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.S, false, nil)
-            wait(0.1)  -- Press "S" every 0.1 seconds
-
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, nil)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, nil)
-            wait(0.12)  -- Press "Enter" every 0.12 seconds
+AutoFishingTab:Button("Teleport To Saved Position", function()
+    if Dropdown:GetValue() == "Saved Position" then
+        if savedPosition then
+            lp.Character.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+            Window:Dialog({
+                Title = "Teleported",
+                Content = "You have been teleported to the saved position.",
+                Buttons = { { Title = "OK", Callback = function() end } }
+            })
         else
-            -- Deactivate navigation mode when Auto Shake is off
-            if pressedBackslash then
-                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.BackSlash, false, nil)
-                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.BackSlash, false, nil)
-                pressedBackslash = false
-            end
+            Window:Dialog({
+                Title = "Error",
+                Content = "No saved position found. Save a position first!",
+                Buttons = { { Title = "OK", Callback = function() end } }
+            })
         end
-        wait(0.1) -- Prevent excessive looping
+    else
+        Window:Dialog({
+            Title = "Error",
+            Content = "Please select 'Saved Position' in the dropdown.",
+            Buttons = { { Title = "OK", Callback = function() end } }
+        })
     end
 end)
+
+AutoFishingTab:Section("Rods", "")
+
+local RodDropdown = AutoFishingTab:Dropdown("Select Rod", {
+    "Flimsy Rod", "Precision Rod", "Plastic Rod", "Carbon Rod", "Long Rod",
+    "Executive Rod", "No-Life Rod", "Rod Of The Depths", "Training Rod",
+    "Fast Rod", "Lucky Rod", "Steady Rod", "Fortune Rod", "Magma Rod",
+    "Reinforced Rod", "Stone Rod", "Phoenix Rod", "Midas Rod", "Trident Rod",
+    "Mythical Rod", "Rapid Rod", "Magnet Rod", "Nocturnal Rod", "Destiny Rod",
+    "Kings Rod", "Aurora Rod", "Scurvy Rod"
+}, "Flimsy Rod")
+
+local EquipRodToggle = AutoFishingTab:Toggle("Equip Rod", false)
+EquipRodToggle:OnChanged(function(Value)
+    local backpack = lp.Backpack
+    while Value do
+        local rodTool = backpack:FindFirstChild(RodDropdown:GetValue())
+        if rodTool then
+            rodTool.Parent = lp.Character
+        end
+        task.wait(0.5)
+    end
+end)
+
+local AutoCastToggle = AutoFishingTab:Toggle("Auto Cast", false)
+AutoCastToggle:OnChanged(function(Value)
+    while Value do
+        local rod = lp.Character:FindFirstChild(RodDropdown:GetValue())
+        if rod then
+            local args = { [1] = 23.7, [2] = 1 }
+            ReplicatedStorage:WaitForChild("events").cast:FireServer(unpack(args))
+        end
+        task.wait(0.5)
+    end
+end)
+
+local AutoReelToggle = AutoFishingTab:Toggle("Auto Reel", false)
+AutoReelToggle:OnChanged(function(Value)
+    while Value do
+        local args = { [1] = 100, [2] = true }
+        ReplicatedStorage:WaitForChild("events").reelfinished:FireServer(unpack(args))
+        task.wait(0.5)
+    end
+end)
+
+AutoFishingTab:Toggle("Auto Shake", false):OnChanged(function(Value)
+    local isShaking = Value
+    local function shakeButton()
+        local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
+        local safezone = FindChild(shakeUI, 'safezone')
+        local button = FindChild(safezone, 'button')
+        if GuiService.SelectedObject ~= button then
+            GuiService.SelectedObject = button
+        end
+        game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+        game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+    end
+
+    while isShaking do
+        shakeButton()
+        task.wait(0.001)
+    end
+end)
+
+-- Automatically Tab: Sell All Button
+Tabs.Automatically:Button("Sell All", function()
+    ReplicatedStorage:WaitForChild("events").SellAll:InvokeServer()
+end)
+
+-- Teleport Tab: Island Selection and Teleport Button
+local islandList = {
+    "Moosewood", "Roslit Bay", "Forsaken Shores", "Sunstone Island",
+    "Statue of Sovereignty", "Terrapin Island", "Snowcap Island", "Mushgrove Swamp",
+    "Ancient Isle", "Northern Expedition", "Northern Summit", "Vertigo",
+    "Depths Entrance", "Depths", "Overgrowth Caves", "Frigid Cavern",
+    "Cryogenic Canal", "Glacial Grotto", "Keeper's Altar"
+}
+
+local selectedIsland = islandList[1]
+
+Tabs.Teleport:Dropdown("Select Island", islandList, selectedIsland, function(value)
+    selectedIsland = value
+end)
+
+-- Island coordinates with rotations
+local islandCoordinates = {
+    ["Moosewood"] = CFrame.new(379.875458, 134.500519, 233.5495, -0.033920113, 8.13274355e-08, 0.999424577, 8.98441925e-08, 1, -7.83249803e-08, -0.999424577, 8.7135696e-08, -0.033920113),
+    ["Roslit Bay"] = CFrame.new(-1472.9812, 132.525513, 707.644531, -0.00177415239, 1.15743369e-07, -0.99999845, -9.25943056e-09, 1, 1.15759981e-07, 0.99999845, 9.46479251e-09, -0.00177415239),
+    ["Forsaken Shores"] = CFrame.new(-2491.104, 133.250015, 1561.2926, 0.355353981, -1.68352852e-08, -0.934731781, 4.69647858e-08, 1, -1.56367586e-10, 0.934731781, -4.38439116e-08, 0.355353981),
+    ["Sunstone Island"] = CFrame.new(-913.809143, 138.160782, -1133.25879, -0.746701241, 4.50330218e-09, 0.665159583, 2.84934609e-09, 1, -3.5716119e-09, -0.665159583, -7.71657294e-10, -0.746701241),
+    ["Statue of Sovereignty"] = CFrame.new(21.4017925, 159.014709, -1039.14233, -0.865476549, -4.38348664e-08, -0.500949502, -9.38435818e-08, 1, 7.46273798e-08, 0.500949502, 1.11599142e-07, -0.865476549),
+    ["Terrapin Island"] = CFrame.new(-193.434143, 135.121979, 1951.46936, 0.512723684, -6.94711346e-08, 0.858553708, 5.44089183e-08, 1, 4.84237539e-08, -0.858553708, 2.18849721e-08, 0.512723684),
+    ["Snowcap Island"] = CFrame.new(2607.93018, 135.284332, 2436.13208, 0.909039497, -7.49003748e-10, 0.4167099, 3.38659367e-09, 1, -5.59032465e-09, -0.4167099, 6.49305321e-09, 0.909039497),
+    ["Mushgrove Swamp"] = CFrame.new(2434.29785, 131.983276, -691.930542, -0.123090521, -7.92820209e-09, -0.992395461, -9.05862692e-08, 1, 3.2467995e-09, 0.992395461, 9.02970569e-08, -0.123090521),
+    ["Ancient Isle"] = CFrame.new(6056.02783, 195.280167, 276.270325, -0.655055285, 1.96010075e-09, 0.755580962, -1.63855578e-08, 1, -1.67997189e-08, -0.755580962, -2.33853594e-08, -0.655055285),
+    ["Northern Expedition"] = CFrame.new(-1701.02979, 187.638779, 3944.81494, 0.918493569, -8.5804345e-08, 0.395435959, 8.59132356e-08, 1, 1.74328942e-08, -0.395435959, 1.7961181e-08, 0.918493569),
+    ["Northern Summit"] = CFrame.new(19608.791, 131.420105, 5222.15283, 0.462794542, -2.64426987e-08, 0.886465549, -4.47066562e-08, 1, 5.31692343e-08, -0.886465549, -6.42373408e-08, 0.462794542),
+    ["Vertigo"] = CFrame.new(-102.40567, -513.299377, 1052.07104, -0.999989033, 5.36423439e-09, 0.00468267547, 5.85247495e-09, 1, 1.04251647e-07, -0.00468267547, 1.04277916e-07, -0.999989033),
+    ["Depths Entrance"] = CFrame.new(-15.4965982, -706.123718, 1231.43494, 0.0681341439, 1.15903154e-08, -0.997676194, 7.1017638e-08, 1, 1.64673093e-08, 0.997676194, -7.19745898e-08, 0.0681341439),
+    ["Depths"] = CFrame.new(491.758118, -706.123718, 1230.6377, 0.00879980437, 1.29271776e-08, -0.999961257, 1.95575205e-13, 1, 1.29276803e-08, 0.999961257, -1.13956629e-10, 0.00879980437),
+    ["Overgrowth Caves"] = CFrame.new(19746.2676, 416.00293, 5403.5752, 0.488031536, -3.30940715e-08, -0.87282598, -3.24267696e-11, 1, -3.79341323e-08, 0.87282598, 1.85413569e-08, 0.488031536),
+    ["Frigid Cavern"] = CFrame.new(20253.6094, 756.525818, 5772.68555, -0.781508088, 1.85673343e-08, 0.623895109, 5.92671467e-09, 1, -2.23363816e-08, -0.623895109, -1.3758414e-08, -0.781508088),
+    ["Cryogenic Canal"] = CFrame.new(19958.5176, 917.195923, 5332.59375, 0.758922458, -7.29783434e-09, 0.651180983, -4.58880756e-09, 1, 1.65551253e-08, -0.651180983, -1.55522013e-08, 0.758922458),
+    ["Glacial Grotto"] = CFrame.new(20003.0273, 1136.42798, 5555.95996, 0.983130038, -3.94455064e-08, 0.182907909, 3.45229765e-08, 1, 3.0096718e-08, -0.182907909, -2.32744615e-08, 0.983130038),
+    ["Keeper's Altar"] = CFrame.new(1297.92285, -805.292236, -284.155823, -0.99758029, 5.80044706e-08, -0.0695239156, 6.16549869e-08, 1, -5.03615105e-08, 0.0695239156, -5.45261436e-08, -0.99758029)
+}
+
+-- Teleport Button functionality
+Tabs.Teleport:Button("Teleport To Island", function()
+    local selectedIsland = Dropdown:GetValue()
+    local targetCFrame = islandCoordinates[selectedIsland]
+    
+    if targetCFrame then
+        -- Teleport the player to the selected island
+        lp.Character.HumanoidRootPart.CFrame = targetCFrame
+        Window:Dialog({
+            Title = "Teleported",
+            Content = "You have been
