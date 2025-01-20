@@ -7,7 +7,7 @@ local Window = Fluent:CreateWindow({
     TabWidth = 160,
     Size = UDim2.fromOffset(480, 380),
     Acrylic = true,
-    Theme = "Aqua",
+    Theme = "Dark",
     MinimizeKey = Enum.KeyCode.R,
 }) 
 
@@ -146,7 +146,7 @@ AutoShakeToggle:OnChanged(function(State)
         isShaking = true
         while isShaking do
             shakeButton()
-            wait(0.5)  -- Delay to prevent overloading the game with actions (adjust as needed)
+            wait(0.1)  -- Delay to prevent overloading the game with actions (adjust as needed)
         end
     else
         -- Stop shaking the button when toggle is off
