@@ -81,9 +81,6 @@ AutoReelToggle:OnChanged(function()
     end
 end)
 
--- Ensure `lp` (LocalPlayer) is correctly defined
-local lp = game.Players.LocalPlayer
-
 -- Create Auto Shake Toggle
 local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
     Title = "Auto Shake",
@@ -91,23 +88,37 @@ local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
 })
 
 AutoShakeToggle:OnChanged(function(State)
-    if State then
-        -- Check if lp is valid (player exists) and PlayerGui is accessible
-        if lp and lp.PlayerGui then
-            -- Ensure the GUI elements exist
-            if FindChild(lp.PlayerGui, 'shakeui') and FindChild(lp.PlayerGui['shakeui'], 'safezone') and FindChild(lp.PlayerGui['shakeui']['safezone'], 'button') then
-                GuiService.SelectedObject = lp.PlayerGui['shakeui']['safezone']['button']
-                -- If the button is selected, simulate the Return key press
-                if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
+    local lp = game.Players.LocalPlayer
+    local GuiService = game:GetService('GuiService')
+    
+    -- Define the interval for shaking in seconds
+    local shakeInterval = 0.1
+    local lastShakeTime = 0
+
+    -- This function will be called repeatedly while the toggle is on
+    while State do
+        -- Check if enough time has passed to trigger another shake
+        if tick() - lastShakeTime >= shakeInterval then
+            -- Find the necessary UI components
+            local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
+            local safezone = FindChild(shakeUI, 'safezone')
+            local button = FindChild(safezone, 'button')
+
+            -- Perform the shake action by selecting the button and sending a key event
+            if button then
+                GuiService.SelectedObject = button
+                if GuiService.SelectedObject == button then
                     game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
                     game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
                 end
             end
-        else
-            warn("PlayerGui is not available.")
+
+            -- Update the last shake time
+            lastShakeTime = tick()
         end
-    else
-        -- If the toggle is turned off, you can add any additional logic here to stop or reset actions.
+        
+        -- Wait a short time before checking again
+        wait(0.1)
     end
 end)
 
