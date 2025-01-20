@@ -49,100 +49,6 @@ local Tabs = {
 }
 
 Tabs.AutoFishing:AddParagraph({
-    Title = "Farming method",
-    Content = ""
-})
-
-local savedPosition = nil -- Variable to store the saved position
-
--- Dropdown for selecting farming method
-local Dropdown = Tabs.AutoFishing:AddDropdown("Dropdown", {
-    Title = "Select Method",
-    Values = {"Saved Position", "Normal"},
-    Multi = false,
-    Default = 2,
-})
-
-Dropdown:SetValue("Normal")
-
-Dropdown:OnChanged(function(Value)
-end)
-
--- Button to save the player's current position
-Tabs.AutoFishing:AddButton({
-    Title = "Save Position",
-    Description = "Saves the player's current position.",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            savedPosition = player.Character.HumanoidRootPart.Position
-            Window:Dialog({
-                Title = "Position Saved",
-                Content = "Your position has been successfully saved!",
-                Buttons = {
-                    {
-                        Title = "OK",
-                        Callback = function()
-                        end
-                    }
-                }
-            })
-        end
-    end
-})
-
--- Button to teleport to the saved position
-Tabs.AutoFishing:AddButton({
-    Title = "Teleport To Saved Position",
-    Description = "Teleports the player to the saved position if the 'Saved Position' method is selected.",
-    Callback = function()
-        if Dropdown:GetValue() == "Saved Position" then
-            if savedPosition then
-                local player = game.Players.LocalPlayer
-                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-                    Window:Dialog({
-                        Title = "Teleported",
-                        Content = "You have been teleported to the saved position.",
-                        Buttons = {
-                            {
-                                Title = "OK",
-                                Callback = function()
-                                end
-                            }
-                        }
-                    })
-                end
-            else
-                Window:Dialog({
-                    Title = "Error",
-                    Content = "No saved position found. Save a position first!",
-                    Buttons = {
-                        {
-                            Title = "OK",
-                            Callback = function()
-                            end
-                        }
-                    }
-                })
-            end
-        else
-            Window:Dialog({
-                Title = "Error",
-                Content = "Please select 'Saved Position' in the dropdown to teleport.",
-                Buttons = {
-                    {
-                        Title = "OK",
-                        Callback = function()
-                        end
-                    }
-                }
-            })
-        end
-    end
-})
-
-Tabs.AutoFishing:AddParagraph({
     Title = "Rods",
     Content = ""
 })
@@ -303,14 +209,17 @@ Tabs.Teleport:AddDropdown({
 Tabs.Teleport:AddButton({
     Title = "Teleport To Island",
     Callback = function()
-        -- Teleport to selected island
-        local targetCFrame = islandCoordinates[selectedIsland]
-        if targetCFrame then
-            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(targetCFrame)
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local targetCFrame = islandCoordinates[selectedIsland]
+            if targetCFrame then
+                character:SetPrimaryPartCFrame(targetCFrame)
+            else
+                warn("Island not found: " .. tostring(selectedIsland))
+            end
+        else
+            warn("Character or HumanoidRootPart not found.")
         end
     end
 })
-
--- Optional Auto Teleport Feature
--- If you want to make the teleportation automatic under certain conditions, you can use the code below.
--- In this case, we'll just leave it for manual control as you requested.
