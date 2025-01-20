@@ -34,6 +34,11 @@ FindChildOfType = function(parent, childname, classname)
     end
 end
 
+--// Custom Functions
+getchar = function()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+
 -- Tabs
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
