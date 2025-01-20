@@ -109,37 +109,39 @@ AutoReelToggle:OnChanged(function()
     end
 end)
 
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService('VirtualInputManager')
+
 -- Create Auto Shake Toggle
 local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
     Title = "Auto Shake",
     Default = false
 })
 
-local GuiService = game:GetService("GuiService")
+local function shakeButton()
+    -- Check if necessary UI elements exist
+    local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
+    if not shakeUI then return end
+    local safezone = FindChild(shakeUI, 'safezone')
+    if not safezone then return end
+    local button = FindChild(safezone, 'button')
+    if not button then return end
+
+    -- Set the selected object to the button if it's not already set
+    if GuiService.SelectedObject ~= button then
+        GuiService.SelectedObject = button
+    end
+    
+    -- Simulate pressing Enter key (Return key)
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+end
 
 AutoShakeToggle:OnChanged(function(State)
-    if State then -- Check if the toggle is turned on (true)
-        -- Ensure navigation mode is active (if needed)
-        if GuiService.SelectedObject == nil then
-            -- Set the initial focus if it's not already set
-            local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
-            local safezone = FindChild(shakeUI, 'safezone')
-            local button = FindChild(safezone, 'button')
-            
-            if button then
-                GuiService.SelectedObject = button
-            else
-                warn("Button not found!")
-                return
-            end
-        end
-        
-        -- If the button is selected, simulate the action
-        if GuiService.SelectedObject == lp.PlayerGui['shakeui']['safezone']['button'] then
-            -- Simulate pressing Enter key (Return key)
-            game:GetService('VirtualInputManager'):SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-            game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-        end
+    while State do
+        -- Only perform actions if the toggle is on (State is true)
+        shakeButton()
+        wait(0.2)  -- Delay to prevent overloading the game with actions (you can adjust the delay)
     end
 end)
 
