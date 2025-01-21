@@ -185,80 +185,32 @@ Tabs.Automatically:AddButton({
 local A = Instance.new("ScreenGui")
 local B = Instance.new("TextButton")
 local C = Instance.new("UICorner")
-local D = Instance.new("ImageLabel")
+local D = Instance.new("ImageLabel")  -- Create an ImageLabel
 
 A.Name = "SpaceToggle"
 A.Parent = game.CoreGui
 A.ResetOnSpawn = false
 
--- Configure the ImageLabel
-D.Name = "BackgroundImage"
-D.Size = UDim2.new(1, 0, 1, 0) -- Full size of the ScreenGui
-D.Position = UDim2.new(0, 0, 0, 0)
-D.BackgroundTransparency = 1
-D.Image = "rbxassetid://86093303748141" -- Replace with your desired image asset ID
-D.Parent = A
-
--- Configure the Minimizebutton
 B.Size = UDim2.new(0, 50, 0, 50)
 B.Position = UDim2.new(0, 10, 1, -60) -- Consider making this responsive
 B.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
-B.Text = ""
+B.Text = "S"
 B.TextColor3 = Color3.fromRGB(0, 0, 0)
 B.TextScaled = true
 B.Transparency = 0.5
 B.Parent = A
 
--- Add corner styling
-C.CornerRadius = UDim.new(0, 12) -- Adjust corner radius as needed
-C.Parent = B
+-- Create ImageLabel to cover the button text
+D.Size = UDim2.new(1, 0, 1, 0)  -- Set size to cover the whole button
+D.Position = UDim2.new(0, 0, 0, 0)  -- Position it at the top-left corner
+D.BackgroundTransparency = 1  -- Make the background transparent
+D.Image = "rbxassetid://86093303748141"  -- Set the image asset
+D.Parent = B
 
--- Dragging functionality
-local dragging = false
-local dragInput
-local dragStart
-local startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    A.Position = UDim2.new(
-        startPos.X.Scale,
-        startPos.X.Offset + delta.X,
-        startPos.Y.Scale,
-        startPos.Y.Offset + delta.Y
-    )
-end
-
-B.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = A.Position
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-B.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
--- Toggle visibility function
+-- Function to toggle visibility of frames
 local function toggleVisibility(frame)
     for _, child in ipairs(frame:GetChildren()) do
-        if child:IsA("Frame") or child:IsA("ImageLabel") or child:IsA("TextButton") then
+        if child:IsA("Frame") then
             child.Visible = not child.Visible
             toggleVisibility(child)
         end
@@ -266,5 +218,13 @@ local function toggleVisibility(frame)
 end
 
 B.MouseButton1Click:Connect(function()
-    toggleVisibility(A)
+    local spaceGui = game.CoreGui:FindFirstChild("ScreenGui") -- Replace with the actual name
+    if spaceGui then
+        toggleVisibility(spaceGui)
+    else
+        warn("1")
+    end
 end)
+
+C.CornerRadius = UDim.new(0, 0.5)
+C.Parent = B
