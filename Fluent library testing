@@ -185,14 +185,15 @@ Tabs.Automatically:AddButton({
 local A = Instance.new("ScreenGui")
 local B = Instance.new("TextButton")
 local C = Instance.new("UICorner")
-local D = Instance.new("ImageLabel")  -- Create an ImageLabel
+local D = Instance.new("ImageLabel")
+local E = Instance.new("UICorner")  -- Create a UICorner for ImageLabel
 
 A.Name = "SpaceToggle"
 A.Parent = game.CoreGui
 A.ResetOnSpawn = false
 
 B.Size = UDim2.new(0, 50, 0, 50)
-B.Position = UDim2.new(0, 10, 1, -60) -- Consider making this responsive
+B.Position = UDim2.new(0, 10, 0.5, -25)  -- Position at the left and center vertically
 B.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
 B.Text = "S"
 B.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -206,6 +207,10 @@ D.Position = UDim2.new(0, 0, 0, 0)  -- Position it at the top-left corner
 D.BackgroundTransparency = 1  -- Make the background transparent
 D.Image = "rbxassetid://86093303748141"  -- Set the image asset
 D.Parent = B
+
+-- Add UI corner effect to the ImageLabel (same as TextButton)
+E.CornerRadius = UDim.new(1, 0)
+E.Parent = D
 
 -- Function to toggle visibility of frames
 local function toggleVisibility(frame)
@@ -226,5 +231,49 @@ B.MouseButton1Click:Connect(function()
     end
 end)
 
-C.CornerRadius = UDim.new(0, 0.5)
+-- Add UI corner effect to the TextButton
+C.CornerRadius = UDim.new(1, 0)
 C.Parent = B
+
+-- DRAGGING FUNCTIONALITY
+local dragging = false
+local dragInput, mousePos, dragStart
+
+-- Function to start dragging
+local function startDrag(input)
+    dragging = true
+    dragStart = input.Position
+    mousePos = input.Position
+end
+
+-- Function to update the position while dragging
+local function updateDrag(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        B.Position = UDim2.new(0, mousePos.X + delta.X, 0, mousePos.Y + delta.Y)
+    end
+end
+
+-- Function to stop dragging
+local function stopDrag()
+    dragging = false
+end
+
+-- Connect dragging to MouseInput events
+B.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        startDrag(input)
+    end
+end)
+
+B.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        updateDrag(input)
+    end
+end)
+
+B.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        stopDrag()
+    end
+end)
