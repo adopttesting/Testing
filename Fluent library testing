@@ -105,7 +105,7 @@ AutoCastToggle:OnChanged(function()
         local selectedRod = RodDropdown.Value
         local args = { [1] = 23.7, [2] = 1 }
         game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
-        wait(0.5)
+        wait(0.1)
     end
 end)
 
@@ -119,7 +119,7 @@ AutoReelToggle:OnChanged(function()
     while AutoReelToggle.Value do
         local args = { [1] = 100, [2] = true }
         game:GetService("ReplicatedStorage").events.reelfinished:FireServer(unpack(args))
-        wait(0.5)
+        wait(0.1)
     end
 end)
 
@@ -209,7 +209,7 @@ D.Image = "rbxassetid://86093303748141"  -- Set the image asset
 D.Parent = B
 
 -- Add UI corner effect to the ImageLabel (same as TextButton)
-E.CornerRadius = UDim.new(0, 0.5)
+E.CornerRadius = UDim.new(0, 5)
 E.Parent = D
 
 -- Function to toggle visibility of frames
@@ -232,7 +232,7 @@ B.MouseButton1Click:Connect(function()
 end)
 
 -- Add UI corner effect to the TextButton
-C.CornerRadius = UDim.new(0, 0.5)
+C.CornerRadius = UDim.new(0, 5)
 C.Parent = B
 
 -- DRAGGING FUNCTIONALITY
