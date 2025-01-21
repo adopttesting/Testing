@@ -209,7 +209,7 @@ D.Image = "rbxassetid://86093303748141"  -- Set the image asset
 D.Parent = B
 
 -- Add UI corner effect to the ImageLabel (same as TextButton)
-E.CornerRadius = UDim.new(1, 0)
+E.CornerRadius = UDim.new(0, 0.5)
 E.Parent = D
 
 -- Function to toggle visibility of frames
@@ -232,7 +232,7 @@ B.MouseButton1Click:Connect(function()
 end)
 
 -- Add UI corner effect to the TextButton
-C.CornerRadius = UDim.new(1, 0)
+C.CornerRadius = UDim.new(0, 0.5)
 C.Parent = B
 
 -- DRAGGING FUNCTIONALITY
