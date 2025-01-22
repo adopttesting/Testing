@@ -46,10 +46,17 @@ local function getchar()
     return lp.Character or lp.CharacterAdded:Wait()
 end
 
+--Walk On water Funcction
+for i,v in pairs(workspace.zones.fishing:GetChildren()) do
+			if v.Name == "Ocean" then
+				v.CanCollide = Value
+			end
+		end
 -- Tabs
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
     Automatically = Window:AddTab({ Title = "Automatically", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
 }
 
 Tabs.AutoFishing:AddParagraph({
@@ -182,98 +189,162 @@ Tabs.Automatically:AddButton({
     end,
 })
 
-local A = Instance.new("ScreenGui")
-local B = Instance.new("TextButton")
-local C = Instance.new("UICorner")
-local D = Instance.new("ImageLabel")
-local E = Instance.new("UICorner")  -- Create a UICorner for ImageLabel
+Tabs.Automatically:AddParagraph({
+    Title = "Auto Buy",
+    Content = ""
+})
 
-A.Name = "SpaceToggle"
-A.Parent = game.CoreGui
-A.ResetOnSpawn = false
+Tabs.Automatically:AddButton({
+    Title = "Auto Buy Relics",
+    Description = "",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
 
-B.Size = UDim2.new(0, 50, 0, 50)
-B.Position = UDim2.new(0, 10, 0.5, -25)  -- Position at the left and center vertically
-B.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
-B.Text = "S"
-B.TextColor3 = Color3.fromRGB(0, 0, 0)
-B.TextScaled = true
-B.Transparency = 0.5
-B.Parent = A
+-- Store the player's current position
+local previousPosition = character.HumanoidRootPart.Position
 
--- Create ImageLabel to cover the button text
-D.Size = UDim2.new(1, 0, 1, 0)  -- Set size to cover the whole button
-D.Position = UDim2.new(0, 0, 0, 0)  -- Position it at the top-left corner
-D.BackgroundTransparency = 1  -- Make the background transparent
-D.Image = "rbxassetid://86093303748141"  -- Set the image asset
-D.Parent = B
+-- Teleport to the specified coordinates
+local targetPosition = Vector3.new(-931.5254516601562, 223.78355407714844, -986.8485717773438)
+character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
 
--- Add UI corner effect to the ImageLabel (same as TextButton)
-E.CornerRadius = UDim.new(0, 5)
-E.Parent = D
+-- Fire the server function
+local merlin = workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Merlin"):WaitForChild("Merlin"):WaitForChild("power")
+merlin:InvokeServer()
 
--- Function to toggle visibility of frames
-local function toggleVisibility(frame)
-    for _, child in ipairs(frame:GetChildren()) do
-        if child:IsA("Frame") then
-            child.Visible = not child.Visible
-            toggleVisibility(child)
-        end
-    end
+-- Wait for a brief moment before returning to the previous position
+wait(0)  -- Adjust the wait time if needed
+
+-- Return to the previous position
+character:SetPrimaryPartCFrame(CFrame.new(previousPosition))
+    end,
+})
+
+Tabs.Misc:AddParagraph({
+    Title = "Server Hoping",
+    Content = ""
+})
+
+Tabs.Misc:AddButton({
+    Title = "Server Hop",
+    Description = "",
+    Callback = function()
+        AllFuncs.HopServer(true)
+    end,
+})
+
+Tabs.Misc:AddButton({
+    Title = "Rejoin Server",
+    Description = "",
+    Callback = function()
+        TeleportService:TeleportToPlaceInstance(game.placeId, game.jobId, game.Players.LocalPlayer);
+    end,
+})
+
+Tabs.Misc:AddParagraph({
+    Title = "Lag",
+    Content = ""
+})
+
+Tabs.Misc:AddButton({
+    Title = "Boost Fps",
+    Description = "",
+    Callback = function()
+        for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
+                    if v.Transparency ~= 1 then
+                        v.Material = Enum.Material.SmoothPlastic
+                    end
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                    v:Destroy()
+                end
+            end
+    end,
+})
+
+Tabs.Misc:AddButton({
+    Title = "Fps Big Boost",
+    Description = "",
+    Callback = function()
+        for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                    v:Destroy()
+                end
+            end
+    end,
+})
+
+Tabs.Misc:AddButton({
+    Title = "Remove Fog",
+    Description = "",
+    Callback = function()
+        game:GetService("Lighting"):FindFirstChild("Sky") then
+				game:GetService("Lighting"):FindFirstChild("Sky").Parent = game:GetService("Lighting").bloom
+			end
+		else
+			if game:GetService("Lighting").bloom:FindFirstChild("Sky") then
+				game:GetService("Lighting").bloom:FindFirstChild("Sky").Parent = game:GetService("Lighting")
+			end
+		end
+    end,
+})
+
+
+
+--Minimize Gui Button
+local UIS = game:GetService("UserInputService")
+local frame = script.Parent -- Ensure this points to the correct frame
+local dragToggle = false
+local dragStart = nil
+local startPos = nil
+
+-- Adjust the size of the frame (GUI) to 50x50
+frame.Size = UDim2.new(0, 50, 0, 50)
+
+-- Add a UICorner to the frame
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 5) -- Set corner radius to (0, 5)
+uiCorner.Parent = frame
+
+-- Add an image to the frame
+local image = Instance.new("ImageLabel")
+image.Image = "rbxassetid://86093303748141" -- Set the image
+image.Size = UDim2.new(1, 0, 1, 0) -- Match the size of the frame
+image.BackgroundTransparency = 1 -- Make the background transparent
+image.Parent = frame
+
+local function updateInput(input)
+	if dragToggle then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
 end
 
-B.MouseButton1Click:Connect(function()
-    local spaceGui = game.CoreGui:FindFirstChild("ScreenGui") -- Replace with the actual name
-    if spaceGui then
-        toggleVisibility(spaceGui)
-    else
-        warn("1")
-    end
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragToggle = true
+		dragStart = input.Position
+		startPos = frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragToggle = false
+			end
+		end)
+	end
 end)
 
--- Add UI corner effect to the TextButton
-C.CornerRadius = UDim.new(0, 5)
-C.Parent = B
-
--- DRAGGING FUNCTIONALITY
-local dragging = false
-local dragInput, mousePos, dragStart
-
--- Function to start dragging
-local function startDrag(input)
-    dragging = true
-    dragStart = input.Position
-    mousePos = input.Position
-end
-
--- Function to update the position while dragging
-local function updateDrag(input)
-    if dragging then
-        local delta = input.Position - dragStart
-        B.Position = UDim2.new(0, mousePos.X + delta.X, 0, mousePos.Y + delta.Y)
-    end
-end
-
--- Function to stop dragging
-local function stopDrag()
-    dragging = false
-end
-
--- Connect dragging to MouseInput events
-B.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        startDrag(input)
-    end
-end)
-
-B.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        updateDrag(input)
-    end
-end)
-
-B.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopDrag()
-    end
+UIS.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		if dragToggle then
+			frame.Transparency = 1
+			updateInput(input)
+		else
+			frame.Transparency = 1
+		end
+	end
 end)
