@@ -80,25 +80,22 @@ Client:AddSwitch("Kill Aura", function(bool)
     local auraRange = 10000  -- Set the range of the kill aura
     _G.autoPunchanim = true  -- Global control variable
 
-    -- Store original HumanoidRootPart positions for resetting
+    -- Store original HumanoidRootPart positions
     local originalPositions = {}
 
-    -- Function to teleport and make the target's HumanoidRootPart invisible
-    local function teleportAndMakeInvisible(otherPlayer)
+    -- Function to teleport the target's HumanoidRootPart to our RightHand position
+    local function teleportTorsoToHands(otherPlayer)
         if otherPlayer.Character then
             local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
             if otherRoot then
-                -- Store the original position of the player's HumanoidRootPart
-                originalPositions[otherPlayer] = otherRoot.Position
-                
                 -- Make the HumanoidRootPart invisible and non-collidable
                 otherRoot.Transparency = 1
                 otherRoot.CanCollide = false
                 
-                -- Continuously teleport the HumanoidRootPart to our hands
+                -- Teleport the HumanoidRootPart to our RightHand position
                 game:GetService("RunService").Heartbeat:Connect(function()
-                    if otherRoot and player.Character and player.Character:FindFirstChild("RightHand") and player.Character:FindFirstChild("LeftHand") then
-                        -- Teleport the HumanoidRootPart to your RightHand and LeftHand positions
+                    if otherRoot and player.Character and player.Character:FindFirstChild("RightHand") then
+                        -- Teleport only the HumanoidRootPart (torso) to RightHand
                         otherRoot.CFrame = player.Character.RightHand.CFrame
                     end
                 end)
@@ -106,22 +103,7 @@ Client:AddSwitch("Kill Aura", function(bool)
         end
     end
 
-    -- Function to reset the player's HumanoidRootPart position and visibility
-    local function resetTeleport(otherPlayer)
-        if originalPositions[otherPlayer] and otherPlayer.Character then
-            local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if otherRoot then
-                -- Restore the original position of the player's HumanoidRootPart
-                otherRoot.Position = originalPositions[otherPlayer]
-                
-                -- Make the HumanoidRootPart visible again
-                otherRoot.Transparency = 0
-                otherRoot.CanCollide = true  -- Enable collision again
-            end
-        end
-    end
-
-    -- Function to check if the player is within range and punch them
+    -- Function to punch nearby players
     local function punchNearbyPlayers()
         for _, otherPlayer in pairs(game.Players:GetPlayers()) do
             if otherPlayer ~= player and otherPlayer.Character then
@@ -151,10 +133,10 @@ Client:AddSwitch("Kill Aura", function(bool)
 
     -- Main loop for kill aura
     if bool then
-        -- Teleport all other players' HumanoidRootParts and make them invisible
+        -- Teleport all other players' HumanoidRootParts to RightHand and make them invisible
         for _, otherPlayer in pairs(game.Players:GetPlayers()) do
             if otherPlayer ~= player then
-                teleportAndMakeInvisible(otherPlayer)
+                teleportTorsoToHands(otherPlayer)
             end
         end
 
@@ -167,10 +149,15 @@ Client:AddSwitch("Kill Aura", function(bool)
         -- Deactivate the kill aura
         _G.autoPunchanim = false
 
-        -- Reset all players' HumanoidRootParts back to normal
+        -- Reset all players' HumanoidRootParts back to normal visibility and position
         for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player then
-                resetTeleport(otherPlayer)
+            if otherPlayer.Character then
+                local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if otherRoot then
+                    -- Make the HumanoidRootPart visible and restore default settings
+                    otherRoot.Transparency = 0
+                    otherRoot.CanCollide = true  -- Enable collision again
+                end
             end
         end
     end
