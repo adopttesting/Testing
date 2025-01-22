@@ -1,17 +1,17 @@
 -- Whitelist for specific usernames 
 local whitelistedUsers = {
-   "Mrbignewcoming3",
-   "Hi_dorihi",  --whitelisted
+    "Mrbignewcoming3",
+    "Hi_dorihi",  -- whitelisted
 }
 
 -- Function to check if player is whitelisted
 local function isWhitelisted(username)
-   for _, whitelisted in ipairs(whitelistedUsers) do
-       if username == whitelisted then
-           return true
-       end
-   end
-   return false
+    for _, whitelisted in ipairs(whitelistedUsers) do
+        if username == whitelisted then
+            return true
+        end
+    end
+    return false
 end
 
 -- Get the local player's username
@@ -60,264 +60,261 @@ if not isWhitelisted(username) then
     -- Kick the player
     player:Kick("Not WhiteListed L")
 else
+    -- If the player is whitelisted, load the GUI
 
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
+    local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
 
-local window = library:AddWindow("Belugaga V1 [] Made By Adopt", {
-    main_color = Color3.fromRGB(0, 0, 0), -- Color
-    min_size = Vector2.new(500, 450), -- Size of the gui
-    can_resize = false, -- true or false
-})
+    local window = library:AddWindow("Belugaga V1 [] Made By Adopt", {
+        main_color = Color3.fromRGB(0, 0, 0), -- Color
+        min_size = Vector2.new(500, 450), -- Size of the gui
+        can_resize = false, -- true or false
+    })
 
-local Client = window:AddTab("Client")
+    local Client = window:AddTab("Client")
 
--- Set Size 2
-Client:AddButton("Set Size 2",function()
-    local args = {
-        [1] = "changeSize",
-        [2] = 2
-    }
+    -- Set Size 2
+    Client:AddButton("Set Size 2", function()
+        local args = {
+            [1] = "changeSize",
+            [2] = 2
+        }
 
-    game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
-end)
+        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
+    end)
 
--- Local Player Controls: WalkSpeed
-Client:AddLabel("Local Player")
+    -- Local Player Controls: WalkSpeed
+    Client:AddLabel("Local Player")
 
-Client:AddSlider("WalkSpeed", function(p)
-    setwalkspeed(p)   
-end, {                    
-    ["min"] = 16,
-    ["max"] = 500,  
-})
+    Client:AddSlider("WalkSpeed", function(p)
+        setwalkspeed(p)   
+    end, {                    
+        ["min"] = 16,
+        ["max"] = 500,  
+    })
 
--- Default WalkSpeed to 16
-Client:GetSlider("WalkSpeed")
-walkSpeedSlider:Set(16)
+    -- Default WalkSpeed to 16
+    Client:GetSlider("WalkSpeed"):Set(16)
 
-Client:AddButton("Apply WalkSpeed",function()
-    -- Apply WalkSpeed code here if needed
-end)
+    Client:AddButton("Apply WalkSpeed", function()
+        -- Apply WalkSpeed code here if needed
+    end)
 
--- Local Player Controls: JumpPower
-Client:AddSlider("JumpPower", function(p)
-    setjumppower(p)   
-end, {                    
-    ["min"] = 50,
-    ["max"] = 1000,  
-})
+    -- Local Player Controls: JumpPower
+    Client:AddSlider("JumpPower", function(p)
+        setjumppower(p)   
+    end, {                    
+        ["min"] = 50,
+        ["max"] = 1000,  
+    })
 
--- Default JumpPower to 50
-Client:GetSlider("JumpPower")
-jumpPowerSlider:Set(50) 
+    -- Default JumpPower to 50
+    Client:GetSlider("JumpPower"):Set(50)
 
-Client:AddButton("Apply JumpPower",function() 
-    -- Apply JumpPower code here if needed
-end)
+    Client:AddButton("Apply JumpPower", function() 
+        -- Apply JumpPower code here if needed
+    end)
 
-local Players = window:AddTab("Players")
+    local Players = window:AddTab("Players")
 
-Players:AddLabel("Spectate Player")
+    Players:AddLabel("Spectate Player")
 
--- Dropdown for selecting a player to spectate
-Players:AddDropdown("Select Player To Spectate", function(text)
-    -- This will store the selected player name
-    selectedPlayerName = text
-end)
+    -- Dropdown for selecting a player to spectate
+    local selectedPlayerName = nil
+    local dropdown = Players:AddDropdown("Select Player To Spectate", function(text)
+        selectedPlayerName = text
+    end)
 
--- Function to update the player list in the dropdown
-local function updatePlayerList()
-    dropdown:Clear()  -- Clear the dropdown options first
+    -- Function to update the player list in the dropdown
+    local function updatePlayerList()
+        dropdown:Clear()  -- Clear the dropdown options first
 
-    -- Populate the dropdown with current players in the game
-    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-        dropdown:Add(player.Name)
-    end
-end
-
--- Initially update the dropdown with the current players
-updatePlayerList()
-
--- Listen for player join and leave events to update the dropdown dynamically
-game:GetService("Players").PlayerAdded:Connect(function()
-    updatePlayerList()  -- Update the dropdown when a player joins
-end)
-
-game:GetService("Players").PlayerRemoving:Connect(function()
-    updatePlayerList()  -- Update the dropdown when a player leaves
-end)
-
--- Spectate selected player
-Players:AddButton("Spectate Selected Player", function()
-    if selectedPlayerName then
-        local playerToSpectate = game:GetService("Players"):FindFirstChild(selectedPlayerName)
-        if playerToSpectate then
-            -- Set the local player's camera to the selected player's POV
-            game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Scriptable
-            game:GetService("Workspace").CurrentCamera.CameraSubject = playerToSpectate.Character:WaitForChild("Humanoid")
-        end
-    end
-end)
-
--- Go off POV (return to normal camera)
-Players:AddButton("Go Off POV", function()
-    -- Revert to default camera settings (first-person mode)
-    game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Standard
-    game:GetService("Workspace").CurrentCamera.CameraSubject = game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid")
-end)
-
-Players:AddLabel("Spy Player stats")
-
-local playerData = {}
-local currentSelectedPlayer = nil
-local notFoundLabel = nil
-local selectedPlayerName = nil
-
--- Function to abbreviate large numbers
-local function abbreviateNumber(value)
-    if value >= 1e15 then
-        return string.format("%.1fQa", value / 1e15)
-    elseif value >= 1e12 then
-        return string.format("%.1fT", value / 1e12)
-    elseif value >= 1e9 then
-        return string.format("%.1fB", value / 1e9)
-    elseif value >= 1e6 then
-        return string.format("%.1fM", value / 1e6)
-    elseif value >= 1e3 then
-        return string.format("%.1fK", value / 1e3)
-    else
-        return tostring(value)
-    end
-end
-
--- Function to create player data labels
-local function createPlayerLabels(player)
-    local playerName = player.Name
-    local leaderstats = player:FindFirstChild("leaderstats")
-    local equippedPets = player:FindFirstChild("equippedPets")
-    local ownedGamepasses = player:FindFirstChild("ownedGamepasses")
-
-    local labels = {
-        StrengthLabel = Players:AddLabel("Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)),
-        DurabilityLabel = Players:AddLabel("Durability: " .. abbreviateNumber(player.Durability.Value or 0)),
-        KillsLabel = Players:AddLabel("Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)),
-        BrawlsLabel = Players:AddLabel("Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)),
-        AgilityLabel = Players:AddLabel("Agility: " .. abbreviateNumber(player.Agility.Value or 0)),
-        EvilKarmaLabel = Players:AddLabel("evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)),
-        GoodKarmaLabel = Players:AddLabel("goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)),
-        MapLabel = Players:AddLabel("Map: " .. (player.currentMap.Value or "N/A")),
-        KingTimeLabel = Players:AddLabel("KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)),
-        PremiumLabel = Players:AddLabel("Premium: " .. (player.MembershipType == Enum.MembershipType.Premium and "true" or "false")),
-    }
-
-    for i = 1, 5 do
-        local petValue = equippedPets:FindFirstChild("pet" .. i) and equippedPets["pet" .. i].Value or "N/A"
-        labels["Pet" .. i .. "Label"] = Playerstab:AddLabel("Pet" .. i .. ": " .. tostring(petValue))
-    end
-
-    local gamepassList = {}
-    if ownedGamepasses then
-        for _, gamepass in ipairs(ownedGamepasses:GetChildren()) do
-            table.insert(gamepassList, gamepass.Name)
+        -- Populate the dropdown with current players in the game
+        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+            dropdown:Add(player.Name)
         end
     end
 
-    local gamepassesText = #gamepassList > 0 and table.concat(gamepassList, ", ") or "N/A"
-    labels.GamepassesLabel = Playerstab:AddLabel("ownedGamepasses: " .. gamepassesText)
+    -- Initially update the dropdown with the current players
+    updatePlayerList()
 
-    playerData[playerName] = labels
-
-    -- Update labels dynamically on stat changes
-    leaderstats.Kills.Changed:Connect(function()
-        labels.KillsLabel.Text = "Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)
+    -- Listen for player join and leave events to update the dropdown dynamically
+    game:GetService("Players").PlayerAdded:Connect(function()
+        updatePlayerList()  -- Update the dropdown when a player joins
     end)
 
-    leaderstats.Strength.Changed:Connect(function()
-        labels.StrengthLabel.Text = "Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)
+    game:GetService("Players").PlayerRemoving:Connect(function()
+        updatePlayerList()  -- Update the dropdown when a player leaves
     end)
 
-    leaderstats.Brawls.Changed:Connect(function()
-        labels.BrawlsLabel.Text = "Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)
-    end)
-
-    player.Durability.Changed:Connect(function()
-        labels.DurabilityLabel.Text = "Durability: " .. abbreviateNumber(player.Durability.Value or 0)
-    end)
-
-    player.Agility.Changed:Connect(function()
-        labels.AgilityLabel.Text = "Agility: " .. abbreviateNumber(player.Agility.Value or 0)
-    end)
-
-    player.evilKarma.Changed:Connect(function()
-        labels.EvilKarmaLabel.Text = "evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)
-    end)
-
-    player.goodKarma.Changed:Connect(function()
-        labels.GoodKarmaLabel.Text = "goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)
-    end)
-
-    player.currentMap.Changed:Connect(function()
-        labels.MapLabel.Text = "Map: " .. (player.currentMap.Value or "N/A")
-    end)
-
-    player.muscleKingTime.Changed:Connect(function()
-        labels.KingTimeLabel.Text = "KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)
-    end)
-end
-
--- Function to remove player data labels
-local function removePlayerLabels(playerName)
-    local labels = playerData[playerName]
-    if labels then
-        for _, label in pairs(labels) do
-            label:Remove()
+    -- Spectate selected player
+    Players:AddButton("Spectate Selected Player", function()
+        if selectedPlayerName then
+            local playerToSpectate = game:GetService("Players"):FindFirstChild(selectedPlayerName)
+            if playerToSpectate then
+                -- Set the local player's camera to the selected player's POV
+                game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Scriptable
+                game:GetService("Workspace").CurrentCamera.CameraSubject = playerToSpectate.Character:WaitForChild("Humanoid")
+            end
         end
-        playerData[playerName] = nil
-    end
-end
+    end)
 
--- Dropdown for selecting player to view stats
-Players:AddDropdown("Select Player", function(playerName)
-    selectedPlayerName = playerName
-    if notFoundLabel then
-        notFoundLabel:Remove()
-        notFoundLabel = nil
-    end
+    -- Go off POV (return to normal camera)
+    Players:AddButton("Go Off POV", function()
+        -- Revert to default camera settings (first-person mode)
+        game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Standard
+        game:GetService("Workspace").CurrentCamera.CameraSubject = game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid")
+    end)
 
-    local player = game.Players:FindFirstChild(playerName)
-    if player then
-        if currentSelectedPlayer then
-            removePlayerLabels(currentSelectedPlayer)
+    Players:AddLabel("Spy Player stats")
+
+    local playerData = {}
+    local currentSelectedPlayer = nil
+    local notFoundLabel = nil
+
+    -- Function to abbreviate large numbers
+    local function abbreviateNumber(value)
+        if value >= 1e15 then
+            return string.format("%.1fQa", value / 1e15)
+        elseif value >= 1e12 then
+            return string.format("%.1fT", value / 1e12)
+        elseif value >= 1e9 then
+            return string.format("%.1fB", value / 1e9)
+        elseif value >= 1e6 then
+            return string.format("%.1fM", value / 1e6)
+        elseif value >= 1e3 then
+            return string.format("%.1fK", value / 1e3)
+        else
+            return tostring(value)
         end
-        createPlayerLabels(player)
-        currentSelectedPlayer = playerName
-    else
-        notFoundLabel = Playerstab:AddLabel("Player not found!")
     end
-end)
 
--- Update the dropdown with the list of players in the game
-local function updatePlayerList()
-    dropdown:Clear()  -- Clear the dropdown options first
+    -- Function to create player data labels
+    local function createPlayerLabels(player)
+        local playerName = player.Name
+        local leaderstats = player:FindFirstChild("leaderstats")
+        local equippedPets = player:FindFirstChild("equippedPets")
+        local ownedGamepasses = player:FindFirstChild("ownedGamepasses")
 
-    -- Populate the dropdown with current players in the game
-    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-        dropdown:Add(player.Name)
+        local labels = {
+            StrengthLabel = Players:AddLabel("Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)),
+            DurabilityLabel = Players:AddLabel("Durability: " .. abbreviateNumber(player.Durability.Value or 0)),
+            KillsLabel = Players:AddLabel("Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)),
+            BrawlsLabel = Players:AddLabel("Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)),
+            AgilityLabel = Players:AddLabel("Agility: " .. abbreviateNumber(player.Agility.Value or 0)),
+            EvilKarmaLabel = Players:AddLabel("evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)),
+            GoodKarmaLabel = Players:AddLabel("goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)),
+            MapLabel = Players:AddLabel("Map: " .. (player.currentMap.Value or "N/A")),
+            KingTimeLabel = Players:AddLabel("KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)),
+            PremiumLabel = Players:AddLabel("Premium: " .. (player.MembershipType == Enum.MembershipType.Premium and "true" or "false")),
+        }
+
+        for i = 1, 5 do
+            local petValue = equippedPets:FindFirstChild("pet" .. i) and equippedPets["pet" .. i].Value or "N/A"
+            labels["Pet" .. i .. "Label"] = Players:AddLabel("Pet" .. i .. ": " .. tostring(petValue))
+        end
+
+        local gamepassList = {}
+        if ownedGamepasses then
+            for _, gamepass in ipairs(ownedGamepasses:GetChildren()) do
+                table.insert(gamepassList, gamepass.Name)
+            end
+        end
+
+        local gamepassesText = #gamepassList > 0 and table.concat(gamepassList, ", ") or "N/A"
+        labels.GamepassesLabel = Players:AddLabel("ownedGamepasses: " .. gamepassesText)
+
+        playerData[playerName] = labels
+
+        -- Update labels dynamically on stat changes
+        leaderstats.Kills.Changed:Connect(function()
+            labels.KillsLabel.Text = "Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)
+        end)
+
+        leaderstats.Strength.Changed:Connect(function()
+            labels.StrengthLabel.Text = "Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)
+        end)
+
+        leaderstats.Brawls.Changed:Connect(function()
+            labels.BrawlsLabel.Text = "Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)
+        end)
+
+        player.Durability.Changed:Connect(function()
+            labels.DurabilityLabel.Text = "Durability: " .. abbreviateNumber(player.Durability.Value or 0)
+        end)
+
+        player.Agility.Changed:Connect(function()
+            labels.AgilityLabel.Text = "Agility: " .. abbreviateNumber(player.Agility.Value or 0)
+        end)
+
+        player.evilKarma.Changed:Connect(function()
+            labels.EvilKarmaLabel.Text = "evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)
+        end)
+
+        player.goodKarma.Changed:Connect(function()
+            labels.GoodKarmaLabel.Text = "goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)
+        end)
+
+        player.currentMap.Changed:Connect(function()
+            labels.MapLabel.Text = "Map: " .. (player.currentMap.Value or "N/A")
+        end)
+
+        player.muscleKingTime.Changed:Connect(function()
+            labels.KingTimeLabel.Text = "KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)
+        end)
     end
+
+    -- Function to remove player data labels
+    local function removePlayerLabels(playerName)
+        local labels = playerData[playerName]
+        if labels then
+            for _, label in pairs(labels) do
+                label:Remove()
+            end
+            playerData[playerName] = nil
+        end
+    end
+
+    -- Dropdown for selecting player to view stats
+    Players:AddDropdown("Select Player", function(playerName)
+        selectedPlayerName = playerName
+        if notFoundLabel then
+            notFoundLabel:Remove()
+            notFoundLabel = nil
+        end
+
+        local player = game.Players:FindFirstChild(playerName)
+        if player then
+            if currentSelectedPlayer then
+                removePlayerLabels(currentSelectedPlayer)
+            end
+            createPlayerLabels(player)
+            currentSelectedPlayer = playerName
+        else
+            notFoundLabel = Players:AddLabel("Player not found!")
+        end
+    end)
+
+    -- Update the dropdown with the list of players in the game
+    local function updatePlayerList()
+        dropdown:Clear()  -- Clear the dropdown options first
+
+        -- Populate the dropdown with current players in the game
+        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+            dropdown:Add(player.Name)
+        end
+    end
+
+    -- Initially update the dropdown with the current players
+    updatePlayerList()
+
+    -- Listen for player join and leave events to update the dropdown dynamically
+    game:GetService("Players").PlayerAdded:Connect(function()
+        updatePlayerList()  -- Update the dropdown when a player joins
+    end)
+
+    game:GetService("Players").PlayerRemoving:Connect(function()
+        updatePlayerList()  -- Update the dropdown when a player leaves
+    end)
+
+--script whitelist end
 end
-
--- Initially update the dropdown with the current players
-updatePlayerList()
-
--- Listen for player join and leave events to update the dropdown dynamically
-game:GetService("Players").PlayerAdded:Connect(function()
-    updatePlayerList()  -- Update the dropdown when a player joins
-end)
-
-game:GetService("Players").PlayerRemoving:Connect(function()
-    updatePlayerList()  -- Update the dropdown when a player leaves
-end)
-
---end of script whitelist
-end
-
