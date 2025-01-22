@@ -93,6 +93,10 @@ else
         end
     end)
 
+Client:AddButton("Apply WalkSpeed",function()
+	-- Code here
+end)
+
     -- JumpPower TextBox
     Client:AddTextBox("Type JumpPower Amount", function(text)
         local jumpPowerAmount = tonumber(text)
@@ -102,6 +106,10 @@ else
             print("Invalid JumpPower input!")
         end
     end)
+
+Client:AddButton("Apply JumpPower",function()
+	-- Code here
+end)
 
     -- Size TextBox
     Client:AddTextBox("Type Size (1 to 500)", function(text)
@@ -121,9 +129,131 @@ else
         end
     end)
 
+Client:AddLabel("Client Things")
+
+local isPositionLocked = false
+local lockedPosition = nil
+
+Client:AddSwitch("Lock Client Position", function(bool)
+    isPositionLocked = bool
+
+    if isPositionLocked then
+        -- Store the player's current position when the toggle is turned on
+        lockedPosition = LocalPlayer:GetPosition()
+    else
+        -- Optionally, you can reset the locked position when turning it off
+        lockedPosition = nil
+    end
+end)
+
+-- This function will keep the player at the locked position if the toggle is on
+function FreezePlayerPosition()
+    if isPositionLocked and lockedPosition then
+        LocalPlayer:SetPosition(lockedPosition)
+    end
+end
+
+-- Call this function every frame to freeze the position
+Client:AddCallback("OnUpdate", function()
+    FreezePlayerPosition()
+end)
+
+local isAntiKickEnabled = false
+local activityTimer = 0
+local activityInterval = 30  -- Interval in seconds to send a "keep-alive" signal
+local lastActivityTime = 0
+
+-- Function to send a keep-alive signal (simulated)
+function SendKeepAliveSignal()
+    if isAntiKickEnabled then
+        -- Simulate sending a "keep-alive" signal to prevent disconnection
+        -- Replace this with the actual method you need to use (e.g., sending a chat message or a server request)
+        -- Example: Client:SendMessage("ping")
+        print("Sending keep-alive signal...")
+        -- You can use a chat message or any other method that the server recognizes as activity
+    end
+end
+
+-- Anti Kick Toggle Callback
+Client:AddSwitch("Anti Kick", function(bool)
+    isAntiKickEnabled = bool
+
+    if isAntiKickEnabled then
+        lastActivityTime = os.time()  -- Start monitoring the activity time
+    end
+end)
+
+-- Update function to monitor time and send periodic activity signals
+Client:AddCallback("OnUpdate", function()
+    if isAntiKickEnabled then
+        local currentTime = os.time()
+        
+        -- If no activity in the specified interval, send keep-alive signal
+        if currentTime - lastActivityTime >= activityInterval then
+            SendKeepAliveSignal()
+            lastActivityTime = currentTime  -- Update last activity time
+        end
+    end
+end)
+
+-- Optional: You can also track player activity (e.g., movement, chat, etc.) to update the `lastActivityTime`
+-- Example:
+-- Client:AddCallback("OnPlayerMove", function()
+--     lastActivityTime = os.time()  -- Reset activity time when player moves
+-- end)
+
+local isAntiPushEnabled = false
+
+-- Function to prevent interaction (such as pushing or using tools on the player)
+function PreventPlayerInteraction()
+    if isAntiPushEnabled then
+        -- Prevent interactions, e.g., by setting collision properties, ignoring physics, or denying tool usage
+        -- Here, we will assume the server allows us to modify tool usage or collision with the player
+
+        -- For example, disabling the tool's action if it targets the player
+        Client:AddCallback("OnPlayerUseTool", function(player, tool)
+            if player == LocalPlayer then
+                return false  -- Prevent the action from going through if it's targeting this player
+            end
+        end)
+
+        -- You can also add logic for preventing physical pushing, using character collision, or freezing physics interactions
+        -- Example: Disable collisions between the player and other players
+        LocalPlayer:SetCollisionEnabled(false)  -- Disables collision with other players
+    else
+        -- Re-enable the collisions when Anti Push is disabled
+        LocalPlayer:SetCollisionEnabled(true)
+    end
+end
+
+-- Anti Push Toggle Callback
+Client:AddSwitch("Anti Push", function(bool)
+    isAntiPushEnabled = bool
+    PreventPlayerInteraction()  -- Toggle the Anti Push effect when the switch is toggled
+end)
+
+-- Optionally, handle tool usage interaction specifically (e.g., using a weapon or pushing tool)
+Client:AddCallback("OnToolUsed", function(tool, targetPlayer)
+    if isAntiPushEnabled and targetPlayer == LocalPlayer then
+        -- Block the tool action if Anti Push is on
+        return false  -- Prevent tool action when targeting the player
+    end
+end
+
+Client:AddButton("Destroy Ad teleport", function() 
+    -- Find and destroy the part named "RobloxForwardPortals" 
+    local part = workspace:FindFirstChild("RobloxForwardPortals") 
+    if part then 
+        part:Destroy() 
+        print("Part 'RobloxForwardPortals' has been destroyed.") 
+    else 
+        print("Part 'RobloxForwardPortals' not found.") 
+    end 
+end)
+
   -- Players tab for selecting a player and viewing stats
 local Players = window:AddTab("Players")
-Players:AddLabel("Sepacte Player")
+Players:AddLabel("Spectate Player")
 
 local selectedPlayerName = nil -- To store the player name entered
 local viewingPlayer = false -- To track whether the camera is locked on a player
@@ -295,10 +425,8 @@ end)
 local ServerTab = window:AddTab("Server")
 
 local elapsedTimeLabel = ServerTab:AddLabel("Elapsed Time:")
-local playerCountLabel = ServerTab:AddLabel("Amount of Players in Server:")
-
 local formattedTimeLabel = ServerTab:AddLabel("Week: 0 Day: 0 Hour: 0 Minute: 0 Second: 0")  -- New label for formatted time
-
+local playerCountLabel = ServerTab:AddLabel("Amount of Players in Server:")
 local currentPlayerCountLabel = ServerTab:AddLabel("Players in Server: 0")  -- New label for current player count
 
 local elapsedTime = 0  -- Start with 0 elapsed time
@@ -316,13 +444,13 @@ end
 -- Update elapsed time every second
 game:GetService("RunService").Heartbeat:Connect(function()
     elapsedTime = elapsedTime + 1  -- Increase by 1 second
-    elapsedTimeLabel:SetText("Elapsed Time: " .. elapsedTime)  -- Update the basic elapsed time label
-    formattedTimeLabel:SetText(formatElapsedTime(elapsedTime))  -- Update the formatted time label every second
+    elapsedTimeLabel.Text = "Elapsed Time: " .. elapsedTime  -- Update the basic elapsed time label
+    formattedTimeLabel.Text = formatElapsedTime(elapsedTime)  -- Update the formatted time label every second
 end)
 
 -- Function to update player count label
 local function updatePlayerCount()
-    currentPlayerCountLabel:SetText("Players in Server: " .. #game.Players:GetPlayers())  -- Update the label with the current player count
+    currentPlayerCountLabel.Text = "Players in Server: " .. #game.Players:GetPlayers()  -- Update the label with the current player count
 end
 
 -- Listen for player join/leave to update the player count
@@ -348,7 +476,10 @@ ServerTab:AddButton("Teleport to Player", function()
         warn("No player name entered!")
     end
 end)
-    
+
+local AutoFarm = window:AddTab("Auto Farm")
+
+
 
 
 
