@@ -121,140 +121,69 @@ else
         end
     end)
 
-    -- Players Tab
-    local Players = window:AddTab("Players")
-    Players:AddLabel("Spectate Player")
+   -- Players tab for selecting a player and viewing stats
+local PlayersTab = window:AddTab("Players")
 
-    -- Dropdown for selecting a player to spectate
-    local selectedPlayerName = nil
-    local dropdown = Players:AddDropdown("Select Player To Spectate", function(text)
-        selectedPlayerName = text
-    end)
+local selectedPlayerName
+local currentSelectedPlayer
+local notFoundLabel
 
-    -- Function to update the player list in the dropdown
-    local function updatePlayerList()
-        dropdown:Clear()  -- Clear the dropdown options first
+-- Function to remove labels of previous selected player
+local function removePlayerLabels(player)
+    -- Custom function to remove previously created labels
+    -- You can remove the player's stats or other UI elements here
+end
 
-        -- Populate the dropdown with current players in the game
+-- Function to create player labels (for example, stats)
+local function createPlayerLabels(player)
+    -- Custom function to create and show player stats/labels here
+    -- You could display their health, level, etc.
+end
+
+-- Dropdown for selecting a player
+PlayersTab:AddDropdown("Select Player", function(playerName)
+    selectedPlayerName = playerName
+    if notFoundLabel then
+        notFoundLabel:Remove()
+        notFoundLabel = nil
+    end
+
+    local player = game.Players:FindFirstChild(playerName)
+    if player then
+        if currentSelectedPlayer then
+            removePlayerLabels(currentSelectedPlayer)
+        end
+        createPlayerLabels(player)
+        currentSelectedPlayer = playerName
+    else
+        notFoundLabel = PlayersTab:AddLabel("Player not found!")
+    end
+end)
+
+-- Update the player list dynamically
+local function updatePlayerList()
+    local dropdown = PlayersTab:GetDropdown("Select Player")
+    if dropdown then
+        dropdown:Clear()  -- Clear the existing options
         for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-            dropdown:Add(player.Name)
+            dropdown:Add(player.Name)  -- Add new player to dropdown
         end
     end
+end
 
-    -- Initially update the dropdown with the current players
-    updatePlayerList()
+-- Call the update function on player join/leave
+game:GetService("Players").PlayerAdded:Connect(updatePlayerList)
+game:GetService("Players").PlayerRemoving:Connect(updatePlayerList)
 
-    -- Listen for player join and leave events to update the dropdown dynamically
-    game:GetService("Players").PlayerAdded:Connect(function()
-        updatePlayerList()
-    end)
+-- Initial update when the script is first loaded
+updatePlayerList() 
 
-    game:GetService("Players").PlayerRemoving:Connect(function()
-        updatePlayerList()
-    end)
+-- Server tab to show elapsed time and player count
+local ServerTab = window:AddTab("Server")
 
-    -- Spectate selected player
-    Players:AddButton("Spectate Selected Player", function()
-        if selectedPlayerName then
-            local playerToSpectate = game:GetService("Players"):FindFirstChild(selectedPlayerName)
-            if playerToSpectate then
-                game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Scriptable
-                game:GetService("Workspace").CurrentCamera.CameraSubject = playerToSpectate.Character:WaitForChild("Humanoid")
-            end
-        end
-    end)
+local elapsedTimeLabel = ServerTab:AddLabel("Elapsed Time:")
+local playerCountLabel = ServerTab:AddLabel("Amount of Players in Server:")
 
-    -- Go off POV (return to normal camera)
-    Players:AddButton("Go Off POV", function()
-        game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Standard
-        game:GetService("Workspace").CurrentCamera.CameraSubject = game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid")
-    end)
-
-    -- Server Tab
-    local Server = window:AddTab("Server")
-
-    -- Labels for elapsed time and player count
-    local elapsedTimeLabel = Server:AddLabel("Elapsed Time:")
-    local playerCountLabel = Server:AddLabel("Amount of Players in Server:")
-
-    -- Timer to update elapsed time
-    local elapsedTime = 0
-
-    -- Function to format the elapsed time
-    local function formatElapsedTime(seconds)
-        local week = math.floor(seconds / 604800)
-        local day = math.floor((seconds % 604800) / 86400)
-        local hour = math.floor((seconds % 86400) / 3600)
-        local minute = math.floor((seconds % 3600) / 60)
-        local second = seconds % 60
-        return string.format("Week: %d Day: %d Hour: %d Minute: %d Second: %d", week, day, hour, minute, second)
-    end
-
-    -- Update elapsed time every second
-    game:GetService("RunService").Heartbeat:Connect(function()
-        elapsedTime = elapsedTime + 1
-        elapsedTimeLabel:SetText("Elapsed Time: " .. formatElapsedTime(elapsedTime))
-    end)
-
-    -- Track players in the server
-    local function updatePlayerCount()
-        playerCountLabel:SetText("Amount of Players in Server: " .. #game.Players:GetPlayers())
-    end
-
-    -- Add event listeners for player join/leave
-    game.Players.PlayerAdded:Connect(updatePlayerCount)
-    game.Players.PlayerRemoving:Connect(updatePlayerCount)
-
-    -- Dropdown for selecting a player to view stats
-    Players:AddDropdown("Select Player", function(playerName)
-        selectedPlayerName = playerName
-        if notFoundLabel then
-            notFoundLabel:Remove()
-            notFoundLabel = nil
-        end
-
-        local player = game.Players:FindFirstChild(playerName)
-        if player then
-            if currentSelectedPlayer then
-                removePlayerLabels(currentSelectedPlayer)
-            end
-            createPlayerLabels(player)
-            currentSelectedPlayer = playerName
-        else
-            notFoundLabel = Players:AddLabel("Player not found!")
-        end
-    end)
-
-    -- Update the dropdown with the list of players in the game
-    local function updatePlayerList()
-        dropdown:Clear()  -- Clear the dropdown options first
-
-        -- Populate the dropdown with current players in the game
-        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-            dropdown:Add(player.Name)
-        end
-    end
-
-    -- Initially update the dropdown with the current players
-    updatePlayerList()
-
-    -- Listen for player join and leave events to update the dropdown dynamically
-    game:GetService("Players").PlayerAdded:Connect(function()
-        updatePlayerList()  -- Update the dropdown when a player joins
-    end)
-
-    game:GetService("Players").PlayerRemoving:Connect(function()
-        updatePlayerList()  -- Update the dropdown when a player leaves
-    end)
-
-local Server = window:AddTab("Server")
-
--- Labels for elapsed time and player count
-local elapsedTimeLabel = Server:AddLabel("Elapsed Time:")
-local playerCountLabel = Server:AddLabel("Amount of Players in Server:")
-local playerNameLabel = Server:AddLabel("")  -- Empty label for player names
-
--- Timer to update elapsed time
 local elapsedTime = 0  -- Start with 0 elapsed time
 
 -- Function to format the elapsed time
@@ -273,45 +202,38 @@ game:GetService("RunService").Heartbeat:Connect(function()
     elapsedTimeLabel:SetText("Elapsed Time: " .. formatElapsedTime(elapsedTime))  -- Update label
 end)
 
--- Track players in the server
+-- Update player count
 local function updatePlayerCount()
-    playerCountLabel:SetText("Amount of Players in Server: " .. #game.Players:GetPlayers())  -- Update player count label
+    playerCountLabel:SetText("Amount of Players in Server: " .. #game.Players:GetPlayers())  -- Update label with player count
 end
 
--- Add event listeners for player join/leave
+-- Listen for player join/leave
 game.Players.PlayerAdded:Connect(updatePlayerCount)
 game.Players.PlayerRemoving:Connect(updatePlayerCount)
 
--- Create the dropdown for selecting a player
-local dropdown = Server:AddDropdown("Select Player", function(text)
-    if text == "Mars" then
-        print("o")
-    elseif text == "Earth" then
-        print("k")
-    elseif text == "Iridocyclitis" then
-        print("Weeeee")
-    end
-end)
-
--- Dynamically populate the dropdown with player names
-game:GetService("RunService").Heartbeat:Connect(function()
-    dropdown:Clear()  -- Clear current options to update the list
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        dropdown:Add(player.Name)  -- Add player names to the dropdown
-    end
-end)
-
--- Button to teleport to the selected player
-Server:AddButton("Teleport To Selected Player", function()
-    local selectedPlayerName = dropdown:GetSelectedText()
-    if selectedPlayerName then
-        local selectedPlayer = game.Players:FindFirstChild(selectedPlayerName)
+-- Create the player selection dropdown
+local dropdown = ServerTab:AddDropdown("Select Player", function(selectedName)
+    if selectedName then
+        local selectedPlayer = game.Players:FindFirstChild(selectedName)
         if selectedPlayer then
-            -- Teleport code here (assuming you are teleporting the local player)
+            -- Teleport the local player to the selected player
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = selectedPlayer.Character.HumanoidRootPart.CFrame
         end
     end
 end)
+
+-- Dynamically populate the player dropdown with player names
+game:GetService("RunService").Heartbeat:Connect(function()
+    if dropdown then
+        dropdown:Clear()  -- Clear the current dropdown options
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            dropdown:Add(player.Name)  -- Add each player name to the dropdown
+        end
+    end
+end)
+    
+
+
 
 --script whitelist end
 end
