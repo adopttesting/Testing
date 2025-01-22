@@ -44,125 +44,83 @@ for _, v in pairs(workspace.zones.fishing:GetChildren()) do
     end
 end
 
---all dat for ui minimize button
--- \\ Normal Module // --
-	
-	PlayerGui = LocalPlayer.PlayerGui
-	Backpack = LocalPlayer.Backpack
-	request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-
-	Char = Client.Character
-	Character = Client.Character
-	if not Threads then getgenv().Threads = {} end
-
-	repeat 
-		LocalPlayer = Players.LocalPlayer
-		wait()
-	until LocalPlayer
-end
-
+-- UI Minimize Button Logic
 local TweenService = game:GetService("TweenService")
-	local UserInputService = game:GetService("UserInputService")
-	local UIBUTTON = Instance.new("ScreenGui")
-	local Frame = Instance.new("Frame")
-	local ImageButton = Instance.new("ImageButton")
-	local UICorner = Instance.new("UICorner")
-	local UICorner_2 = Instance.new("UICorner")
+local UserInputService = game:GetService("UserInputService")
 
---the button
+local UIBUTTON = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local ImageButton = Instance.new("ImageButton")
+local UICorner = Instance.new("UICorner")
+local UICorner_2 = Instance.new("UICorner")
+
+-- Button Initialization
 UIBUTTON.Name = "UIBUTTON"
-	UIBUTTON.Parent = game.CoreGui
-	UIBUTTON.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+UIBUTTON.Parent = game.CoreGui
+UIBUTTON.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-	Frame.Parent = UIBUTTON
-	Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-	Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-	Frame.BorderSizePixel = 0
-	Frame.Transparency = 1
-	Frame.Position = UDim2.new(0.157012194, 0, 0.164366379, 0)
-	Frame.Size = UDim2.new(0, 115, 0, 49)
+Frame.Parent = UIBUTTON
+Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Frame.BorderSizePixel = 0
+Frame.Transparency = 1
+Frame.Position = UDim2.new(0.157, 0, 0.164, 0)
+Frame.Size = UDim2.new(0, 115, 0, 49)
 
 ImageButton.Parent = Frame
 ImageButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-ImageButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 ImageButton.BorderSizePixel = 0
-ImageButton.Active = true
-ImageButton.Draggable = true
-ImageButton.Position = UDim2.new(0.218742043, 0, -0.155235752, 0)
+ImageButton.Position = UDim2.new(0.218, 0, -0.155, 0)
 ImageButton.Size = UDim2.new(0, 54, 0, 54)
-
--- Set initial image to "open"
 ImageButton.Image = "rbxassetid://965305329" -- Open image asset ID
-local isOpen = true -- Variable to track the state
+
+local isOpen = true
 
 ImageButton.MouseButton1Click:Connect(function()
-    -- Animate the button size
     ImageButton:TweenSize(UDim2.new(0, 55, 0, 55), Enum.EasingDirection.In, Enum.EasingStyle.Elastic, 0.1)
     delay(0.1, function()
         ImageButton:TweenSize(UDim2.new(0, 52, 0, 52), Enum.EasingDirection.Out, Enum.EasingStyle.Elastic, 0.1)
     end)
 
--- Toggle the image based on the state
     if isOpen then
-        ImageButton.Image = "rbxassetid://86093303748141" -- Replace with close image asset ID
+        ImageButton.Image = "rbxassetid://86093303748141"
     else
-        ImageButton.Image = "rbxassetid://86093303748141" -- Open image asset ID
+        ImageButton.Image = "rbxassetid://965305329"
     end
-    isOpen = not isOpen -- Toggle the state
+    isOpen = not isOpen
 
-    -- Simulate key presses
     local VirtualInputManager = game:GetService("VirtualInputManager")
-    VirtualInputManager:SendKeyEvent(true,"RightControl",false,game)
-    VirtualInputManager:SendKeyEvent(false,"RightControl",false,game)
-    VirtualInputManager:SendKeyEvent(true,"LeftControl",false,game)
-    VirtualInputManager:SendKeyEvent(false,"LeftControl",false,game)
+    VirtualInputManager:SendKeyEvent(true, "RightControl", false, game)
+    VirtualInputManager:SendKeyEvent(false, "RightControl", false, game)
 end)
 
 UICorner.CornerRadius = UDim.new(0, 5)
 UICorner.Parent = ImageButton
 
-	UICorner_2.CornerRadius = UDim.new(0, 5)
-	UICorner_2.Parent = Frame
+UICorner_2.CornerRadius = UDim.new(0, 5)
+UICorner_2.Parent = Frame
 
-local UIS = game:GetService('UserInputService')
-	local frame = Frame
-	local dragToggle = nil
-	local dragSpeed = 0.25
-	local dragStart = nil
-	local startPos = nil
+local dragToggle, dragStart, startPos = nil, nil, nil
 
-	local function updateInput(input)
-		local delta = input.Position - dragStart
-		local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-			startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		game:GetService('TweenService'):Create(frame, TweenInfo.new(dragSpeed), {Position = position}):Play()
-	end
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = Frame.Position
+    end
+end)
 
-	frame.InputBegan:Connect(function(input)
-		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then 
-			dragToggle = true
-			dragStart = input.Position
-			startPos = frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragToggle = false
-				end
-			end)
-		end
-	end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
 
-	UIS.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			if dragToggle then
-				Frame.Transparency = 1
-				updateInput(input)
-			else
-				Frame.Transparency = 1
-			end
-		end
-	end)
-end
-
+Frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = false
+    end
+end)
 
 -- Tabs
 local Tabs = {
@@ -172,7 +130,7 @@ local Tabs = {
 }
 
 -- Auto Fishing Tab
-Tabs.AutoFishing:AddParagraph({ Title = "Rods", Content = "Select and manage your fishing rods." })
+Tabs.AutoFishing:AddParagraph({ Title = "Rods", Content = "" })
 
 local RodDropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
     Title = "Select Rod",
@@ -255,7 +213,7 @@ AutoShakeToggle:OnChanged(function(state)
 end)
 
 -- Automatically Tab
-Tabs.Automatically:AddParagraph({ Title = "Selling", Content = "Manage selling your fish." })
+Tabs.Automatically:AddParagraph({ Title = "Selling", Content = "" })
 
 Tabs.Automatically:AddButton({
     Title = "Sell All",
@@ -290,7 +248,7 @@ Tabs.Automatically:AddButton({
 })
 
 -- Miscellaneous Tab
-Tabs.Misc:AddParagraph({ Title = "Server Hoping", Content = "Manage server connections." })
+Tabs.Misc:AddParagraph({ Title = "Server Hoping", Content = "" })
 
 Tabs.Misc:AddButton({
     Title = "Server Hop",
@@ -306,7 +264,7 @@ Tabs.Misc:AddButton({
     end,
 })
 
-Tabs.Misc:AddParagraph({ Title = "Lag Management", Content = "Optimize performance settings." })
+Tabs.Misc:AddParagraph({ Title = "Lag Management", Content = "" })
 
 Tabs.Misc:AddButton({
     Title = "Boost FPS",
@@ -332,4 +290,3 @@ Tabs.Misc:AddButton({
         end
     end,
 })
-
