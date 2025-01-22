@@ -122,24 +122,156 @@ else
     end)
 
   -- Players tab for selecting a player and viewing stats
-local PlayersTab = window:AddTab("Players")
+local Players = window:AddTab("Players")
+Players:AddLabel("Sepacte Player")
 
-local selectedPlayerName
-local currentSelectedPlayer
-local notFoundLabel
+local selectedPlayerName = nil -- To store the player name entered
+local viewingPlayer = false -- To track whether the camera is locked on a player
 
--- Function to remove labels of the previously selected player
-local function removePlayerLabels(player)
-    -- Custom function to remove previously created labels (optional)
+-- Add TextBox for selecting a player
+Players:AddTextBox("Player Name", function(playerName)
+    selectedPlayerName = playerName
+end)
+
+-- Add toggle to lock/unlock camera view
+Players:AddSwitch("Spy Player", function(bool)
+    local camera = game.Workspace.CurrentCamera
+
+    if bool then
+        -- Enable camera lock
+        if selectedPlayerName then
+            local targetPlayer = game.Players:FindFirstChild(selectedPlayerName)
+            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local humanoidRootPart = targetPlayer.Character.HumanoidRootPart
+                viewingPlayer = true -- Enable camera following
+
+                -- Loop to lock camera while the toggle is active
+                while viewingPlayer and bool do
+                    camera.CameraSubject = humanoidRootPart
+                    wait()
+                end
+            end
+        end
+    else
+        -- Disable camera lock and reset to the player's own character
+        viewingPlayer = false
+        camera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+    end
+end)
+
+
+Players:AddLabel("View Stats")
+
+local playerData = {}
+local currentSelectedPlayer = nil
+local notFoundLabel = nil
+local selectedPlayerName = nil
+
+-- Function to abbreviate large numbers
+local function abbreviateNumber(value)
+    if value >= 1e15 then
+        return string.format("%.1fQa", value / 1e15)
+    elseif value >= 1e12 then
+        return string.format("%.1fT", value / 1e12)
+    elseif value >= 1e9 then
+        return string.format("%.1fB", value / 1e9)
+    elseif value >= 1e6 then
+        return string.format("%.1fM", value / 1e6)
+    elseif value >= 1e3 then
+        return string.format("%.1fK", value / 1e3)
+    else
+        return tostring(value)
+    end
 end
 
--- Function to create player labels (for example, stats)
+-- Function to create player data labels
 local function createPlayerLabels(player)
-    -- Custom function to create and show player stats/labels (optional)
+    local playerName = player.Name
+    local leaderstats = player:FindFirstChild("leaderstats")
+    local equippedPets = player:FindFirstChild("equippedPets")
+    local ownedGamepasses = player:FindFirstChild("ownedGamepasses")
+
+    local labels = {
+        StrengthLabel = Players:AddLabel("Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)),
+        DurabilityLabel = Players:AddLabel("Durability: " .. abbreviateNumber(player.Durability.Value or 0)),
+        KillsLabel = Players:AddLabel("Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)),
+        BrawlsLabel = Players:AddLabel("Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)),
+        AgilityLabel = Players:AddLabel("Agility: " .. abbreviateNumber(player.Agility.Value or 0)),
+        EvilKarmaLabel = Players:AddLabel("evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)),
+        GoodKarmaLabel = Players:AddLabel("goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)),
+        MapLabel = Players:AddLabel("Map: " .. (player.currentMap.Value or "N/A")),
+        KingTimeLabel = Players:AddLabel("KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)),
+        PremiumLabel = Players:AddLabel("Premium: " .. (player.MembershipType == Enum.MembershipType.Premium and "true" or "false")),
+    }
+
+    for i = 1, 5 do
+        local petValue = equippedPets:FindFirstChild("pet" .. i) and equippedPets["pet" .. i].Value or "N/A"
+        labels["Pet" .. i .. "Label"] = ViewStatsTab:AddLabel("Pet" .. i .. ": " .. tostring(petValue))
+    end
+
+    local gamepassList = {}
+    if ownedGamepasses then
+        for _, gamepass in ipairs(ownedGamepasses:GetChildren()) do
+            table.insert(gamepassList, gamepass.Name)
+        end
+    end
+
+    local gamepassesText = #gamepassList > 0 and table.concat(gamepassList, ", ") or "N/A"
+    labels.GamepassesLabel = ViewStatsTab:AddLabel("ownedGamepasses: " .. gamepassesText)
+
+    playerData[playerName] = labels
+
+    -- Update labels dynamically on stat changes
+    leaderstats.Kills.Changed:Connect(function()
+        labels.KillsLabel.Text = "Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)
+    end)
+
+    leaderstats.Strength.Changed:Connect(function()
+        labels.StrengthLabel.Text = "Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)
+    end)
+
+    leaderstats.Brawls.Changed:Connect(function()
+        labels.BrawlsLabel.Text = "Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)
+    end)
+
+    player.Durability.Changed:Connect(function()
+        labels.DurabilityLabel.Text = "Durability: " .. abbreviateNumber(player.Durability.Value or 0)
+    end)
+
+    player.Agility.Changed:Connect(function()
+        labels.AgilityLabel.Text = "Agility: " .. abbreviateNumber(player.Agility.Value or 0)
+    end)
+
+    player.evilKarma.Changed:Connect(function()
+        labels.EvilKarmaLabel.Text = "evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)
+    end)
+
+    player.goodKarma.Changed:Connect(function()
+        labels.GoodKarmaLabel.Text = "goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)
+    end)
+
+    player.currentMap.Changed:Connect(function()
+        labels.MapLabel.Text = "Map: " .. (player.currentMap.Value or "N/A")
+    end)
+
+    player.muscleKingTime.Changed:Connect(function()
+        labels.KingTimeLabel.Text = "KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)
+    end)
 end
 
--- TextBox for selecting a player
-PlayersTab:AddTextBox("Enter Player Name", function(playerName)
+-- Function to remove player data labels
+local function removePlayerLabels(playerName)
+    local labels = playerData[playerName]
+    if labels then
+        for _, label in pairs(labels) do
+            label:Remove()
+        end
+        playerData[playerName] = nil
+    end
+end
+
+-- Textbox for entering player name to view stats
+Players:AddTextBox("Player Name", function(playerName)
     selectedPlayerName = playerName
     if notFoundLabel then
         notFoundLabel:Remove()
@@ -154,31 +286,20 @@ PlayersTab:AddTextBox("Enter Player Name", function(playerName)
         createPlayerLabels(player)
         currentSelectedPlayer = playerName
     else
-        notFoundLabel = PlayersTab:AddLabel("Player not found!")
+        notFoundLabel = Players:AddLabel("Player not found!")
     end
 end)
 
--- Update the player list dynamically (optional functionality if needed elsewhere)
-local function updatePlayerList()
-    local playerNames = {}
-    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    -- Optionally display this list or use it elsewhere
-end
 
--- Call the update function on player join/leave
-game:GetService("Players").PlayerAdded:Connect(updatePlayerList)
-game:GetService("Players").PlayerRemoving:Connect(updatePlayerList)
 
--- Initial update when the script is first loaded
-updatePlayerList()
-
--- Server tab to show elapsed time and player count
 local ServerTab = window:AddTab("Server")
 
 local elapsedTimeLabel = ServerTab:AddLabel("Elapsed Time:")
 local playerCountLabel = ServerTab:AddLabel("Amount of Players in Server:")
+
+local formattedTimeLabel = ServerTab:AddLabel("Week: 0 Day: 0 Hour: 0 Minute: 0 Second: 0")  -- New label for formatted time
+
+local currentPlayerCountLabel = ServerTab:AddLabel("Players in Server: 0")  -- New label for current player count
 
 local elapsedTime = 0  -- Start with 0 elapsed time
 
@@ -195,15 +316,16 @@ end
 -- Update elapsed time every second
 game:GetService("RunService").Heartbeat:Connect(function()
     elapsedTime = elapsedTime + 1  -- Increase by 1 second
-    elapsedTimeLabel:SetText("Elapsed Time: " .. formatElapsedTime(elapsedTime))  -- Update label
+    elapsedTimeLabel:SetText("Elapsed Time: " .. elapsedTime)  -- Update the basic elapsed time label
+    formattedTimeLabel:SetText(formatElapsedTime(elapsedTime))  -- Update the formatted time label every second
 end)
 
--- Update player count
+-- Function to update player count label
 local function updatePlayerCount()
-    playerCountLabel:SetText("Amount of Players in Server: " .. #game.Players:GetPlayers())  -- Update label with player count
+    currentPlayerCountLabel:SetText("Players in Server: " .. #game.Players:GetPlayers())  -- Update the label with the current player count
 end
 
--- Listen for player join/leave
+-- Listen for player join/leave to update the player count
 game.Players.PlayerAdded:Connect(updatePlayerCount)
 game.Players.PlayerRemoving:Connect(updatePlayerCount)
 
