@@ -1,4 +1,4 @@
--- Whitelist for specific usernames 
+-- Whitelist for specific usernames
 local whitelistedUsers = {
     "Mrbignewcoming3",
     "Hi_dorihi",  -- whitelisted
@@ -71,8 +71,7 @@ else
     })
 
     local Client = window:AddTab("Client")
-
-Client:AddLabel("Local Player")
+    Client:AddLabel("Local Player")
 
     -- Set Size 2
     Client:AddButton("Set Size 2", function()
@@ -84,79 +83,46 @@ Client:AddLabel("Local Player")
         game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
     end)
 
-Client:AddButton("Set Size nan", function()
-        local args = {
-            [1] = "changeSize",
-            [2] = nan
-        }
-
-        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
+    -- WalkSpeed TextBox
+    Client:AddTextBox("Type WalkSpeed Amount", function(text)
+        local walkSpeedAmount = tonumber(text)
+        if walkSpeedAmount then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedAmount
+        else
+            print("Invalid WalkSpeed input!")
+        end
     end)
 
--- Create WalkSpeed TextBox and Button
-Client:AddTextBox("Type WalkSpeed Amount", function(text)
-    -- Get the WalkSpeed amount entered in the textbox (as a string)
-    local walkSpeedAmount = tonumber(text) -- Convert the text to a number
-    if walkSpeedAmount then
-        -- If it's a valid number, apply the walk speed
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedAmount
-        print("WalkSpeed applied: " .. walkSpeedAmount)
-    else
-        print("Invalid WalkSpeed input!")
-    end
-end)
+    -- JumpPower TextBox
+    Client:AddTextBox("Type JumpPower Amount", function(text)
+        local jumpPowerAmount = tonumber(text)
+        if jumpPowerAmount then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = jumpPowerAmount
+        else
+            print("Invalid JumpPower input!")
+        end
+    end)
 
-Client:AddButton("Apply WalkSpeed", function()
-    -- Button to apply WalkSpeed when clicked (handled in TextBox function)
-end)
-
--- Create JumpPower TextBox and Button
-Client:AddTextBox("Type JumpPower Amount", function(text)
-    -- Get the JumpPower amount entered in the textbox (as a string)
-    local jumpPowerAmount = tonumber(text) -- Convert the text to a number
-    if jumpPowerAmount then
-        -- If it's a valid number, apply the jump power
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = jumpPowerAmount
-        print("JumpPower applied: " .. jumpPowerAmount)
-    else
-        print("Invalid JumpPower input!")
-    end
-end)
-
-Client:AddButton("Apply JumpPower", function()
-    -- Button to apply JumpPower when clicked (handled in TextBox function)
-end)
-
--- Create Size TextBox and Button
-Client:AddTextBox("Type Size (1 to 500)", function(text)
-    -- Get the size amount entered in the textbox (as a string)
-    local sizeAmount = tonumber(text) -- Convert the text to a number
-    if sizeAmount and sizeAmount >= 1 and sizeAmount <= 500 then
-        -- If it's a valid number within the range of 1 to 500, apply it
-        local character = game.Players.LocalPlayer.Character
-        if character then
-            -- Apply the size to the character's model (example: scaling the head)
-            character:SetPrimaryPartCFrame(character.PrimaryPart.CFrame)  -- Reset the character's CFrame to avoid issues while resizing
-            for _, part in pairs(character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.Size = Vector3.new(sizeAmount, sizeAmount, sizeAmount) -- Scale parts uniformly
+    -- Size TextBox
+    Client:AddTextBox("Type Size (1 to 500)", function(text)
+        local sizeAmount = tonumber(text)
+        if sizeAmount and sizeAmount >= 1 and sizeAmount <= 500 then
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                character:SetPrimaryPartCFrame(character.PrimaryPart.CFrame)  -- Reset the character's CFrame to avoid issues while resizing
+                for _, part in pairs(character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.Size = Vector3.new(sizeAmount, sizeAmount, sizeAmount)
+                    end
                 end
             end
-            print("Size applied: " .. sizeAmount)
+        else
+            print("Invalid size input! Please enter a value between 1 and 500.")
         end
-    else
-        print("Invalid size input! Please enter a value between 1 and 500.")
-    end
-end)
+    end)
 
-Client:AddButton("Apply Size", function()
-    -- Button to apply Size when clicked (handled in TextBox function)
-end)
-   
-
-    
+    -- Players Tab
     local Players = window:AddTab("Players")
-
     Players:AddLabel("Spectate Player")
 
     -- Dropdown for selecting a player to spectate
@@ -180,11 +146,11 @@ end)
 
     -- Listen for player join and leave events to update the dropdown dynamically
     game:GetService("Players").PlayerAdded:Connect(function()
-        updatePlayerList()  -- Update the dropdown when a player joins
+        updatePlayerList()
     end)
 
     game:GetService("Players").PlayerRemoving:Connect(function()
-        updatePlayerList()  -- Update the dropdown when a player leaves
+        updatePlayerList()
     end)
 
     -- Spectate selected player
@@ -192,7 +158,6 @@ end)
         if selectedPlayerName then
             local playerToSpectate = game:GetService("Players"):FindFirstChild(selectedPlayerName)
             if playerToSpectate then
-                -- Set the local player's camera to the selected player's POV
                 game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Scriptable
                 game:GetService("Workspace").CurrentCamera.CameraSubject = playerToSpectate.Character:WaitForChild("Humanoid")
             end
@@ -201,121 +166,46 @@ end)
 
     -- Go off POV (return to normal camera)
     Players:AddButton("Go Off POV", function()
-        -- Revert to default camera settings (first-person mode)
         game:GetService("Players").LocalPlayer.CameraMode = Enum.CameraMode.Standard
         game:GetService("Workspace").CurrentCamera.CameraSubject = game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid")
     end)
 
-    Players:AddLabel("Spy Player stats")
+    -- Server Tab
+    local Server = window:AddTab("Server")
 
-    local playerData = {}
-    local currentSelectedPlayer = nil
-    local notFoundLabel = nil
+    -- Labels for elapsed time and player count
+    local elapsedTimeLabel = Server:AddLabel("Elapsed Time:")
+    local playerCountLabel = Server:AddLabel("Amount of Players in Server:")
 
-    -- Function to abbreviate large numbers
-    local function abbreviateNumber(value)
-        if value >= 1e15 then
-            return string.format("%.1fQa", value / 1e15)
-        elseif value >= 1e12 then
-            return string.format("%.1fT", value / 1e12)
-        elseif value >= 1e9 then
-            return string.format("%.1fB", value / 1e9)
-        elseif value >= 1e6 then
-            return string.format("%.1fM", value / 1e6)
-        elseif value >= 1e3 then
-            return string.format("%.1fK", value / 1e3)
-        else
-            return tostring(value)
-        end
+    -- Timer to update elapsed time
+    local elapsedTime = 0
+
+    -- Function to format the elapsed time
+    local function formatElapsedTime(seconds)
+        local week = math.floor(seconds / 604800)
+        local day = math.floor((seconds % 604800) / 86400)
+        local hour = math.floor((seconds % 86400) / 3600)
+        local minute = math.floor((seconds % 3600) / 60)
+        local second = seconds % 60
+        return string.format("Week: %d Day: %d Hour: %d Minute: %d Second: %d", week, day, hour, minute, second)
     end
 
-    -- Function to create player data labels
-    local function createPlayerLabels(player)
-        local playerName = player.Name
-        local leaderstats = player:FindFirstChild("leaderstats")
-        local equippedPets = player:FindFirstChild("equippedPets")
-        local ownedGamepasses = player:FindFirstChild("ownedGamepasses")
+    -- Update elapsed time every second
+    game:GetService("RunService").Heartbeat:Connect(function()
+        elapsedTime = elapsedTime + 1
+        elapsedTimeLabel:SetText("Elapsed Time: " .. formatElapsedTime(elapsedTime))
+    end)
 
-        local labels = {
-            StrengthLabel = Players:AddLabel("Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)),
-            DurabilityLabel = Players:AddLabel("Durability: " .. abbreviateNumber(player.Durability.Value or 0)),
-            KillsLabel = Players:AddLabel("Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)),
-            BrawlsLabel = Players:AddLabel("Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)),
-            AgilityLabel = Players:AddLabel("Agility: " .. abbreviateNumber(player.Agility.Value or 0)),
-            EvilKarmaLabel = Players:AddLabel("evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)),
-            GoodKarmaLabel = Players:AddLabel("goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)),
-            MapLabel = Players:AddLabel("Map: " .. (player.currentMap.Value or "N/A")),
-            KingTimeLabel = Players:AddLabel("KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)),
-            PremiumLabel = Players:AddLabel("Premium: " .. (player.MembershipType == Enum.MembershipType.Premium and "true" or "false")),
-        }
-
-        for i = 1, 5 do
-            local petValue = equippedPets:FindFirstChild("pet" .. i) and equippedPets["pet" .. i].Value or "N/A"
-            labels["Pet" .. i .. "Label"] = Players:AddLabel("Pet" .. i .. ": " .. tostring(petValue))
-        end
-
-        local gamepassList = {}
-        if ownedGamepasses then
-            for _, gamepass in ipairs(ownedGamepasses:GetChildren()) do
-                table.insert(gamepassList, gamepass.Name)
-            end
-        end
-
-        local gamepassesText = #gamepassList > 0 and table.concat(gamepassList, ", ") or "N/A"
-        labels.GamepassesLabel = Players:AddLabel("ownedGamepasses: " .. gamepassesText)
-
-        playerData[playerName] = labels
-
-        -- Update labels dynamically on stat changes
-        leaderstats.Kills.Changed:Connect(function()
-            labels.KillsLabel.Text = "Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)
-        end)
-
-        leaderstats.Strength.Changed:Connect(function()
-            labels.StrengthLabel.Text = "Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)
-        end)
-
-        leaderstats.Brawls.Changed:Connect(function()
-            labels.BrawlsLabel.Text = "Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)
-        end)
-
-        player.Durability.Changed:Connect(function()
-            labels.DurabilityLabel.Text = "Durability: " .. abbreviateNumber(player.Durability.Value or 0)
-        end)
-
-        player.Agility.Changed:Connect(function()
-            labels.AgilityLabel.Text = "Agility: " .. abbreviateNumber(player.Agility.Value or 0)
-        end)
-
-        player.evilKarma.Changed:Connect(function()
-            labels.EvilKarmaLabel.Text = "evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)
-        end)
-
-        player.goodKarma.Changed:Connect(function()
-            labels.GoodKarmaLabel.Text = "goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)
-        end)
-
-        player.currentMap.Changed:Connect(function()
-            labels.MapLabel.Text = "Map: " .. (player.currentMap.Value or "N/A")
-        end)
-
-        player.muscleKingTime.Changed:Connect(function()
-            labels.KingTimeLabel.Text = "KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)
-        end)
+    -- Track players in the server
+    local function updatePlayerCount()
+        playerCountLabel:SetText("Amount of Players in Server: " .. #game.Players:GetPlayers())
     end
 
-    -- Function to remove player data labels
-    local function removePlayerLabels(playerName)
-        local labels = playerData[playerName]
-        if labels then
-            for _, label in pairs(labels) do
-                label:Remove()
-            end
-            playerData[playerName] = nil
-        end
-    end
+    -- Add event listeners for player join/leave
+    game.Players.PlayerAdded:Connect(updatePlayerCount)
+    game.Players.PlayerRemoving:Connect(updatePlayerCount)
 
-    -- Dropdown for selecting player to view stats
+    -- Dropdown for selecting a player to view stats
     Players:AddDropdown("Select Player", function(playerName)
         selectedPlayerName = playerName
         if notFoundLabel then
