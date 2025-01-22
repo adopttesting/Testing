@@ -60,96 +60,87 @@ if not isWhitelisted(username) then
     -- Kick the player
     player:Kick("Not WhiteListed L")
 else
-    local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
 
-    local window = library:AddWindow("Belugaga V1 [] Made By Adopt", {
-        main_color = Color3.fromRGB(0, 0, 0), -- Color
-        min_size = Vector2.new(500, 450), -- Size of the gui
-        can_resize = false, -- true or false
-    })
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
 
-    local Client = window:AddTab("Client")
+local window = library:AddWindow("Belugaga V1 [] Made By Adopt", {
+    main_color = Color3.fromRGB(0, 0, 0), -- Color
+    min_size = Vector2.new(500, 450), -- Size of the gui
+    can_resize = false, -- true or false
+})
 
--- Place this script in a LocalScript (for the player's client)
+local Client = window:AddTab("Client")
 
--- Variables
-local player = game.Players.LocalPlayer
-local playerName = player.Name
-local punchTool = player.Backpack:FindFirstChild("Punch") or game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
-local autoPunch = false -- control variable to manage punch loop
-local invisibilityTable = {} -- Table to store players with invisible torsos
+-- Set Size 2
+Client:AddButton("Set Size 2",function()
+    local args = {
+        [1] = "changeSize",
+        [2] = 2
+    }
 
--- Function to teleport the torso of all other players to the right hand
-local function teleportTorsoToRightHand()
-    while autoPunch do
-        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") and otherPlayer.Character:FindFirstChild("Torso") then
-                local torso = otherPlayer.Character.Torso
-                local rightHand = player.Character and player.Character:FindFirstChild("RightHand")
+    game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
+end)
 
-                -- Teleport torso to right hand position
-                if rightHand then
-                    torso.CFrame = rightHand.CFrame * CFrame.new(0, 0, 0) -- Adjust the position if needed
-                end
-
-                -- Make the torso invisible
-                torso.Transparency = 1
-                torso.CanCollide = false
-
-                -- Store the player in invisibilityTable to revert changes later
-                invisibilityTable[otherPlayer] = torso
-            end
-        end
-        wait(0.1) -- Loop interval to avoid performance issues
+-- Dropdown for Sizes
+Client:AddDropdown("Choose Size", function(text)
+    local size_value
+    if text == "Mars" then
+        size_value = 50
+    elseif text == "Earth" then
+        size_value = 100
+    elseif text == "Iridocyclitis" then
+        size_value = 10
     end
-end
 
--- Function to simulate the punch animation
-local function startPunching()
-    autoPunch = true
-    while autoPunch do
-        if punchTool then
-            -- Equip punch tool if not already equipped
-            if punchTool.Parent ~= game.Workspace:FindFirstChild(playerName) then
-                punchTool.Parent = game.Workspace:FindFirstChild(playerName)
-            end
-            -- Fire punch events for both hands
-            game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-            game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-            wait() -- Adjust the delay between punches as needed
-        else
-            warn("Punch tool not found")
-            autoPunch = false -- Stop the loop if the tool isn't found
-        end
+    if size_value then
+        -- Set the size using the chosen option
+        local args = {
+            [1] = "changeSize",
+            [2] = size_value
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
     end
-end
+end)
 
--- Function to stop the punch animation and make torsos visible again
-local function stopActions()
-    autoPunch = false
+-- Adding the dropdown options for sizes
+local dropdown = Client:AddDropdown("Choose Size", function(text) end)
+dropdown:Add("Mars")   -- Size 50
+dropdown:Add("Earth")  -- Size 100
+dropdown:Add("Iridocyclitis")  -- Size 10
 
-    -- Restore the torsos to visible and enable collision
-    for player, torso in pairs(invisibilityTable) do
-        if torso then
-            torso.Transparency = 0
-            torso.CanCollide = true
-        end
-    end
-    invisibilityTable = {} -- Clear the table after restoring
-end
+-- Local Player Controls: WalkSpeed
+Client:AddLabel("Local Player")
 
--- Kill Aura toggle event
-Client:AddSwitch("Kill Aura", function(bool)
-    if bool then
-        -- Start teleporting and punching when toggled on
-        autoPunch = true
-        -- Start both actions (teleport torso and punch animation)
-        teleportTorsoToRightHand()
-        startPunching()
-    else
-        -- Stop both actions when toggled off
-        stopActions()
-    end
+Client:AddSlider("WalkSpeed", function(p)
+    setwalkspeed(p)   
+end, {                    
+    ["min"] = 16,
+    ["max"] = 500,  
+})
+
+-- Default WalkSpeed to 16
+local walkSpeedSlider = Client:GetSlider("WalkSpeed")
+walkSpeedSlider:Set(16)
+
+Client:AddButton("Apply WalkSpeed",function()
+    -- Apply WalkSpeed code here if needed
+end)
+
+-- Local Player Controls: JumpPower
+Client:AddSlider("JumpPower", function(p)
+    setjumppower(p)   
+end, {                    
+    ["min"] = 50,
+    ["max"] = 1000,  
+})
+
+-- Default JumpPower to 50
+local jumpPowerSlider = Client:GetSlider("JumpPower")
+jumpPowerSlider:Set(50) 
+
+Client:AddButton("Apply JumpPower",function() 
+    -- Apply JumpPower code here if needed
 end)
 
 --end of script whitelist
