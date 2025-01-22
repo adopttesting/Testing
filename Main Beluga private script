@@ -70,52 +70,98 @@ else
 
     local Client = window:AddTab("Client")
 
-Client:AddSwitch("Kill Aura", function(bool)
-    if bool then
-        local player = game.Players.LocalPlayer
-        local playerName = player.Name
-        local punchTool =
-            player.Backpack:FindFirstChild("Punch") or
-            game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
+-- Client-Side Script
 
-        local auraRange = 100000 -- Set the range of the kill aura
-        _G.autoPunchanim = true -- Global control variable
+local player = game.Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local auraEnabled = false -- Global toggle for kill aura
+local punchTool = player.Backpack:FindFirstChild("Punch") or game.Workspace:FindFirstChild(player.Name):FindFirstChild("Punch")
+local auraRange = 10000 -- Range for the kill aura (effectively make everyone reachable)
+local hitboxSize = Vector3.new(10000, 10000, 10000) -- The size of the hitbox for kill aura
 
-        -- Function to punch nearby players
-        local function punchNearbyPlayers()
-            for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-                if otherPlayer ~= player and otherPlayer.Character then
-                    local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    local otherHumanoid = otherPlayer.Character:FindFirstChild("Humanoid")
-                    if otherRoot and otherHumanoid and otherHumanoid.Health > 0 then
-                        -- Calculate distance
-                        local distance = (player.Character.HumanoidRootPart.Position - otherRoot.Position).Magnitude
-                        if distance <= auraRange then
-                            -- Punch the target
-                            if punchTool then
-                                if punchTool.Parent ~= player.Character then
-                                    punchTool.Parent = player.Character -- Equip the tool
-                                end
-                                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                            else
-                                warn("Punch tool not found")
-                                _G.autoPunchanim = false -- Stop if tool is not found
-                            end
+-- Check if the punch tool exists
+if not punchTool then
+    warn("Punch tool not found")
+end
+
+-- Create RemoteEvent for communicating with the server
+if not ReplicatedStorage:FindFirstChild("KillAuraToggled") then
+    local killAuraToggleEvent = Instance.new("RemoteEvent")
+    killAuraToggleEvent.Name = "KillAuraToggled"
+    killAuraToggleEvent.Parent = ReplicatedStorage
+end
+
+-- Function to enlarge the hitbox of other players
+local function enlargeHitbox(otherPlayer)
+    if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = otherPlayer.Character.HumanoidRootPart
+        humanoidRootPart.Size = hitboxSize  -- Set large hitbox size
+        humanoidRootPart.Transparency = 1  -- Make it invisible to others
+    end
+end
+
+-- Function to reset the hitbox of other players
+local function resetHitbox(otherPlayer)
+    if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = otherPlayer.Character.HumanoidRootPart
+        humanoidRootPart.Size = Vector3.new(2, 2, 1)  -- Default hitbox size
+        humanoidRootPart.Transparency = 1  -- Reset transparency
+    end
+end
+
+-- Function to send the punch command to the server
+local function punchNearbyPlayers()
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local otherHumanoid = otherPlayer.Character:FindFirstChild("Humanoid")
+            if otherRoot and otherHumanoid then
+                -- Calculate the distance to see if the other player is within the aura range
+                local distance = (player.Character.HumanoidRootPart.Position - otherRoot.Position).Magnitude
+                if distance <= auraRange then
+                    -- Send the punch command
+                    if punchTool then
+                        if punchTool.Parent ~= player.Character then
+                            punchTool.Parent = player.Character -- Equip the tool if not already equipped
                         end
+                        -- Trigger the punch animation
+                        game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                        game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                    else
+                        warn("Punch tool not found")
                     end
                 end
             end
         end
+    end
+end
 
-        -- Main loop
-        while _G.autoPunchanim do
-            punchNearbyPlayers() -- Continuously punch nearby players
-            wait(0.1) -- Adjust the delay for aura checks and punches
+-- Toggle kill aura using a switch
+Client:AddSwitch("Kill Aura", function(bool)
+    if bool then
+        auraEnabled = true
+
+        -- Enlarge the hitboxes of all players only once
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= player then
+                enlargeHitbox(otherPlayer)
+            end
+        end
+        
+        -- Start the punching loop to punch nearby players
+        while auraEnabled do
+            punchNearbyPlayers()
+            wait(0.1)  -- Delay between checks for punching
         end
     else
-        -- Deactivate the kill aura
-        _G.autoPunchanim = false
+        auraEnabled = false
+        
+        -- Reset hitboxes back to normal
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= player then
+                resetHitbox(otherPlayer)
+            end
+        end
     end
 end)
 
