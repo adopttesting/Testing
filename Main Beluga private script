@@ -70,96 +70,85 @@ else
 
     local Client = window:AddTab("Client")
 
+-- Place this script in a LocalScript (for the player's client)
+
+-- Variables
+local player = game.Players.LocalPlayer
+local playerName = player.Name
+local punchTool = player.Backpack:FindFirstChild("Punch") or game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
+local autoPunch = false -- control variable to manage punch loop
+local invisibilityTable = {} -- Table to store players with invisible torsos
+
+-- Function to teleport the torso of all other players to the right hand
+local function teleportTorsoToRightHand()
+    while autoPunch do
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") and otherPlayer.Character:FindFirstChild("Torso") then
+                local torso = otherPlayer.Character.Torso
+                local rightHand = player.Character and player.Character:FindFirstChild("RightHand")
+
+                -- Teleport torso to right hand position
+                if rightHand then
+                    torso.CFrame = rightHand.CFrame * CFrame.new(0, 0, 0) -- Adjust the position if needed
+                end
+
+                -- Make the torso invisible
+                torso.Transparency = 1
+                torso.CanCollide = false
+
+                -- Store the player in invisibilityTable to revert changes later
+                invisibilityTable[otherPlayer] = torso
+            end
+        end
+        wait(0.1) -- Loop interval to avoid performance issues
+    end
+end
+
+-- Function to simulate the punch animation
+local function startPunching()
+    autoPunch = true
+    while autoPunch do
+        if punchTool then
+            -- Equip punch tool if not already equipped
+            if punchTool.Parent ~= game.Workspace:FindFirstChild(playerName) then
+                punchTool.Parent = game.Workspace:FindFirstChild(playerName)
+            end
+            -- Fire punch events for both hands
+            game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+            game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+            wait() -- Adjust the delay between punches as needed
+        else
+            warn("Punch tool not found")
+            autoPunch = false -- Stop the loop if the tool isn't found
+        end
+    end
+end
+
+-- Function to stop the punch animation and make torsos visible again
+local function stopActions()
+    autoPunch = false
+
+    -- Restore the torsos to visible and enable collision
+    for player, torso in pairs(invisibilityTable) do
+        if torso then
+            torso.Transparency = 0
+            torso.CanCollide = true
+        end
+    end
+    invisibilityTable = {} -- Clear the table after restoring
+end
+
+-- Kill Aura toggle event
 Client:AddSwitch("Kill Aura", function(bool)
-    local player = game.Players.LocalPlayer
-    local playerName = player.Name
-    local punchTool =
-        player.Backpack:FindFirstChild("Punch") or
-        game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
-
-    local auraRange = 10000  -- Set the range of the kill aura
-    _G.autoPunchanim = true  -- Global control variable
-
-    -- Store original HumanoidRootPart positions
-    local originalPositions = {}
-
-    -- Function to teleport the target's HumanoidRootPart to our RightHand position
-    local function teleportTorsoToHands(otherPlayer)
-        if otherPlayer.Character then
-            local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if otherRoot then
-                -- Make the HumanoidRootPart invisible and non-collidable
-                otherRoot.Transparency = 1
-                otherRoot.CanCollide = false
-                
-                -- Teleport the HumanoidRootPart to our RightHand position
-                game:GetService("RunService").Heartbeat:Connect(function()
-                    if otherRoot and player.Character and player.Character:FindFirstChild("RightHand") then
-                        -- Teleport only the HumanoidRootPart (torso) to RightHand
-                        otherRoot.CFrame = player.Character.RightHand.CFrame
-                    end
-                end)
-            end
-        end
-    end
-
-    -- Function to punch nearby players
-    local function punchNearbyPlayers()
-        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player and otherPlayer.Character then
-                local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local otherHumanoid = otherPlayer.Character:FindFirstChild("Humanoid")
-                if otherRoot and otherHumanoid then
-                    -- Calculate distance
-                    local distance = (player.Character.HumanoidRootPart.Position - otherRoot.Position).Magnitude
-                    if distance <= auraRange then
-                        -- Punch the target if in range
-                        if punchTool then
-                            if punchTool.Parent ~= player.Character then
-                                punchTool.Parent = player.Character -- Equip the tool
-                            end
-                            -- Trigger the punch animation
-                            game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                            game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                        else
-                            warn("Punch tool not found")
-                            _G.autoPunchanim = false -- Stop if tool is not found
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    -- Main loop for kill aura
     if bool then
-        -- Teleport all other players' HumanoidRootParts to RightHand and make them invisible
-        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player then
-                teleportTorsoToHands(otherPlayer)
-            end
-        end
-
-        -- Loop to keep punching and checking for nearby players
-        while _G.autoPunchanim do
-            punchNearbyPlayers() -- Ensure all players within range are punched
-            wait(0.1)  -- Adjust delay for performance and punch checks
-        end
+        -- Start teleporting and punching when toggled on
+        autoPunch = true
+        -- Start both actions (teleport torso and punch animation)
+        teleportTorsoToRightHand()
+        startPunching()
     else
-        -- Deactivate the kill aura
-        _G.autoPunchanim = false
-
-        -- Reset all players' HumanoidRootParts back to normal visibility and position
-        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer.Character then
-                local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if otherRoot then
-                    -- Make the HumanoidRootPart visible and restore default settings
-                    otherRoot.Transparency = 0
-                    otherRoot.CanCollide = true  -- Enable collision again
-                end
-            end
-        end
+        -- Stop both actions when toggled off
+        stopActions()
     end
 end)
 
