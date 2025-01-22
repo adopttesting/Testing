@@ -79,7 +79,7 @@ Client:AddSwitch("Kill Aura", function(bool)
             player.Backpack:FindFirstChild("Punch") or
             game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
 
-        local auraRange = 10 -- Set the range of the kill aura
+        local auraRange = 100000 -- Set the range of the kill aura
         _G.autoPunchanim = true -- Global control variable
 
         -- Function to check nearby players and punch them
