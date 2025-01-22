@@ -348,5 +348,71 @@ end)
         updatePlayerList()  -- Update the dropdown when a player leaves
     end)
 
+local Server = window:AddTab("Server")
+
+-- Labels for elapsed time and player count
+local elapsedTimeLabel = Server:AddLabel("Elapsed Time:")
+local playerCountLabel = Server:AddLabel("Amount of Players in Server:")
+local playerNameLabel = Server:AddLabel("")  -- Empty label for player names
+
+-- Timer to update elapsed time
+local elapsedTime = 0  -- Start with 0 elapsed time
+
+-- Function to format the elapsed time
+local function formatElapsedTime(seconds)
+    local week = math.floor(seconds / 604800)  -- 7 days = 604800 seconds
+    local day = math.floor((seconds % 604800) / 86400)  -- 1 day = 86400 seconds
+    local hour = math.floor((seconds % 86400) / 3600)  -- 1 hour = 3600 seconds
+    local minute = math.floor((seconds % 3600) / 60)  -- 1 minute = 60 seconds
+    local second = seconds % 60  -- Remaining seconds
+    return string.format("Week: %d Day: %d Hour: %d Minute: %d Second: %d", week, day, hour, minute, second)
+end
+
+-- Update elapsed time every second
+game:GetService("RunService").Heartbeat:Connect(function()
+    elapsedTime = elapsedTime + 1  -- Increase by 1 second
+    elapsedTimeLabel:SetText("Elapsed Time: " .. formatElapsedTime(elapsedTime))  -- Update label
+end)
+
+-- Track players in the server
+local function updatePlayerCount()
+    playerCountLabel:SetText("Amount of Players in Server: " .. #game.Players:GetPlayers())  -- Update player count label
+end
+
+-- Add event listeners for player join/leave
+game.Players.PlayerAdded:Connect(updatePlayerCount)
+game.Players.PlayerRemoving:Connect(updatePlayerCount)
+
+-- Create the dropdown for selecting a player
+local dropdown = Server:AddDropdown("Select Player", function(text)
+    if text == "Mars" then
+        print("o")
+    elseif text == "Earth" then
+        print("k")
+    elseif text == "Iridocyclitis" then
+        print("Weeeee")
+    end
+end)
+
+-- Dynamically populate the dropdown with player names
+game:GetService("RunService").Heartbeat:Connect(function()
+    dropdown:Clear()  -- Clear current options to update the list
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        dropdown:Add(player.Name)  -- Add player names to the dropdown
+    end
+end)
+
+-- Button to teleport to the selected player
+Server:AddButton("Teleport To Selected Player", function()
+    local selectedPlayerName = dropdown:GetSelectedText()
+    if selectedPlayerName then
+        local selectedPlayer = game.Players:FindFirstChild(selectedPlayerName)
+        if selectedPlayer then
+            -- Teleport code here (assuming you are teleporting the local player)
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = selectedPlayer.Character.HumanoidRootPart.CFrame
+        end
+    end
+end)
+
 --script whitelist end
 end
