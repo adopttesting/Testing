@@ -592,3 +592,4 @@ folder2:AddSwitch("Auto Muscle King Squat", function(bool)
 end)
 
 -- End of script
+end
