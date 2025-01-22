@@ -121,27 +121,25 @@ else
         end
     end)
 
-   -- Players tab for selecting a player and viewing stats
+  -- Players tab for selecting a player and viewing stats
 local PlayersTab = window:AddTab("Players")
 
 local selectedPlayerName
 local currentSelectedPlayer
 local notFoundLabel
 
--- Function to remove labels of previous selected player
+-- Function to remove labels of the previously selected player
 local function removePlayerLabels(player)
-    -- Custom function to remove previously created labels
-    -- You can remove the player's stats or other UI elements here
+    -- Custom function to remove previously created labels (optional)
 end
 
 -- Function to create player labels (for example, stats)
 local function createPlayerLabels(player)
-    -- Custom function to create and show player stats/labels here
-    -- You could display their health, level, etc.
+    -- Custom function to create and show player stats/labels (optional)
 end
 
--- Dropdown for selecting a player
-PlayersTab:AddDropdown("Select Player", function(playerName)
+-- TextBox for selecting a player
+PlayersTab:AddTextBox("Enter Player Name", function(playerName)
     selectedPlayerName = playerName
     if notFoundLabel then
         notFoundLabel:Remove()
@@ -160,15 +158,13 @@ PlayersTab:AddDropdown("Select Player", function(playerName)
     end
 end)
 
--- Update the player list dynamically
+-- Update the player list dynamically (optional functionality if needed elsewhere)
 local function updatePlayerList()
-    local dropdown = PlayersTab:GetDropdown("Select Player")
-    if dropdown then
-        dropdown:Clear()  -- Clear the existing options
-        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-            dropdown:Add(player.Name)  -- Add new player to dropdown
-        end
+    local playerNames = {}
+    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+        table.insert(playerNames, player.Name)
     end
+    -- Optionally display this list or use it elsewhere
 end
 
 -- Call the update function on player join/leave
@@ -176,7 +172,7 @@ game:GetService("Players").PlayerAdded:Connect(updatePlayerList)
 game:GetService("Players").PlayerRemoving:Connect(updatePlayerList)
 
 -- Initial update when the script is first loaded
-updatePlayerList() 
+updatePlayerList()
 
 -- Server tab to show elapsed time and player count
 local ServerTab = window:AddTab("Server")
@@ -211,24 +207,23 @@ end
 game.Players.PlayerAdded:Connect(updatePlayerCount)
 game.Players.PlayerRemoving:Connect(updatePlayerCount)
 
--- Create the player selection dropdown
-local dropdown = ServerTab:AddDropdown("Select Player", function(selectedName)
+-- TextBox for entering player name to teleport
+local playerNameTextBox = ServerTab:AddTextBox("Enter Player Name to Teleport", function(playerName)
+    selectedName = playerName
+end)
+
+-- Button to teleport to the player entered in the TextBox
+ServerTab:AddButton("Teleport to Player", function()
     if selectedName then
         local selectedPlayer = game.Players:FindFirstChild(selectedName)
         if selectedPlayer then
-            -- Teleport the local player to the selected player
+            -- Teleport the local player to the selected player's position
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = selectedPlayer.Character.HumanoidRootPart.CFrame
+        else
+            warn("Player not found!")
         end
-    end
-end)
-
--- Dynamically populate the player dropdown with player names
-game:GetService("RunService").Heartbeat:Connect(function()
-    if dropdown then
-        dropdown:Clear()  -- Clear the current dropdown options
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            dropdown:Add(player.Name)  -- Add each player name to the dropdown
-        end
+    else
+        warn("No player name entered!")
     end
 end)
     
