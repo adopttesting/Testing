@@ -72,6 +72,8 @@ else
 
     local Client = window:AddTab("Client")
 
+Client:AddLabel("Local Player")
+
     -- Set Size 2
     Client:AddButton("Set Size 2", function()
         local args = {
@@ -82,38 +84,68 @@ else
         game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
     end)
 
-    -- Local Player Controls: WalkSpeed
-    Client:AddLabel("Local Player")
+-- Create WalkSpeed TextBox and Button
+Client:AddTextBox("Type WalkSpeed Amount", function(text)
+    -- Get the WalkSpeed amount entered in the textbox (as a string)
+    local walkSpeedAmount = tonumber(text) -- Convert the text to a number
+    if walkSpeedAmount then
+        -- If it's a valid number, apply the walk speed
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedAmount
+        print("WalkSpeed applied: " .. walkSpeedAmount)
+    else
+        print("Invalid WalkSpeed input!")
+    end
+end)
 
-    Client:AddSlider("WalkSpeed", function(p)
-        setwalkspeed(p)   
-    end, {                    
-        ["min"] = 16,
-        ["max"] = 500,  
-    })
+Client:AddButton("Apply WalkSpeed", function()
+    -- Button to apply WalkSpeed when clicked (handled in TextBox function)
+end)
 
-    -- Default WalkSpeed to 16
-    Client:GetSlider("WalkSpeed"):Set(16)
+-- Create JumpPower TextBox and Button
+Client:AddTextBox("Type JumpPower Amount", function(text)
+    -- Get the JumpPower amount entered in the textbox (as a string)
+    local jumpPowerAmount = tonumber(text) -- Convert the text to a number
+    if jumpPowerAmount then
+        -- If it's a valid number, apply the jump power
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = jumpPowerAmount
+        print("JumpPower applied: " .. jumpPowerAmount)
+    else
+        print("Invalid JumpPower input!")
+    end
+end)
 
-    Client:AddButton("Apply WalkSpeed", function()
-        -- Apply WalkSpeed code here if needed
-    end)
+Client:AddButton("Apply JumpPower", function()
+    -- Button to apply JumpPower when clicked (handled in TextBox function)
+end)
 
-    -- Local Player Controls: JumpPower
-    Client:AddSlider("JumpPower", function(p)
-        setjumppower(p)   
-    end, {                    
-        ["min"] = 50,
-        ["max"] = 1000,  
-    })
+-- Create Size TextBox and Button
+Client:AddTextBox("Type Size (1 to 500)", function(text)
+    -- Get the size amount entered in the textbox (as a string)
+    local sizeAmount = tonumber(text) -- Convert the text to a number
+    if sizeAmount and sizeAmount >= 1 and sizeAmount <= 500 then
+        -- If it's a valid number within the range of 1 to 500, apply it
+        local character = game.Players.LocalPlayer.Character
+        if character then
+            -- Apply the size to the character's model (example: scaling the head)
+            character:SetPrimaryPartCFrame(character.PrimaryPart.CFrame)  -- Reset the character's CFrame to avoid issues while resizing
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.Size = Vector3.new(sizeAmount, sizeAmount, sizeAmount) -- Scale parts uniformly
+                end
+            end
+            print("Size applied: " .. sizeAmount)
+        end
+    else
+        print("Invalid size input! Please enter a value between 1 and 500.")
+    end
+end)
 
-    -- Default JumpPower to 50
-    Client:GetSlider("JumpPower"):Set(50)
+Client:AddButton("Apply Size", function()
+    -- Button to apply Size when clicked (handled in TextBox function)
+end)
+   
 
-    Client:AddButton("Apply JumpPower", function() 
-        -- Apply JumpPower code here if needed
-    end)
-
+    
     local Players = window:AddTab("Players")
 
     Players:AddLabel("Spectate Player")
