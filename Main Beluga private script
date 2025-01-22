@@ -84,6 +84,15 @@ Client:AddLabel("Local Player")
         game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
     end)
 
+Client:AddButton("Set Size nan", function()
+        local args = {
+            [1] = "changeSize",
+            [2] = nan
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
+    end)
+
 -- Create WalkSpeed TextBox and Button
 Client:AddTextBox("Type WalkSpeed Amount", function(text)
     -- Get the WalkSpeed amount entered in the textbox (as a string)
