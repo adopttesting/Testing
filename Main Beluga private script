@@ -131,127 +131,110 @@ else
 
     Client:AddLabel("Client Things")
 
-local isPositionLocked = false
-local lockedPosition = nil
+    local isPositionLocked = false
+    local lockedPosition = nil
 
-Client:AddSwitch("Lock Client Position", function(bool)
-    isPositionLocked = bool
+    Client:AddSwitch("Lock Client Position", function(bool)
+        isPositionLocked = bool
 
-    if isPositionLocked then
-        -- Store the player's current position when the toggle is turned on
-        lockedPosition = LocalPlayer:GetPosition()
-    else
-        -- Optionally, you can reset the locked position when turning it off
-        lockedPosition = nil
-    end
-end)
+        if isPositionLocked then
+            -- Store the player's current position when the toggle is turned on
+            lockedPosition = player.Character:WaitForChild("HumanoidRootPart").Position
+        else
+            -- Optionally, you can reset the locked position when turning it off
+            lockedPosition = nil
+        end
+    end)
 
--- This function will keep the player at the locked position if the toggle is on
-function FreezePlayerPosition()
-    if isPositionLocked and lockedPosition then
-        LocalPlayer:SetPosition(lockedPosition)
-    end
-end
-
--- Call this function every frame to freeze the position
-Client:AddCallback("OnUpdate", function()
-    FreezePlayerPosition()
-end)
-
-local isAntiKickEnabled = false
-local activityTimer = 0
-local activityInterval = 30  -- Interval in seconds to send a "keep-alive" signal
-local lastActivityTime = 0
-
--- Function to send a keep-alive signal (simulated)
-function SendKeepAliveSignal()
-    if isAntiKickEnabled then
-        -- Simulate sending a "keep-alive" signal to prevent disconnection
-        -- Replace this with the actual method you need to use (e.g., sending a chat message or a server request)
-        -- Example: Client:SendMessage("ping")
-        print("Sending keep-alive signal...")
-        -- You can use a chat message or any other method that the server recognizes as activity
-    end
-end
-
--- Anti Kick Toggle Callback
-Client:AddSwitch("Anti Kick", function(bool)
-    isAntiKickEnabled = bool
-
-    if isAntiKickEnabled then
-        lastActivityTime = os.time()  -- Start monitoring the activity time
-    end
-end)
-
--- Update function to monitor time and send periodic activity signals
-Client:AddCallback("OnUpdate", function()
-    if isAntiKickEnabled then
-        local currentTime = os.time()
-        
-        -- If no activity in the specified interval, send keep-alive signal
-        if currentTime - lastActivityTime >= activityInterval then
-            SendKeepAliveSignal()
-            lastActivityTime = currentTime  -- Update last activity time
+    -- This function will keep the player at the locked position if the toggle is on
+    function FreezePlayerPosition()
+        if isPositionLocked and lockedPosition then
+            player.Character:SetPrimaryPartCFrame(CFrame.new(lockedPosition))
         end
     end
-end)
 
--- Optional: You can also track player activity (e.g., movement, chat, etc.) to update the `lastActivityTime`
--- Example:
--- Client:AddCallback("OnPlayerMove", function()
---     lastActivityTime = os.time()  -- Reset activity time when player moves
--- end)
+    -- Call this function every frame to freeze the position
+    Client:AddCallback("OnUpdate", function()
+        FreezePlayerPosition()
+    end)
 
-local isAntiPushEnabled = false
+    local isAntiKickEnabled = false
+    local activityTimer = 0
+    local activityInterval = 30  -- Interval in seconds to send a "keep-alive" signal
+    local lastActivityTime = 0
 
--- Function to prevent interaction (such as pushing or using tools on the player)
-function PreventPlayerInteraction()
-    if isAntiPushEnabled then
-        -- Prevent interactions, e.g., by setting collision properties, ignoring physics, or denying tool usage
-        -- Here, we will assume the server allows us to modify tool usage or collision with the player
+    -- Function to send a keep-alive signal (simulated)
+    function SendKeepAliveSignal()
+        if isAntiKickEnabled then
+            -- Simulate sending a "keep-alive" signal to prevent disconnection
+            print("Sending keep-alive signal...")
+        end
+    end
 
-        -- For example, disabling the tool's action if it targets the player
-        Client:AddCallback("OnPlayerUseTool", function(player, tool)
-            if player == LocalPlayer then
-                return false  -- Prevent the action from going through if it's targeting this player
+    -- Anti Kick Toggle Callback
+    Client:AddSwitch("Anti Kick", function(bool)
+        isAntiKickEnabled = bool
+
+        if isAntiKickEnabled then
+            lastActivityTime = os.time()  -- Start monitoring the activity time
+        end
+    end)
+
+    -- Update function to monitor time and send periodic activity signals
+    Client:AddCallback("OnUpdate", function()
+        if isAntiKickEnabled then
+            local currentTime = os.time()
+            
+            -- If no activity in the specified interval, send keep-alive signal
+            if currentTime - lastActivityTime >= activityInterval then
+                SendKeepAliveSignal()
+                lastActivityTime = currentTime  -- Update last activity time
             end
-        end)
+        end
+    end)
 
-        -- You can also add logic for preventing physical pushing, using character collision, or freezing physics interactions
-        -- Example: Disable collisions between the player and other players
-        LocalPlayer:SetCollisionEnabled(false)  -- Disables collision with other players
-    else
-        -- Re-enable the collisions when Anti Push is disabled
-        LocalPlayer:SetCollisionEnabled(true)
+    local isAntiPushEnabled = false
+
+    -- Function to prevent interaction (such as pushing or using tools on the player)
+    function PreventPlayerInteraction()
+        if isAntiPushEnabled then
+            -- Prevent interactions, e.g., by setting collision properties, ignoring physics, or denying tool usage
+            -- Here, we will assume the server allows us to modify tool usage or collision with the player
+
+            -- Example: Disable collisions between the player and other players
+            player.Character:SetCollisionEnabled(false)  -- Disables collision with other players
+        else
+            -- Re-enable the collisions when Anti Push is disabled
+            player.Character:SetCollisionEnabled(true)
+        end
     end
+
+    -- Anti Push Toggle Callback
+    Client:AddSwitch("Anti Push", function(bool)
+        isAntiPushEnabled = bool
+        PreventPlayerInteraction()  -- Toggle the Anti Push effect when the switch is toggled
+    end)
+
+    -- Optional: You can also track player activity (e.g., movement, chat, etc.) to update the `lastActivityTime`
+    -- Example:
+    -- Client:AddCallback("OnPlayerMove", function()
+    --     lastActivityTime = os.time()  -- Reset activity time when player moves
+    -- end)
+
+    Client:AddButton("Destroy Ad teleport", function() 
+        -- Find and destroy the part named "RobloxForwardPortals" 
+        local part = workspace:FindFirstChild("RobloxForwardPortals") 
+        if part then 
+            part:Destroy() 
+            print("Part 'RobloxForwardPortals' has been destroyed.") 
+        else 
+            print("Part 'RobloxForwardPortals' not found.") 
+        end 
+    end)
+
 end
 
--- Anti Push Toggle Callback
-Client:AddSwitch("Anti Push", function(bool)
-    isAntiPushEnabled = bool
-    PreventPlayerInteraction()  -- Toggle the Anti Push effect when the switch is toggled
-end)
-
--- Optionally, handle tool usage interaction specifically (e.g., using a weapon or pushing tool)
-Client:AddCallback("OnToolUsed", function(tool, targetPlayer)
-    if isAntiPushEnabled and targetPlayer == LocalPlayer then
-        -- Block the tool action if Anti Push is on
-        return false  -- Prevent tool action when targeting the player
-    end
-end
-
-Client:AddButton("Destroy Ad teleport", function() 
-    -- Find and destroy the part named "RobloxForwardPortals" 
-    local part = workspace:FindFirstChild("RobloxForwardPortals") 
-    if part then 
-        part:Destroy() 
-        print("Part 'RobloxForwardPortals' has been destroyed.") 
-    else 
-        print("Part 'RobloxForwardPortals' not found.") 
-    end 
-end)
-
-  -- Players tab for selecting a player and viewing stats
+-- Players tab for selecting a player and viewing stats
 local Players = window:AddTab("Players")
 Players:AddLabel("Spectate Player")
 
@@ -288,7 +271,6 @@ Players:AddSwitch("Spy Player", function(bool)
         camera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
     end
 end)
-
 
 Players:AddLabel("View Stats")
 
@@ -419,8 +401,6 @@ Players:AddTextBox("Player Name", function(playerName)
         notFoundLabel = Players:AddLabel("Player not found!")
     end
 end)
-
-
 
 local ServerTab = window:AddTab("Server")
 
