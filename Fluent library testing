@@ -1,3 +1,4 @@
+-- Load Fluent Library
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 -- Create Main Window
@@ -11,47 +12,158 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl,
 })
 
-game.Players.LocalPlayer.Idled:Connect(function()
-    VirtualUser:CaptureController()
-    VirtualUser:ClickButton2(Vector2.new())
-    end)
+-- Prevent Player Idling
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
 
---// Services
+-- Services
 local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 local GuiService = game:GetService('GuiService')
+local TeleportService = game:GetService("TeleportService")
 
 -- Variables
 local lp = Players.LocalPlayer
 
--- Function to find children of class
-local function FindChildOfClass(parent, classname)
-    return parent:FindFirstChildOfClass(classname)
+-- Utility Functions
+local function FindChild(parent, childName)
+    return parent:FindFirstChild(childName)
 end
 
-local function FindChild(parent, child)
-    return parent:FindFirstChild(child)
-end
-
-local function FindChildOfType(parent, childname, classname)
-    local child = parent:FindFirstChild(childname)
-    if child and child.ClassName == classname then
-        return child
-    end
-end
-
--- Custom Function
 local function getchar()
     return lp.Character or lp.CharacterAdded:Wait()
 end
 
---Walk On water Funcction
-for i,v in pairs(workspace.zones.fishing:GetChildren()) do
-			if v.Name == "Ocean" then
-				v.CanCollide = Value
+-- Walk on Water Functionality
+for _, v in pairs(workspace.zones.fishing:GetChildren()) do
+    if v.Name == "Ocean" then
+        v.CanCollide = false
+    end
+end
+
+--all dat for ui minimize button
+-- \\ Normal Module // --
+	
+	PlayerGui = LocalPlayer.PlayerGui
+	Backpack = LocalPlayer.Backpack
+	request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+
+	Char = Client.Character
+	Character = Client.Character
+	if not Threads then getgenv().Threads = {} end
+
+	repeat 
+		LocalPlayer = Players.LocalPlayer
+		wait()
+	until LocalPlayer
+end
+
+local TweenService = game:GetService("TweenService")
+	local UserInputService = game:GetService("UserInputService")
+	local UIBUTTON = Instance.new("ScreenGui")
+	local Frame = Instance.new("Frame")
+	local ImageButton = Instance.new("ImageButton")
+	local UICorner = Instance.new("UICorner")
+	local UICorner_2 = Instance.new("UICorner")
+
+--the button
+UIBUTTON.Name = "UIBUTTON"
+	UIBUTTON.Parent = game.CoreGui
+	UIBUTTON.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+	Frame.Parent = UIBUTTON
+	Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Frame.BorderSizePixel = 0
+	Frame.Transparency = 1
+	Frame.Position = UDim2.new(0.157012194, 0, 0.164366379, 0)
+	Frame.Size = UDim2.new(0, 115, 0, 49)
+
+ImageButton.Parent = Frame
+ImageButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ImageButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+ImageButton.BorderSizePixel = 0
+ImageButton.Active = true
+ImageButton.Draggable = true
+ImageButton.Position = UDim2.new(0.218742043, 0, -0.155235752, 0)
+ImageButton.Size = UDim2.new(0, 54, 0, 54)
+
+-- Set initial image to "open"
+ImageButton.Image = "rbxassetid://965305329" -- Open image asset ID
+local isOpen = true -- Variable to track the state
+
+ImageButton.MouseButton1Click:Connect(function()
+    -- Animate the button size
+    ImageButton:TweenSize(UDim2.new(0, 55, 0, 55), Enum.EasingDirection.In, Enum.EasingStyle.Elastic, 0.1)
+    delay(0.1, function()
+        ImageButton:TweenSize(UDim2.new(0, 52, 0, 52), Enum.EasingDirection.Out, Enum.EasingStyle.Elastic, 0.1)
+    end)
+
+-- Toggle the image based on the state
+    if isOpen then
+        ImageButton.Image = "rbxassetid://86093303748141" -- Replace with close image asset ID
+    else
+        ImageButton.Image = "rbxassetid://86093303748141" -- Open image asset ID
+    end
+    isOpen = not isOpen -- Toggle the state
+
+    -- Simulate key presses
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    VirtualInputManager:SendKeyEvent(true,"RightControl",false,game)
+    VirtualInputManager:SendKeyEvent(false,"RightControl",false,game)
+    VirtualInputManager:SendKeyEvent(true,"LeftControl",false,game)
+    VirtualInputManager:SendKeyEvent(false,"LeftControl",false,game)
+end)
+
+UICorner.CornerRadius = UDim.new(0, 5)
+UICorner.Parent = ImageButton
+
+	UICorner_2.CornerRadius = UDim.new(0, 5)
+	UICorner_2.Parent = Frame
+
+local UIS = game:GetService('UserInputService')
+	local frame = Frame
+	local dragToggle = nil
+	local dragSpeed = 0.25
+	local dragStart = nil
+	local startPos = nil
+
+	local function updateInput(input)
+		local delta = input.Position - dragStart
+		local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		game:GetService('TweenService'):Create(frame, TweenInfo.new(dragSpeed), {Position = position}):Play()
+	end
+
+	frame.InputBegan:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then 
+			dragToggle = true
+			dragStart = input.Position
+			startPos = frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragToggle = false
+				end
+			end)
+		end
+	end)
+
+	UIS.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			if dragToggle then
+				Frame.Transparency = 1
+				updateInput(input)
+			else
+				Frame.Transparency = 1
 			end
 		end
+	end)
+end
+
+
 -- Tabs
 local Tabs = {
     AutoFishing = Window:AddTab({ Title = "Auto Fishing", Icon = "" }),
@@ -59,12 +171,9 @@ local Tabs = {
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
 }
 
-Tabs.AutoFishing:AddParagraph({
-    Title = "Rods",
-    Content = ""
-})
+-- Auto Fishing Tab
+Tabs.AutoFishing:AddParagraph({ Title = "Rods", Content = "Select and manage your fishing rods." })
 
--- Auto Fishing: Dropdown to Select Rod
 local RodDropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
     Title = "Select Rod",
     Values = {
@@ -80,65 +189,47 @@ local RodDropdown = Tabs.AutoFishing:AddDropdown("Select Rod", {
 })
 RodDropdown:SetValue("Flimsy Rod")
 
--- Auto Fishing: Equip Rod Toggle
-local EquipRodToggle = Tabs.AutoFishing:AddToggle("Equip Rod", {
-    Title = "Equip Rod",
-    Default = false,
-})
-
+local EquipRodToggle = Tabs.AutoFishing:AddToggle("Equip Rod", { Title = "Equip Rod", Default = false })
 EquipRodToggle:OnChanged(function()
-    local player = game:GetService("Players").LocalPlayer
-    local backpack = player:WaitForChild("Backpack")
-
+    local backpack = lp:WaitForChild("Backpack")
     while EquipRodToggle.Value do
         local selectedRod = RodDropdown.Value
-        local rodTool = backpack:FindFirstChild(selectedRod) or player.Character:FindFirstChild(selectedRod)
-
+        local rodTool = backpack:FindFirstChild(selectedRod) or getchar():FindFirstChild(selectedRod)
         if rodTool and backpack:FindFirstChild(selectedRod) then
-            rodTool.Parent = player.Character
+            rodTool.Parent = getchar()
         end
         wait(0.5)
     end
 end)
 
--- Auto Fishing: Auto Cast Toggle
-local AutoCastToggle = Tabs.AutoFishing:AddToggle("Auto Cast", {
-    Title = "Auto Cast",
-    Default = false,
-})
-
+local AutoCastToggle = Tabs.AutoFishing:AddToggle("Auto Cast", { Title = "Auto Cast", Default = false })
 AutoCastToggle:OnChanged(function()
     while AutoCastToggle.Value do
         local selectedRod = RodDropdown.Value
-        local args = { [1] = 23.7, [2] = 1 }
-        game:GetService("Players").LocalPlayer.Character:FindFirstChild(selectedRod).events.cast:FireServer(unpack(args))
+        local args = { 23.7, 1 }
+        local rod = getchar():FindFirstChild(selectedRod)
+        if rod and rod:FindFirstChild("events") and rod.events:FindFirstChild("cast") then
+            rod.events.cast:FireServer(unpack(args))
+        end
         wait(0.1)
     end
 end)
 
--- Auto Fishing: Auto Reel Toggle
-local AutoReelToggle = Tabs.AutoFishing:AddToggle("Auto Reel", {
-    Title = "Auto Reel",
-    Default = false,
-})
-
+local AutoReelToggle = Tabs.AutoFishing:AddToggle("Auto Reel", { Title = "Auto Reel", Default = false })
 AutoReelToggle:OnChanged(function()
     while AutoReelToggle.Value do
-        local args = { [1] = 100, [2] = true }
-        game:GetService("ReplicatedStorage").events.reelfinished:FireServer(unpack(args))
+        local args = { 100, true }
+        local reelEvent = ReplicatedStorage:FindFirstChild("events") and ReplicatedStorage.events:FindFirstChild("reelfinished")
+        if reelEvent then
+            reelEvent:FireServer(unpack(args))
+        end
         wait(0.1)
     end
 end)
 
--- Auto Shake Toggle
-local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", {
-    Title = "Auto Shake",
-    Default = false
-})
-
+local AutoShakeToggle = Tabs.AutoFishing:AddToggle("Auto Shake", { Title = "Auto Shake", Default = false })
 local isShaking = false
 
--- Function to shake the button (select and simulate key press)
 local function shakeButton()
     local shakeUI = FindChild(lp.PlayerGui, 'shakeui')
     if not shakeUI then return end
@@ -155,196 +246,90 @@ local function shakeButton()
     game:GetService('VirtualInputManager'):SendKeyEvent(false, Enum.KeyCode.Return, false, game)
 end
 
-AutoShakeToggle:OnChanged(function(State)
-    if State then
-        isShaking = true
-        while isShaking do
-            shakeButton()
-            wait(0.001)
-        end
-    else
-        isShaking = false
+AutoShakeToggle:OnChanged(function(state)
+    isShaking = state
+    while isShaking do
+        shakeButton()
+        wait(0.01)
     end
 end)
 
-Tabs.Automatically:AddParagraph({
-    Title = "Selling",
-    Content = ""
-})
+-- Automatically Tab
+Tabs.Automatically:AddParagraph({ Title = "Selling", Content = "Manage selling your fish." })
 
--- Automatically Tab: Sell All Button
 Tabs.Automatically:AddButton({
     Title = "Sell All",
-    Description = "",
     Callback = function()
-        game:GetService("ReplicatedStorage").events.SellAll:InvokeServer()
+        ReplicatedStorage:WaitForChild("events"):WaitForChild("SellAll"):InvokeServer()
     end,
 })
 
 Tabs.Automatically:AddButton({
     Title = "Sell In Hand",
-    Description = "",
     Callback = function()
-        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("Sell")
+        local sellEvent = ReplicatedStorage:WaitForChild("events"):WaitForChild("Sell")
+        sellEvent:InvokeServer()
     end,
-})
-
-Tabs.Automatically:AddParagraph({
-    Title = "Auto Buy",
-    Content = ""
 })
 
 Tabs.Automatically:AddButton({
     Title = "Auto Buy Relics",
-    Description = "",
     Callback = function()
-        local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
+        local character = getchar()
+        local previousPosition = character.HumanoidRootPart.Position
 
--- Store the player's current position
-local previousPosition = character.HumanoidRootPart.Position
+        local targetPosition = Vector3.new(-931.525, 223.784, -986.849)
+        character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
 
--- Teleport to the specified coordinates
-local targetPosition = Vector3.new(-931.5254516601562, 223.78355407714844, -986.8485717773438)
-character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+        local merlin = workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Merlin"):WaitForChild("Merlin"):WaitForChild("power")
+        merlin:InvokeServer()
 
--- Fire the server function
-local merlin = workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Merlin"):WaitForChild("Merlin"):WaitForChild("power")
-merlin:InvokeServer()
-
--- Wait for a brief moment before returning to the previous position
-wait(0)  -- Adjust the wait time if needed
-
--- Return to the previous position
-character:SetPrimaryPartCFrame(CFrame.new(previousPosition))
+        wait(0.5)
+        character:SetPrimaryPartCFrame(CFrame.new(previousPosition))
     end,
 })
 
-Tabs.Misc:AddParagraph({
-    Title = "Server Hoping",
-    Content = ""
-})
+-- Miscellaneous Tab
+Tabs.Misc:AddParagraph({ Title = "Server Hoping", Content = "Manage server connections." })
 
 Tabs.Misc:AddButton({
     Title = "Server Hop",
-    Description = "",
     Callback = function()
-        AllFuncs.HopServer(true)
+        -- Server hopping logic here
     end,
 })
 
 Tabs.Misc:AddButton({
     Title = "Rejoin Server",
-    Description = "",
     Callback = function()
-        TeleportService:TeleportToPlaceInstance(game.placeId, game.jobId, game.Players.LocalPlayer);
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, lp)
     end,
 })
 
-Tabs.Misc:AddParagraph({
-    Title = "Lag",
-    Content = ""
-})
+Tabs.Misc:AddParagraph({ Title = "Lag Management", Content = "Optimize performance settings." })
 
 Tabs.Misc:AddButton({
-    Title = "Boost Fps",
-    Description = "",
+    Title = "Boost FPS",
     Callback = function()
-        for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
-                    if v.Transparency ~= 1 then
-                        v.Material = Enum.Material.SmoothPlastic
-                    end
-                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                    v:Destroy()
-                end
+        for _, v in ipairs(game:GetDescendants()) do
+            if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.CastShadow = false
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                v:Destroy()
             end
+        end
     end,
 })
 
 Tabs.Misc:AddButton({
-    Title = "Fps Big Boost",
-    Description = "",
+    Title = "FPS Big Boost",
     Callback = function()
-        for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                    v:Destroy()
-                end
+        for _, v in ipairs(game:GetDescendants()) do
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                v:Destroy()
             end
+        end
     end,
 })
 
-Tabs.Misc:AddButton({
-    Title = "Remove Fog",
-    Description = "",
-    Callback = function()
-        game:GetService("Lighting"):FindFirstChild("Sky") then
-				game:GetService("Lighting"):FindFirstChild("Sky").Parent = game:GetService("Lighting").bloom
-			end
-		else
-			if game:GetService("Lighting").bloom:FindFirstChild("Sky") then
-				game:GetService("Lighting").bloom:FindFirstChild("Sky").Parent = game:GetService("Lighting")
-			end
-		end
-    end,
-})
-
-
-
---Minimize Gui Button
-local UIS = game:GetService("UserInputService")
-local frame = script.Parent -- Ensure this points to the correct frame
-local dragToggle = false
-local dragStart = nil
-local startPos = nil
-
--- Adjust the size of the frame (GUI) to 50x50
-frame.Size = UDim2.new(0, 50, 0, 50)
-
--- Add a UICorner to the frame
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 5) -- Set corner radius to (0, 5)
-uiCorner.Parent = frame
-
--- Add an image to the frame
-local image = Instance.new("ImageLabel")
-image.Image = "rbxassetid://86093303748141" -- Set the image
-image.Size = UDim2.new(1, 0, 1, 0) -- Match the size of the frame
-image.BackgroundTransparency = 1 -- Make the background transparent
-image.Parent = frame
-
-local function updateInput(input)
-	if dragToggle then
-		local delta = input.Position - dragStart
-		frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
-end
-
-frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragToggle = true
-		dragStart = input.Position
-		startPos = frame.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragToggle = false
-			end
-		end)
-	end
-end)
-
-UIS.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		if dragToggle then
-			frame.Transparency = 1
-			updateInput(input)
-		else
-			frame.Transparency = 1
-		end
-	end
-end)
