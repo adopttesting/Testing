@@ -356,6 +356,37 @@ spawn(function()
     end
 end)
 
+RebirthTab:AddTextBox("Select Rebirth Amount", function(text)
+    local inputNumber = tonumber(text)
+    if inputNumber and inputNumber >= 0 then
+        rebirthAmount = inputNumber
+        currentRebirths = 0
+        print("Rebirth amount set to:", rebirthAmount)
+    else
+        print("Invalid input. Please enter a positive number.")
+    end
+end)
+
+
+local AutoFarmTab = window:AddTab("Auto Farm")
+local AutoWeightToggle = false
+local AutoPushupsToggle = false
+local SitupsToggle = false
+local MuscleKingFarmToggle = false
+
+-- Helper functions for auto actions
+local function AutoWeight()
+    while AutoWeightToggle do
+        local player = game.Players.LocalPlayer
+        local weightTool = player.Backpack:FindFirstChild("Weight") or player.Character:FindFirstChild("Weight")
+        if weightTool then
+            player.Character.Humanoid:EquipTool(weightTool)
+            weightTool:Activate()
+        end
+        wait(0.1)
+    end
+end
+
 -- View Stats Tab
 local ViewStatsTab = window:AddTab("ViewStats")
 
