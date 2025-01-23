@@ -270,111 +270,74 @@ Killtab:AddTextBox("Unwhitelist [Player]", function(text)
     end
 end)
 
-local folder5 = Killtab:AddFolder("Choose the Auto Kill you want") -- Folder name should be descriptive
-
 -- Auto Kill Toggle
-folder5:AddSwitch("Auto Kill", function(State)
+Killtab:AddSwitch("Auto Kill", function(State)
     autoKillActive = State  -- Toggle the state of autoKill
 
-    -- If AutoKill is enabled, start the autoKill process
     if autoKillActive then
+        -- Define the function to perform Auto Kill actions
         local function autoKill()
             while autoKillActive do
                 wait(0.1)  -- Wait to avoid performance issues
-
-                -- Get the local player and their right hand
+                
+                -- Get the local player and their right and left hands
                 local player = game.Players.LocalPlayer
                 local character = player.Character
                 local rightHand = character and character:FindFirstChild("RightHand")
-
-                -- Ensure that the right hand exists
-                if rightHand then
-                    -- Iterate through all models in the Workspace
-                    for _, obj in pairs(game.Workspace:GetChildren()) do
-                        -- Check if the object is a model and if its parent is a player
-                        if obj:IsA("Model") and game.Players:FindFirstChild(obj.Name) then
-                            -- Check if the object is not the local player's character and is not whitelisted
-                            if obj.Name ~= player.Name and not whitelist[obj.Name] then
-                                -- Save the original transparency and CanCollide values if they haven't been saved already
-                                if not originalTransparency[obj.Name] then
-                                    originalTransparency[obj.Name] = {}
-                                    originalCanCollide[obj.Name] = {}
-                                    for _, part in pairs(obj:GetDescendants()) do
-                                        if part:IsA("BasePart") then
-                                            originalTransparency[obj.Name][part] = part.Transparency
-                                            originalCanCollide[obj.Name][part] = part.CanCollide
-                                        end
-                                    end
+                local leftHand = character and character:FindFirstChild("LeftHand")
+                
+                -- Ensure that the hands exist
+                if rightHand and leftHand then
+                    -- Iterate through all players in the game
+                    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+                        -- Skip the local player and whitelisted players
+                        if otherPlayer.Name ~= player.Name and not whitelist[otherPlayer.Name] then
+                            local otherCharacter = otherPlayer.Character
+                            local head = otherCharacter and otherCharacter:FindFirstChild("Head")
+                            
+                            if head then
+                                -- Remove nameGui from the head
+                                local nameGui = head:FindFirstChild("nameGui")
+                                if nameGui then
+                                    nameGui.Parent = nil -- Temporarily remove it
                                 end
 
-                                -- Make the model invisible by setting transparency to 1 and disabling collisions
-                                for _, part in pairs(obj:GetDescendants()) do
-                                    if part:IsA("BasePart") then
-                                        part.Transparency = 1
-                                        part.CanCollide = false
-                                    end
-                                end
-
-                                -- Teleport the model to the player's right hand
-                                local humanoidRootPart = obj:FindFirstChild("HumanoidRootPart")
-                                if humanoidRootPart then
-                                    humanoidRootPart.CFrame = rightHand.CFrame
-                                end
+                                -- Make the head invisible
+                                head.Transparency = 1
+                                
+                                -- Teleport the head to the local player's right and left hands
+                                head.CFrame = rightHand.CFrame
+                                head.CFrame = leftHand.CFrame
                             end
                         end
                     end
                 end
             end
         end
-
-        -- Start the autoKill loop in a coroutine so it runs independently
+        
+        -- Start the autoKill loop in a coroutine
         coroutine.wrap(autoKill)()
     else
-        -- If AutoKill is turned off, reset transparency and collisions
-        for _, obj in pairs(game.Workspace:GetChildren()) do
-            if obj:IsA("Model") and game.Players:FindFirstChild(obj.Name) and not whitelist[obj.Name] then
-                -- Restore original transparency and CanCollide values
-                if originalTransparency[obj.Name] then
-                    for part, transparency in pairs(originalTransparency[obj.Name]) do
-                        part.Transparency = transparency
-                        part.CanCollide = originalCanCollide[obj.Name][part]
+        -- If AutoKill is turned off, restore the nameGui and head transparency
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            -- Skip the local player
+            if otherPlayer.Name ~= game.Players.LocalPlayer.Name then
+                local otherCharacter = otherPlayer.Character
+                local head = otherCharacter and otherCharacter:FindFirstChild("Head")
+                
+                if head then
+                    -- Re-add the nameGui back to the head
+                    local nameGui = head:FindFirstChild("nameGui")
+                    if not nameGui then
+                        local newNameGui = Instance.new("BillboardGui") -- Or use the original class/type
+                        newNameGui.Name = "nameGui"
+                        newNameGui.Parent = head
                     end
+
+                    -- Restore the original transparency
+                    head.Transparency = 0
                 end
             end
-        end
-        -- Clear the saved data for next time
-        originalTransparency = {}
-        originalCanCollide = {}
-    end
-end)
-
-
--- Auto Kill Aura v2 Toggle
-folder5:AddSwitch("Auto Kill Aura v2", function(State)
-    autoKillEnabled = State
-end)
-
-game:GetService('RunService').RenderStepped:Connect(function()
-    if autoKillEnabled then
-        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-            if player.Name ~= game.Players.LocalPlayer.Name then
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    local rootPart = player.Character.HumanoidRootPart
-                    -- Modify the root part properties for players that are not the local player
-                    rootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)  -- Set hitbox size to 600
-                    rootPart.Transparency = 1  -- Make the red thing invisible
-                    rootPart.Material = Enum.Material.Neon
-                    rootPart.CanCollide = false
-                end
-            end
-        end
-
-        -- Modify the local player's HumanoidRootPart properties (optional)
-        local localPlayer = game.Players.LocalPlayer
-        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local rootPart = localPlayer.Character.HumanoidRootPart
-            rootPart.Transparency = 1  -- Make the local player's root part invisible
-            rootPart.CanCollide = false
         end
     end
 end)
