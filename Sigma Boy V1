@@ -236,21 +236,36 @@ end)
 
 local Killing = window:AddTab("Killing")
 
--- WhiteList Dropdown
+-- Variables to store dropdown data
 local whiteList = {}
+local playersDropdown = {}
+
+-- WhiteList Dropdown
 Killing:AddDropdown("WhiteList", function(selected)
-    -- Code for handling whitelist selection if needed
+    -- Placeholder for selection logic
+end)
+
+-- Select Players Dropdown
+local selectedPlayer = nil
+Killing:AddDropdown("Select Players", function(selected)
+    selectedPlayer = selected
 end)
 
 -- Function to update WhiteList and Select Players Dropdown
 local function updatePlayerDropdowns()
     whiteList = {}
-    local players = game.Players:GetPlayers()
-    for _, player in ipairs(players) do
+    playersDropdown = {}
+    
+    for _, player in ipairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
             table.insert(whiteList, player.Name)
+            table.insert(playersDropdown, player.Name)
         end
     end
+    
+    -- Refresh dropdowns dynamically (requires the dropdowns to support updates)
+    Killing:GetDropdown("WhiteList"):Update(whiteList)
+    Killing:GetDropdown("Select Players"):Update(playersDropdown)
 end
 
 -- Update dropdowns when players join or leave
@@ -267,8 +282,9 @@ Killing:AddSwitch("Auto Kill", function(state)
             while autoKillEnabled do
                 for _, player in ipairs(game.Players:GetPlayers()) do
                     if player ~= game.Players.LocalPlayer and not table.find(whiteList, player.Name) then
-                        local head = player.Character and player.Character:FindFirstChild("Head")
-                        if head then
+                        local character = player.Character
+                        local head = character and character:FindFirstChild("Head")
+                        if head and game.Players.LocalPlayer.Character then
                             head.CFrame = game.Players.LocalPlayer.Character.RightHand.CFrame
                             local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch") or game.Players.LocalPlayer.Character:FindFirstChild("Punch")
                             if punchTool then
@@ -279,16 +295,10 @@ Killing:AddSwitch("Auto Kill", function(state)
                         end
                     end
                 end
-                wait()
+                wait(0.1) -- Prevent excessive looping
             end
         end)
     end
-end)
-
--- Select Players Dropdown
-local selectedPlayer = nil
-Killing:AddDropdown("Select Players", function(selected)
-    selectedPlayer = selected
 end)
 
 -- Kill Players Toggle
@@ -302,7 +312,7 @@ Killing:AddSwitch("Kill Players", function(state)
                     local target = game.Players:FindFirstChild(selectedPlayer)
                     if target and target.Character then
                         local head = target.Character:FindFirstChild("Head")
-                        if head then
+                        if head and game.Players.LocalPlayer.Character then
                             head.CFrame = game.Players.LocalPlayer.Character.RightHand.CFrame
                             local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch") or game.Players.LocalPlayer.Character:FindFirstChild("Punch")
                             if punchTool then
@@ -313,7 +323,7 @@ Killing:AddSwitch("Kill Players", function(state)
                         end
                     end
                 end
-                wait()
+                wait(0.1) -- Prevent excessive looping
             end
         end)
     end
@@ -335,18 +345,16 @@ end)
 spawn(function()
     while true do
         if autoPunchEnabled or autoPunchNoAnimEnabled then
-            local player = game.Players.LocalPlayer
-            local punchTool = player.Backpack:FindFirstChild("Punch") or player.Character:FindFirstChild("Punch")
+            local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch") or game.Players.LocalPlayer.Character:FindFirstChild("Punch")
             if punchTool then
-                punchTool.Parent = player.Character
+                punchTool.Parent = game.Players.LocalPlayer.Character
                 game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
                 game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
             end
         end
-        wait()
+        wait(0.1) -- Prevent excessive looping
     end
 end)
-
 
 -- View Stats Tab
 local ViewStatsTab = window:AddTab("ViewStats")
