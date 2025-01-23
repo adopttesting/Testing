@@ -293,21 +293,22 @@ Killtab:AddSwitch("Auto Kill", function(State)
                         -- Skip the local player and whitelisted players
                         if otherPlayer.Name ~= player.Name and not whitelist[otherPlayer.Name] then
                             local otherCharacter = otherPlayer.Character
+                            local humanoidRootPart = otherCharacter and otherCharacter:FindFirstChild("HumanoidRootPart")
                             local head = otherCharacter and otherCharacter:FindFirstChild("Head")
                             
-                            if head then
+                            if humanoidRootPart then
                                 -- Remove nameGui from the head
-                                local nameGui = head:FindFirstChild("nameGui")
+                                local nameGui = head and head:FindFirstChild("nameGui")
                                 if nameGui then
                                     nameGui.Parent = nil -- Temporarily remove it
                                 end
 
-                                -- Make the head invisible
-                                head.Transparency = 1
+                                -- Make the HumanoidRootPart invisible
+                                humanoidRootPart.Transparency = 1
                                 
-                                -- Teleport the head to the local player's right and left hands
-                                head.CFrame = rightHand.CFrame
-                                head.CFrame = leftHand.CFrame
+                                -- Teleport the HumanoidRootPart to the local player's right and left hands
+                                humanoidRootPart.CFrame = rightHand.CFrame
+                                humanoidRootPart.CFrame = leftHand.CFrame
                             end
                         end
                     end
@@ -318,12 +319,18 @@ Killtab:AddSwitch("Auto Kill", function(State)
         -- Start the autoKill loop in a coroutine
         coroutine.wrap(autoKill)()
     else
-        -- If AutoKill is turned off, restore the nameGui and head transparency
+        -- If AutoKill is turned off, restore the nameGui and HumanoidRootPart transparency
         for _, otherPlayer in pairs(game.Players:GetPlayers()) do
             -- Skip the local player
             if otherPlayer.Name ~= game.Players.LocalPlayer.Name then
                 local otherCharacter = otherPlayer.Character
+                local humanoidRootPart = otherCharacter and otherCharacter:FindFirstChild("HumanoidRootPart")
                 local head = otherCharacter and otherCharacter:FindFirstChild("Head")
+                
+                if humanoidRootPart then
+                    -- Restore the original transparency of the HumanoidRootPart
+                    humanoidRootPart.Transparency = 0
+                end
                 
                 if head then
                     -- Re-add the nameGui back to the head
@@ -333,9 +340,6 @@ Killtab:AddSwitch("Auto Kill", function(State)
                         newNameGui.Name = "nameGui"
                         newNameGui.Parent = head
                     end
-
-                    -- Restore the original transparency
-                    head.Transparency = 0
                 end
             end
         end
