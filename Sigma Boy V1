@@ -148,7 +148,8 @@ folder3:AddSwitch("Auto Join Brawl", function(State)
     end
 end)
 
--- Auto Farm Tab Continued
+-- Auto Farm Tab
+local AutoFarm = window:AddTab("Auto Farm")
 
 AutoFarm:AddLabel("Tools")
 AutoFarm:AddLabel("Normal Farming")
