@@ -234,158 +234,340 @@ folder2:AddSwitch("Auto Muscle King Lift", function(bool)
     end
 end)
 
-local Killing = window:AddTab("Killing")
+local Killtab = window:AddTab("Kill")
+local AutoPunchToggle = false
+local targetPlayerName = ""
+local teleporting = false
+local playerToSpyOn = nil
+local godModeToggle = false
+local autoEquipPunchToggle = false
+local whitelist = {}  -- Table to store whitelisted player names
+local punchEquipped = false  -- Variable to track whether the "Punch" tool is equipped or not
+local currentKillPlayer = nil  -- Variable to store the player whose model is being 
+local autoKillActive = false
+local originalTransparency = {}  -- Table to store original transparency values
+local originalCanCollide = {}  -- Table to store original CanCollide values
 
--- Variables to store dropdown data
-local whiteList = {}
-local playersDropdown = {}
-
--- WhiteList Dropdown
-Killing:AddDropdown("WhiteList", function(selected)
-    -- Placeholder for selection logic
-end)
-
--- Select Players Dropdown
-local selectedPlayer = nil
-Killing:AddDropdown("Select Players", function(selected)
-    selectedPlayer = selected
-end)
-
--- Function to update WhiteList and Select Players Dropdown
-local function updatePlayerDropdowns()
-    whiteList = {}
-    playersDropdown = {}
-    
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            table.insert(whiteList, player.Name)
-            table.insert(playersDropdown, player.Name)
-        end
+-- Create Whitelist [Player] Textbox
+Killtab:AddTextBox("Whitelist [Player]", function(text)
+    -- Add the player name to the whitelist
+    if text ~= "" and game.Players:FindFirstChild(text) then
+        whitelist[text] = true
+        print(text .. " has been whitelisted.")
+    else
+        print("Invalid player name.")
     end
-    
-    -- Refresh dropdowns dynamically (requires the dropdowns to support updates)
-    Killing:GetDropdown("WhiteList"):Update(whiteList)
-    Killing:GetDropdown("Select Players"):Update(playersDropdown)
-end
+end)
 
--- Update dropdowns when players join or leave
-game.Players.PlayerAdded:Connect(updatePlayerDropdowns)
-game.Players.PlayerRemoving:Connect(updatePlayerDropdowns)
-updatePlayerDropdowns()
+-- Create Unwhitelist [Player] Textbox
+Killtab:AddTextBox("Unwhitelist [Player]", function(text)
+    -- Remove the player name from the whitelist
+    if text ~= "" and whitelist[text] then
+        whitelist[text] = nil
+        print(text .. " has been unwhitelisted.")
+    else
+        print("Player not found in whitelist.")
+    end
+end)
+
+local folder5 = Killtab:AddFolder("Choose the Auto Kill you want") -- Folder name should be descriptive
 
 -- Auto Kill Toggle
-local autoKillEnabled = false
-Killing:AddSwitch("Auto Kill", function(state)
-    autoKillEnabled = state
-    if state then
-        spawn(function()
-            while autoKillEnabled do
-                for _, player in ipairs(game.Players:GetPlayers()) do
-                    if player ~= game.Players.LocalPlayer and not table.find(whiteList, player.Name) then
-                        local character = player.Character
-                        local head = character and character:FindFirstChild("Head")
-                        if head and game.Players.LocalPlayer.Character then
-                            head.CFrame = game.Players.LocalPlayer.Character.RightHand.CFrame
-                            local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch") or game.Players.LocalPlayer.Character:FindFirstChild("Punch")
-                            if punchTool then
-                                punchTool.Parent = game.Players.LocalPlayer.Character
-                                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+folder5:AddSwitch("Auto Kill", function(State)
+    autoKillActive = State  -- Toggle the state of autoKill
+
+    -- If AutoKill is enabled, start the autoKill process
+    if autoKillActive then
+        local function autoKill()
+            while autoKillActive do
+                wait(0.1)  -- Wait to avoid performance issues
+
+                -- Get the local player and their right hand
+                local player = game.Players.LocalPlayer
+                local character = player.Character
+                local rightHand = character and character:FindFirstChild("RightHand")
+
+                -- Ensure that the right hand exists
+                if rightHand then
+                    -- Iterate through all models in the Workspace
+                    for _, obj in pairs(game.Workspace:GetChildren()) do
+                        -- Check if the object is a model and if its parent is a player
+                        if obj:IsA("Model") and game.Players:FindFirstChild(obj.Name) then
+                            -- Check if the object is not the local player's character and is not whitelisted
+                            if obj.Name ~= player.Name and not whitelist[obj.Name] then
+                                -- Save the original transparency and CanCollide values if they haven't been saved already
+                                if not originalTransparency[obj.Name] then
+                                    originalTransparency[obj.Name] = {}
+                                    originalCanCollide[obj.Name] = {}
+                                    for _, part in pairs(obj:GetDescendants()) do
+                                        if part:IsA("BasePart") then
+                                            originalTransparency[obj.Name][part] = part.Transparency
+                                            originalCanCollide[obj.Name][part] = part.CanCollide
+                                        end
+                                    end
+                                end
+
+                                -- Make the model invisible by setting transparency to 1 and disabling collisions
+                                for _, part in pairs(obj:GetDescendants()) do
+                                    if part:IsA("BasePart") then
+                                        part.Transparency = 1
+                                        part.CanCollide = false
+                                    end
+                                end
+
+                                -- Teleport the model to the player's right hand
+                                local humanoidRootPart = obj:FindFirstChild("HumanoidRootPart")
+                                if humanoidRootPart then
+                                    humanoidRootPart.CFrame = rightHand.CFrame
+                                end
                             end
                         end
                     end
                 end
-                wait(0.1) -- Prevent excessive looping
-            end
-        end)
-    end
-end)
-
--- Kill Players Toggle
-local killPlayerEnabled = false
-Killing:AddSwitch("Kill Players", function(state)
-    killPlayerEnabled = state
-    if state then
-        spawn(function()
-            while killPlayerEnabled do
-                if selectedPlayer then
-                    local target = game.Players:FindFirstChild(selectedPlayer)
-                    if target and target.Character then
-                        local head = target.Character:FindFirstChild("Head")
-                        if head and game.Players.LocalPlayer.Character then
-                            head.CFrame = game.Players.LocalPlayer.Character.RightHand.CFrame
-                            local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch") or game.Players.LocalPlayer.Character:FindFirstChild("Punch")
-                            if punchTool then
-                                punchTool.Parent = game.Players.LocalPlayer.Character
-                                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                            end
-                        end
-                    end
-                end
-                wait(0.1) -- Prevent excessive looping
-            end
-        end)
-    end
-end)
-
--- Auto Punch Switch
-local autoPunchEnabled = false
-Killing:AddSwitch("Auto Punch", function(state)
-    autoPunchEnabled = state
-end)
-
--- Auto Punch [No Animation] Switch
-local autoPunchNoAnimEnabled = false
-Killing:AddSwitch("Auto Punch [No Animation]", function(state)
-    autoPunchNoAnimEnabled = state
-end)
-
--- Auto Punch Functionality
-spawn(function()
-    while true do
-        if autoPunchEnabled or autoPunchNoAnimEnabled then
-            local punchTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Punch") or game.Players.LocalPlayer.Character:FindFirstChild("Punch")
-            if punchTool then
-                punchTool.Parent = game.Players.LocalPlayer.Character
-                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
             end
         end
-        wait(0.1) -- Prevent excessive looping
-    end
-end)
 
-RebirthTab:AddTextBox("Select Rebirth Amount", function(text)
-    local inputNumber = tonumber(text)
-    if inputNumber and inputNumber >= 0 then
-        rebirthAmount = inputNumber
-        currentRebirths = 0
-        print("Rebirth amount set to:", rebirthAmount)
+        -- Start the autoKill loop in a coroutine so it runs independently
+        coroutine.wrap(autoKill)()
     else
-        print("Invalid input. Please enter a positive number.")
+        -- If AutoKill is turned off, reset transparency and collisions
+        for _, obj in pairs(game.Workspace:GetChildren()) do
+            if obj:IsA("Model") and game.Players:FindFirstChild(obj.Name) and not whitelist[obj.Name] then
+                -- Restore original transparency and CanCollide values
+                if originalTransparency[obj.Name] then
+                    for part, transparency in pairs(originalTransparency[obj.Name]) do
+                        part.Transparency = transparency
+                        part.CanCollide = originalCanCollide[obj.Name][part]
+                    end
+                end
+            end
+        end
+        -- Clear the saved data for next time
+        originalTransparency = {}
+        originalCanCollide = {}
     end
 end)
 
 
-local AutoFarmTab = window:AddTab("Auto Farm")
-local AutoWeightToggle = false
-local AutoPushupsToggle = false
-local SitupsToggle = false
-local MuscleKingFarmToggle = false
+-- Auto Kill Aura v2 Toggle
+folder5:AddSwitch("Auto Kill Aura v2", function(State)
+    autoKillEnabled = State
+end)
 
--- Helper functions for auto actions
-local function AutoWeight()
-    while AutoWeightToggle do
-        local player = game.Players.LocalPlayer
-        local weightTool = player.Backpack:FindFirstChild("Weight") or player.Character:FindFirstChild("Weight")
-        if weightTool then
-            player.Character.Humanoid:EquipTool(weightTool)
-            weightTool:Activate()
+game:GetService('RunService').RenderStepped:Connect(function()
+    if autoKillEnabled then
+        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+            if player.Name ~= game.Players.LocalPlayer.Name then
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local rootPart = player.Character.HumanoidRootPart
+                    -- Modify the root part properties for players that are not the local player
+                    rootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)  -- Set hitbox size to 600
+                    rootPart.Transparency = 1  -- Make the red thing invisible
+                    rootPart.Material = Enum.Material.Neon
+                    rootPart.CanCollide = false
+                end
+            end
         end
-        wait(0.1)
+
+        -- Modify the local player's HumanoidRootPart properties (optional)
+        local localPlayer = game.Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = localPlayer.Character.HumanoidRootPart
+            rootPart.Transparency = 1  -- Make the local player's root part invisible
+            rootPart.CanCollide = false
+        end
+    end
+end)
+
+-- Optional function to reset the player's character
+local function resetPlayer()
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        player.Character:BreakJoints()  -- Break joints to reset the character (if necessary)
     end
 end
+
+-- Call the function to reset the character (if required by the script's logic)
+resetPlayer()
+
+
+-- Create Equip Punch Toggle
+Killtab:AddSwitch("Equip Punch", function(State)
+    punchEquipped = State  -- Toggle whether the "Punch" tool should be equipped or not
+
+    -- If Equip Punch is enabled, continuously equip the "Punch" tool
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    local backpack = player.Backpack
+
+    if punchEquipped then
+        -- Equip "Punch" tool continuously
+        local punchTool = character:FindFirstChild("Punch") or backpack:FindFirstChild("Punch")
+        if punchTool then
+            -- Equip the tool if it's found in the character or backpack
+            backpack:EquipTool(punchTool)
+        end
+    else
+        -- If Equip Punch is off, stop equipping the "Punch" tool
+        local punchTool = backpack:FindFirstChild("Punch")
+        if punchTool then
+            -- Unequip the "Punch" tool
+            punchTool.Parent = character
+        end
+    end
+end)
+
+
+-- Create Kill Player [Name] Textbox
+Killtab:AddTextBox("Kill Player [Name]", function(text)
+    -- Store the player's name to be used for teleportation
+    currentKillPlayer = text
+end)
+
+-- Create Start Kill Button
+Killtab:AddButton("Start Kill", function()
+    if currentKillPlayer then
+        local player = game.Players:FindFirstChild(currentKillPlayer)
+        if player then
+            -- Start teleporting the specified player's model
+            local function startTeleporting()
+                local character = player.Character
+                local rightHand = game.Players.LocalPlayer.Character:FindFirstChild("RightHand")
+
+                -- Check if the player's character and right hand exist
+                if character and rightHand then
+                    while currentKillPlayer == player.Name do
+                        wait(0.1)  -- Wait to avoid performance issues
+                        -- Check if the player is not whitelisted
+                        if not whitelist[player.Name] then
+                            -- Teleport the model to the player's right hand
+                            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                            if humanoidRootPart then
+                                humanoidRootPart.CFrame = rightHand.CFrame
+                            end
+                        end
+                    end
+                end
+            end
+
+            -- Start teleporting the player's model in a coroutine
+            coroutine.wrap(startTeleporting)()
+        else
+            print("Player not found.")
+        end
+    else
+        print("No player name specified.")
+    end
+end)
+
+-- Create Stop Kill Button
+Killtab:AddButton("Stop Kill", function()
+    if currentKillPlayer then
+        local player = game.Players:FindFirstChild(currentKillPlayer)
+        if player then
+            -- Stop teleporting the specified player's model
+            print("Stopped teleporting " .. currentKillPlayer)
+            currentKillPlayer = nil  -- Stop teleporting
+        else
+            print("Player not found.")
+        end
+    else
+        print("No player name specified.")
+    end
+end)
+
+-- Speed Punch (Optional Speed Increase for Punch)
+Killtab:AddButton("Speed Punch", function()
+    local player = game.Players.LocalPlayer
+    local punch = player.Backpack:FindFirstChild("Punch") or player.Character:FindFirstChild("Punch")
+    if punch and punch:FindFirstChild("attackTime") then
+        punch.attackTime.Value = 0
+    end
+end)
+
+-- Auto Punch Toggle
+Killtab:AddSwitch("Auto Punch", function(State)
+    AutoPunchToggle = State
+    if AutoPunchToggle then
+        task.spawn(function()
+            while AutoPunchToggle do
+                local player = game.Players.LocalPlayer
+                local tool = player.Backpack:FindFirstChild("Punch") or player.Character:FindFirstChild("Punch")
+                if tool and tool.Parent ~= player.Character then
+                    tool.Parent = player.Character
+                end
+                if tool then
+                    tool:Activate()
+                end
+                task.wait(0.01)  -- Trigger every 0.01 seconds
+            end
+        end)
+    end
+end)
+
+Killtab:AddSwitch("Auto Punch [No Animation]", function(state)
+    if state then
+        local player = game.Players.LocalPlayer
+        local playerName = player.Name
+        local punchTool =
+            player.Backpack:FindFirstChild("Punch") or
+            game.Workspace:FindFirstChild(playerName):FindFirstChild("Punch")
+        
+        _G.autoPunchanim = true -- Global control variable
+
+        while _G.autoPunchanim do
+            if punchTool then
+                if punchTool.Parent ~= game.Workspace:FindFirstChild(playerName) then
+                    punchTool.Parent = game.Workspace:FindFirstChild(playerName) -- Equip the tool
+                end
+                
+                -- Fire punch events for both right and left hand
+                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                
+                wait() -- Adjust the delay as needed for timing between punches
+            else
+                warn("Punch tool not found")
+                _G.autoPunchanim = false -- Optional: Stop the loop if tool is not found
+            end
+        end
+    else
+        _G.autoPunchanim = false
+    end
+end)
+
+Killtab:AddLabel("Spy")
+
+-- Textbox for Spy target player
+Killtab:AddTextBox("Spy on Player (Name)", function(text)
+    playerToSpyOn = text
+end)
+
+-- Spy Toggle
+Killtab:AddSwitch("Spy", function(State)
+    if State then
+        local player = game.Players.LocalPlayer
+        local spying = true -- Variable to control the spying state
+        task.spawn(function()
+            while spying do
+                task.wait(0.1)  -- Check every 0.1 seconds
+                if playerToSpyOn then
+                    local targetPlayer = game.Players:FindFirstChild(playerToSpyOn)
+                    if targetPlayer and targetPlayer.Character then
+                        -- Teleport the LocalPlayer to the target player's head (or wherever you want)
+                        local targetHead = targetPlayer.Character:FindFirstChild("Head")
+                        if targetHead then
+                            player.Character:MoveTo(targetHead.Position)
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        -- Stop spying when toggle is turned off
+        spying = false
+    end
+end)
 
 -- View Stats Tab
 local ViewStatsTab = window:AddTab("ViewStats")
