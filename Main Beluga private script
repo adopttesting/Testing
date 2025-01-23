@@ -2,24 +2,24 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/adopttesting/Testing/refs/heads/main/Library", true))()
 
 
-local window = library:AddWindow("Simga Boy V1 | Adopt Script", {
+local window = library:AddWindow("Sigma Boy V1 | Adopt Script", {
     main_color = Color3.fromRGB(0,0,0), -- Color
     min_size = Vector2.new(420, 440), -- Size of the gui
     can_resize = false, -- true or false
 })
 
 local Client = window:AddTab("Client")
-    Client:AddLabel("Local Player")
+Client:AddLabel("Local Player")
 
-    -- Set Size 2
-    Client:AddButton("Set Size 2", function()
-        local args = {
-            [1] = "changeSize",
-            [2] = 2
-        }
+-- Set Size 2
+Client:AddButton("Set Size 2", function()
+    local args = {
+        [1] = "changeSize",
+        [2] = 2
+    }
 
-        game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
-    end)
+    game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
+end)
 
 local Maintab = window:AddTab("Main")
 
@@ -73,7 +73,7 @@ Maintab:AddButton("Anti Crash", function()
     game:GetService("Players").LocalPlayer.Idled:Connect(function()
         bb:CaptureController()
         bb:ClickButton2(Vector2.new())
-        ab.Text = "Roblox tried kicking you, but I didnâ€™t let them!"  -- Fixed encoding issue
+        ab.Text = "Roblox tried kicking you, but I didn’t let them!"
         wait(2)
         ab.Text = "Status: Active"
     end)
@@ -93,61 +93,25 @@ end)
 -- Create folder "Islands Teleports"
 local folder = Maintab:AddFolder("Islands Teleports")
 
--- Beach Teleport
-folder:AddButton("Beach", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-11, 5, -178)
-    end
-end)
+-- Teleport Buttons
+local teleportPositions = {
+    {"Beach", Vector3.new(-11, 5, -178)},
+    {"Legends", Vector3.new(4603, 989, -3898)},
+    {"Muscle", Vector3.new(-8626, 15, -5730)},
+    {"Tiny", Vector3.new(-38, 5, 1884)},
+    {"Secret", Vector3.new(-2596, -1, 5738)},
+    {"Inferno", Vector3.new(-6759, 5, -1285)},
+    {"Frost", Vector3.new(-2623, 5, -409)},
+    {"Mythical", Vector3.new(2251, 5, 1073)}
+}
 
--- Legends Teleport
-folder:AddButton("Legends", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(4603, 989, -3898)
-    end
-end)
-
--- Muscle Teleport
-folder:AddButton("Muscle", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-8626, 15, -5730)
-    end
-end)
-
--- Tiny Teleport
-folder:AddButton("Tiny", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-38, 5, 1884)
-    end
-end)
-
--- Secret Teleport
-folder:AddButton("Secret", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2596, -1, 5738)
-    end
-end)
-
--- Inferno Teleport
-folder:AddButton("Inferno", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-6759, 5, -1285)
-    end
-end)
-
--- Frost Teleport
-folder:AddButton("Frost", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2623, 5, -409)
-    end
-end)
-
--- Mythical Teleport
-folder:AddButton("Mythical", function()
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2251, 5, 1073)
-    end
-end)
+for _, position in pairs(teleportPositions) do
+    folder:AddButton(position[1], function()
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position[2])
+        end
+    end)
+end
 
 -- Rock Farming v1 Section
 local folder2 = Maintab:AddFolder("Rock Farming v1")
@@ -160,12 +124,11 @@ local folder3 = Maintab:AddFolder("Brawl")
 folder3:AddSwitch("God Mode (Brawl)", function(State)
     godModeToggle = State
     if godModeToggle then
-        -- Repeat the joinBrawl event every 0.1 seconds to simulate God Mode
         task.spawn(function()
             while godModeToggle do
                 local args = { [1] = "joinBrawl" }
                 game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("brawlEvent"):FireServer(unpack(args))
-                task.wait()  -- Repeat the event every 0 seconds
+                task.wait(0)  -- Repeat the event every 0 seconds
             end
         end)
     end
@@ -185,12 +148,12 @@ folder3:AddSwitch("Auto Join Brawl", function(State)
     end
 end)
 
-Local AutoFarm = window:AddTab("Auto Farm")
+-- Auto Farm Tab Continued
 
 AutoFarm:AddLabel("Tools")
 AutoFarm:AddLabel("Normal Farming")
 
-local folder = AutoFarming:AddFolder("Jungle Farming")
+local folder = AutoFarm:AddFolder("Jungle Farming")
 
 local isInfiniteEventEnabled = false
 local eventThread = nil  -- Thread for infinite event loop
@@ -241,7 +204,7 @@ folder:AddSwitch("Auto Jungle Bench", function(bool)
     end
 end)
 
-local folder2 = AutoFarming:AddFolder("Muscle King Farming")
+local folder2 = AutoFarm:AddFolder("Muscle King Farming")
 
 -- Toggle callback for Muscle King Bench
 folder2:AddSwitch("Auto Muscle King Bench", function(bool)
@@ -271,31 +234,20 @@ folder2:AddSwitch("Auto Muscle King Lift", function(bool)
     end
 end)
 
--- Toggle callback for King Boulder
-folder2:AddSwitch("Auto King Boulder", function(bool)
-    isInfiniteEventEnabled = bool
-    if isInfiniteEventEnabled then
-        if not eventThread then
-            eventThread = spawn(function() FireInfiniteEvents("King Boulder") end)
-        end
-    else
-        if eventThread then
-            eventThread = nil
-        end
-    end
-end)
+-- Auto Collect Gems (Bonus Tab)
+local folder3 = AutoFarm:AddFolder("Auto Collect Gems")
 
--- Toggle callback for Muscle King Squat
-folder2:AddSwitch("Auto Muscle King Squat", function(bool)
-    isInfiniteEventEnabled = bool
-    if isInfiniteEventEnabled then
-        if not eventThread then
-            eventThread = spawn(function() FireInfiniteEvents("Muscle King Squat") end)
-        end
-    else
-        if eventThread then
-            eventThread = nil
-        end
+folder3:AddSwitch("Auto Collect Gems", function(bool)
+    if bool then
+        local gemCollectionThread = spawn(function()
+            while true do
+                for _, gem in ipairs(workspace:FindPartsByName("Gem")) do
+                    -- Collect gem logic
+                    gem.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                    wait(0.5)  -- Delay between collecting gems
+                end
+            end
+        end)
     end
 end)
 
@@ -421,7 +373,9 @@ game:GetService('RunService').RenderStepped:Connect(function()
             if player.Name ~= game.Players.LocalPlayer.Name and not table.find(whiteListedPlayers, player.Name) then
                 local character = player.Character
                 local localCharacter = game.Players.LocalPlayer.Character
-                handleKill(character, localCharacter)
+                if character then
+                    handleKill(character, localCharacter)
+                end
             end
         end
     end
@@ -432,7 +386,9 @@ game:GetService('RunService').RenderStepped:Connect(function()
         if targetPlayer then
             local character = targetPlayer.Character
             local localCharacter = game.Players.LocalPlayer.Character
-            handleKill(character, localCharacter, killPlayer)
+            if character then
+                handleKill(character, localCharacter, killPlayer)
+            end
         end
     end
 
@@ -450,7 +406,7 @@ game:GetService('RunService').RenderStepped:Connect(function()
                 end
                 game.Players.LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
                 game.Players.LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                wait()
+                wait(0.1)  -- Add a delay to prevent too many requests per frame
             else
                 _G.autoPunchanim = false
             end
@@ -472,152 +428,6 @@ local function resetPlayer()
 end
 
 resetPlayer()
-
-
-
-
-
-
-
-
-
-
-local rebirthAmount = 0
-local currentRebirths = 0
-local autoRebirthEnabled = false
-
--- Create a function for auto rebirth
-local function autoRebirth()
-    spawn(function()
-        while autoRebirthEnabled do
-            local rebirthevent = game.ReplicatedStorage.rEvents:FindFirstChild("rebirthRemote")
-            if rebirthevent then
-                if rebirthAmount == 0 or currentRebirths < rebirthAmount then
-                    rebirthevent:FireServer()
-                    currentRebirths = currentRebirths + 1
-                else
-                    autoRebirthEnabled = false
-                    print("Reached the desired rebirth amount.")
-                end
-            end
-            wait(0.1)
-        end
-    end)
-end
-
--- Assuming 'window' is the UI library you're using, and it has an AddTab method
-local RebirthTab = window:AddTab("Rebirth")
-
--- Add a switch for auto rebirth
-RebirthTab:AddSwitch("Auto Rebirth", {
-    Default = false,
-    Callback = function(state)
-        autoRebirthEnabled = state
-        if state then
-            autoRebirth()
-        end
-    end
-})
-
-
-
--- Add a textbox to set the rebirth amount
-RebirthTab:AddTextBox("Select Rebirth Amount", function(text)
-    local inputNumber = tonumber(text)
-    if inputNumber and inputNumber >= 0 then
-        rebirthAmount = inputNumber
-        currentRebirths = 0
-        print("Rebirth amount set to:", rebirthAmount)
-    else
-        print("Invalid input. Please enter a positive number.")
-    end
-end)
-
-
-local AutoFarmTab = window:AddTab("Auto Farm")
-local AutoWeightToggle = false
-local AutoPushupsToggle = false
-local SitupsToggle = false
-local MuscleKingFarmToggle = false
-
--- Helper functions for auto actions
-local function AutoWeight()
-    while AutoWeightToggle do
-        local player = game.Players.LocalPlayer
-        local weightTool = player.Backpack:FindFirstChild("Weight") or player.Character:FindFirstChild("Weight")
-        if weightTool then
-            player.Character.Humanoid:EquipTool(weightTool)
-            weightTool:Activate()
-        end
-        wait(0.1)
-    end
-end
-
-local function AutoPushups()
-    while AutoPushupsToggle do
-        local player = game.Players.LocalPlayer
-        local pushupTool = player.Backpack:FindFirstChild("Pushup") or player.Character:FindFirstChild("Pushup")
-        if pushupTool then
-            player.Character.Humanoid:EquipTool(pushupTool)
-            pushupTool:Activate()
-        end
-        wait(0.1)
-    end
-end
-
-local function AutoSitups()
-    while SitupsToggle do
-        local player = game.Players.LocalPlayer
-        local situpTool = player.Backpack:FindFirstChild("Situp") or player.Character:FindFirstChild("Situp")
-        if situpTool then
-            player.Character.Humanoid:EquipTool(situpTool)
-            situpTool:Activate()
-        end
-        wait(0.1)
-    end
-end
-
-local function MuscleKingFarm()
-    while MuscleKingFarmToggle do
-        local player = game.Players.LocalPlayer
-        local muscleKingTool = player.Backpack:FindFirstChild("MuscleKing") or player.Character:FindFirstChild("MuscleKing")
-        if muscleKingTool then
-            player.Character.Humanoid:EquipTool(muscleKingTool)
-            muscleKingTool:Activate()
-        end
-        wait(0.1)
-    end
-end
-
-AutoFarmTab:AddSwitch("Auto Weight", function(State)
-    AutoWeightToggle = State
-    if AutoWeightToggle then
-        AutoWeight()
-    end
-end)
-
-AutoFarmTab:AddSwitch("Auto Pushups", function(value)
-    AutoPushupsToggle = value
-    if AutoPushupsToggle then
-        AutoPushups()
-    end
-end)
-
-AutoFarmTab:AddSwitch("Situps", function(value)
-    SitupsToggle = value
-    if SitupsToggle then
-        AutoSitups()
-    end
-end)
-
-AutoFarmTab:AddSwitch("Muscle King Farm", function(value)
-    MuscleKingFarmToggle = value
-    if MuscleKingFarmToggle then
-        MuscleKingFarm()
-    end
-end)
-
-
 
 -- View Stats Tab
 local ViewStatsTab = window:AddTab("ViewStats")
@@ -651,27 +461,34 @@ local function createPlayerLabels(player)
     local equippedPets = player:FindFirstChild("equippedPets")
     local ownedGamepasses = player:FindFirstChild("ownedGamepasses")
 
+    -- Ensure leaderstats is present
+    if not leaderstats then
+        return
+    end
+
     -- Create labels for stats
     local labels = {
-        StrengthLabel = ViewStatsTab:AddLabel("Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)),
-        DurabilityLabel = ViewStatsTab:AddLabel("Durability: " .. abbreviateNumber(player.Durability.Value or 0)),
-        KillsLabel = ViewStatsTab:AddLabel("Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)),
-        BrawlsLabel = ViewStatsTab:AddLabel("Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)),
-        AgilityLabel = ViewStatsTab:AddLabel("Agility: " .. abbreviateNumber(player.Agility.Value or 0)),
-        EvilKarmaLabel = ViewStatsTab:AddLabel("evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)),
-        GoodKarmaLabel = ViewStatsTab:AddLabel("goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)),
-        MapLabel = ViewStatsTab:AddLabel("Map: " .. (player.currentMap.Value or "N/A")),
-        KingTimeLabel = ViewStatsTab:AddLabel("KingTime: " .. abbreviateNumber(player.muscleKingTime.Value or 0)),
+        StrengthLabel = ViewStatsTab:AddLabel("Strength: " .. abbreviateNumber(leaderstats.Strength and leaderstats.Strength.Value or 0)),
+        DurabilityLabel = ViewStatsTab:AddLabel("Durability: " .. abbreviateNumber(player.Durability and player.Durability.Value or 0)),
+        KillsLabel = ViewStatsTab:AddLabel("Kills: " .. abbreviateNumber(leaderstats.Kills and leaderstats.Kills.Value or 0)),
+        BrawlsLabel = ViewStatsTab:AddLabel("Brawls: " .. abbreviateNumber(leaderstats.Brawls and leaderstats.Brawls.Value or 0)),
+        AgilityLabel = ViewStatsTab:AddLabel("Agility: " .. abbreviateNumber(player.Agility and player.Agility.Value or 0)),
+        EvilKarmaLabel = ViewStatsTab:AddLabel("evilKarma: " .. abbreviateNumber(player.evilKarma and player.evilKarma.Value or 0)),
+        GoodKarmaLabel = ViewStatsTab:AddLabel("goodKarma: " .. abbreviateNumber(player.goodKarma and player.goodKarma.Value or 0)),
+        MapLabel = ViewStatsTab:AddLabel("Map: " .. (player.currentMap and player.currentMap.Value or "N/A")),
+        KingTimeLabel = ViewStatsTab:AddLabel("KingTime: " .. abbreviateNumber(player.muscleKingTime and player.muscleKingTime.Value or 0)),
         PremiumLabel = ViewStatsTab:AddLabel("Premium: " .. (player.MembershipType == Enum.MembershipType.Premium and "true" or "false")),
     }
 
-    -- Add pet labels
-    for i = 1, 5 do
-        local petValue = equippedPets:FindFirstChild("pet" .. i) and equippedPets["pet" .. i].Value or "N/A"
-        labels["Pet" .. i .. "Label"] = ViewStatsTab:AddLabel("Pet" .. i .. ": " .. tostring(petValue))
+    -- Add pet labels (ensure equippedPets exists)
+    if equippedPets then
+        for i = 1, 5 do
+            local petValue = equippedPets:FindFirstChild("pet" .. i) and equippedPets["pet" .. i].Value or "N/A"
+            labels["Pet" .. i .. "Label"] = ViewStatsTab:AddLabel("Pet" .. i .. ": " .. tostring(petValue))
+        end
     end
 
-    -- Add owned gamepasses
+    -- Add owned gamepasses (ensure ownedGamepasses exists)
     local gamepassList = {}
     if ownedGamepasses then
         for _, gamepass in ipairs(ownedGamepasses:GetChildren()) do
@@ -685,33 +502,47 @@ local function createPlayerLabels(player)
     playerData[playerName] = labels
 
     -- Connect value change events to update the labels
-    leaderstats.Kills.Changed:Connect(function()
-        labels.KillsLabel.Text = "Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)
-    end)
+    if leaderstats.Kills then
+        leaderstats.Kills.Changed:Connect(function()
+            labels.KillsLabel.Text = "Kills: " .. abbreviateNumber(leaderstats.Kills.Value or 0)
+        end)
+    end
 
-    leaderstats.Strength.Changed:Connect(function()
-        labels.StrengthLabel.Text = "Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)
-    end)
+    if leaderstats.Strength then
+        leaderstats.Strength.Changed:Connect(function()
+            labels.StrengthLabel.Text = "Strength: " .. abbreviateNumber(leaderstats.Strength.Value or 0)
+        end)
+    end
 
-    leaderstats.Brawls.Changed:Connect(function()
-        labels.BrawlsLabel.Text = "Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)
-    end)
+    if leaderstats.Brawls then
+        leaderstats.Brawls.Changed:Connect(function()
+            labels.BrawlsLabel.Text = "Brawls: " .. abbreviateNumber(leaderstats.Brawls.Value or 0)
+        end)
+    end
 
-    player.Durability.Changed:Connect(function()
-        labels.DurabilityLabel.Text = "Durability: " .. abbreviateNumber(player.Durability.Value or 0)
-    end)
+    if player.Durability then
+        player.Durability.Changed:Connect(function()
+            labels.DurabilityLabel.Text = "Durability: " .. abbreviateNumber(player.Durability.Value or 0)
+        end)
+    end
 
-    player.Agility.Changed:Connect(function()
-        labels.AgilityLabel.Text = "Agility: " .. abbreviateNumber(player.Agility.Value or 0)
-    end)
+    if player.Agility then
+        player.Agility.Changed:Connect(function()
+            labels.AgilityLabel.Text = "Agility: " .. abbreviateNumber(player.Agility.Value or 0)
+        end)
+    end
 
-    player.evilKarma.Changed:Connect(function()
-        labels.EvilKarmaLabel.Text = "evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)
-    end)
+    if player.evilKarma then
+        player.evilKarma.Changed:Connect(function()
+            labels.EvilKarmaLabel.Text = "evilKarma: " .. abbreviateNumber(player.evilKarma.Value or 0)
+        end)
+    end
 
-    player.goodKarma.Changed:Connect(function()
-        labels.GoodKarmaLabel.Text = "goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)
-    end)
+    if player.goodKarma then
+        player.goodKarma.Changed:Connect(function()
+            labels.GoodKarmaLabel.Text = "goodKarma: " .. abbreviateNumber(player.goodKarma.Value or 0)
+        end)
+    end
 end
 
 -- Function to remove player labels (cleanup)
@@ -744,11 +575,11 @@ local textbox = ViewStatsTab:AddTextBox("Player Name", function(playerName)
     end
 end)
 
---The credit tab because yes
+-- The credit tab because yes
 local Credittab = window:AddTab("Credit")  -- Adding the "Credit" tab
 
 -- Adding the labels
-Credittab:AddLabel("Script Made By Adopt And EpicDeevv")
+Credittab:AddLabel("Script Made By Adopt")
 Credittab:AddLabel("Discord Server: https://discord.gg/ZgDYgKa2")
 
 -- Show the window
