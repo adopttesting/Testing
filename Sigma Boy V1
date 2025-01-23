@@ -243,7 +243,7 @@ local godModeToggle = false
 local autoEquipPunchToggle = false
 local whitelist = {}  -- Table to store whitelisted player names
 local punchEquipped = false  -- Variable to track whether the "Punch" tool is equipped or not
-local currentKillPlayer = nil  -- Variable to store the player whose model is being 
+local currentKillPlayer = nil  -- Variable to store the player whose model is being targeted
 local autoKillActive = false
 local originalTransparency = {}  -- Table to store original transparency values
 local originalCanCollide = {}  -- Table to store original CanCollide values
@@ -346,17 +346,70 @@ Killtab:AddSwitch("Auto Kill", function(State)
     end
 end)
 
--- Optional function to reset the player's character
-local function resetPlayer()
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        player.Character:BreakJoints()  -- Break joints to reset the character (if necessary)
+-- Start Kill Button (Targeted Auto Kill)
+Killtab:AddButton("Start Kill", function()
+    if currentKillPlayer then
+        local player = game.Players:FindFirstChild(currentKillPlayer)
+        if player then
+            -- Start teleporting the specified player's model
+            local function startKillPlayer()
+                local character = player.Character
+                local rightHand = game.Players.LocalPlayer.Character:FindFirstChild("RightHand")
+                local leftHand = game.Players.LocalPlayer.Character:FindFirstChild("LeftHand")
+
+                -- Check if the player's character and hands exist
+                if character and rightHand and leftHand then
+                    while currentKillPlayer == player.Name do
+                        wait(0.1)  -- Wait to avoid performance issues
+                        -- Check if the player is not whitelisted
+                        if not whitelist[player.Name] then
+                            -- Teleport the model to the player's right and left hands
+                            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                            if humanoidRootPart then
+                                -- Make the HumanoidRootPart invisible
+                                humanoidRootPart.Transparency = 1
+                                
+                                -- Teleport the HumanoidRootPart to the local player's right and left hands
+                                humanoidRootPart.CFrame = rightHand.CFrame
+                                humanoidRootPart.CFrame = leftHand.CFrame
+                                
+                                -- Remove nameGui
+                                local head = character:FindFirstChild("Head")
+                                local nameGui = head and head:FindFirstChild("nameGui")
+                                if nameGui then
+                                    nameGui.Parent = nil  -- Remove nameGui
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            -- Start teleporting the specified player's model in a coroutine
+            coroutine.wrap(startKillPlayer)()
+        else
+            print("Player not found.")
+        end
+    else
+        print("No player name specified.")
     end
-end
+end)
 
--- Call the function to reset the character (if required by the script's logic)
-resetPlayer()
-
+-- Stop Kill Button (Stop Targeted Auto Kill)
+Killtab:AddButton("Stop Kill", function()
+    if currentKillPlayer then
+        local player = game.Players:FindFirstChild(currentKillPlayer)
+        if player then
+            -- Stop teleporting the specified player's model
+            print("Stopped teleporting " .. currentKillPlayer)
+            currentKillPlayer = nil  -- Stop teleporting
+        else
+            print("Player not found.")
+        end
+    else
+        print("No player name specified.")
+    end
+end)
 
 -- Create Equip Punch Toggle
 Killtab:AddSwitch("Equip Punch", function(State)
@@ -381,65 +434,6 @@ Killtab:AddSwitch("Equip Punch", function(State)
             -- Unequip the "Punch" tool
             punchTool.Parent = character
         end
-    end
-end)
-
-
--- Create Kill Player [Name] Textbox
-Killtab:AddTextBox("Kill Player [Name]", function(text)
-    -- Store the player's name to be used for teleportation
-    currentKillPlayer = text
-end)
-
--- Create Start Kill Button
-Killtab:AddButton("Start Kill", function()
-    if currentKillPlayer then
-        local player = game.Players:FindFirstChild(currentKillPlayer)
-        if player then
-            -- Start teleporting the specified player's model
-            local function startTeleporting()
-                local character = player.Character
-                local rightHand = game.Players.LocalPlayer.Character:FindFirstChild("RightHand")
-
-                -- Check if the player's character and right hand exist
-                if character and rightHand then
-                    while currentKillPlayer == player.Name do
-                        wait(0.1)  -- Wait to avoid performance issues
-                        -- Check if the player is not whitelisted
-                        if not whitelist[player.Name] then
-                            -- Teleport the model to the player's right hand
-                            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-                            if humanoidRootPart then
-                                humanoidRootPart.CFrame = rightHand.CFrame
-                            end
-                        end
-                    end
-                end
-            end
-
-            -- Start teleporting the player's model in a coroutine
-            coroutine.wrap(startTeleporting)()
-        else
-            print("Player not found.")
-        end
-    else
-        print("No player name specified.")
-    end
-end)
-
--- Create Stop Kill Button
-Killtab:AddButton("Stop Kill", function()
-    if currentKillPlayer then
-        local player = game.Players:FindFirstChild(currentKillPlayer)
-        if player then
-            -- Stop teleporting the specified player's model
-            print("Stopped teleporting " .. currentKillPlayer)
-            currentKillPlayer = nil  -- Stop teleporting
-        else
-            print("Player not found.")
-        end
-    else
-        print("No player name specified.")
     end
 end)
 
@@ -472,6 +466,7 @@ Killtab:AddSwitch("Auto Punch", function(State)
     end
 end)
 
+-- Auto Punch [No Animation] Toggle
 Killtab:AddSwitch("Auto Punch [No Animation]", function(state)
     if state then
         local player = game.Players.LocalPlayer
@@ -503,6 +498,7 @@ Killtab:AddSwitch("Auto Punch [No Animation]", function(state)
     end
 end)
 
+-- Spy Section
 Killtab:AddLabel("Spy")
 
 -- Textbox for Spy target player
@@ -535,7 +531,8 @@ Killtab:AddSwitch("Spy", function(State)
         spying = false
     end
 end)
-
+                             
+        
 -- View Stats Tab
 local ViewStatsTab = window:AddTab("ViewStats")
 
